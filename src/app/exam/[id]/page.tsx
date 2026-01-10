@@ -3,7 +3,8 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import ExamRunner from './exam-runner'
 
-export default async function ExamPage({ params }: { params: { id: string } }) {
+export default async function ExamPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -15,7 +16,7 @@ export default async function ExamPage({ params }: { params: { id: string } }) {
   const { data: exam } = await supabase
     .from('exams')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!exam) notFound()
@@ -24,7 +25,7 @@ export default async function ExamPage({ params }: { params: { id: string } }) {
   const { data: studentExam } = await supabase
     .from('student_exams')
     .select('id, status')
-    .eq('exam_id', params.id)
+    .eq('exam_id', id)
     .eq('student_id', user.id)
     .single()
 
@@ -41,7 +42,7 @@ export default async function ExamPage({ params }: { params: { id: string } }) {
   const { data: questions } = await supabase
     .from('questions')
     .select('*')
-    .eq('exam_id', params.id)
+    .eq('exam_id', id)
     .order('created_at', { ascending: true })
 
   return (
