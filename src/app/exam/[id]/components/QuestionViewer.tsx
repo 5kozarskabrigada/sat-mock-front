@@ -26,6 +26,11 @@ export default function QuestionViewer({
   const [inputValue, setInputValue] = useState(selectedAnswer || '')
   const [crossedAnswers, setCrossedAnswers] = useState<Record<string, boolean>>({})
   
+  // Resizable pane state
+  const [leftPaneWidth, setLeftPaneWidth] = useState(50) // percentage
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isDragging = useRef(false)
+
   // Annotation State
   const passageRef = useRef<HTMLDivElement>(null)
   const [selectionMenu, setSelectionMenu] = useState<{ x: number, y: number, show: boolean } | null>(null)
@@ -36,8 +41,6 @@ export default function QuestionViewer({
     setCrossedAnswers({})
     setInputValue(selectedAnswer || '')
     setSelectionMenu(null)
-    // Note: In a real app, we would fetch highlights for this question here
-    // For now, we reset them or could persist them in parent
     setHighlights([]) 
   }, [question.id])
 
@@ -47,11 +50,51 @@ export default function QuestionViewer({
   }
 
   const toggleCrossOut = (e: React.MouseEvent, key: string) => {
-    e.stopPropagation() // Prevent selecting the answer
+    e.stopPropagation()
     setCrossedAnswers(prev => ({
         ...prev,
         [key]: !prev[key]
     }))
+  }
+
+  const toggleCrossOutDirect = (key: string) => {
+    setCrossedAnswers(prev => ({
+        ...prev,
+        [key]: !prev[key]
+    }))
+  }
+
+  // Handle Drag for Resizing
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !containerRef.current) return
+      
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100
+      
+      // Clamp between 20% and 80%
+      if (newWidth >= 20 && newWidth <= 80) {
+        setLeftPaneWidth(newWidth)
+      }
+    }
+
+    const handleMouseUp = () => {
+      isDragging.current = false
+      document.body.style.cursor = 'default'
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
+  const startResize = () => {
+    isDragging.current = true
+    document.body.style.cursor = 'col-resize'
   }
 
   // Annotation: Handle Text Selection
@@ -62,25 +105,20 @@ export default function QuestionViewer({
             const range = selection.getRangeAt(0)
             const rect = range.getBoundingClientRect()
             
-            // Calculate relative position to the viewport or container
-            // We'll use fixed position for the menu relative to the viewport
             setSelectionMenu({
                 x: rect.left + (rect.width / 2),
-                y: rect.top - 10, // Position above text
+                y: rect.top - 10,
                 show: true
             })
         } else {
-            // Hide menu if clicking elsewhere, handled by click listener on document or simple check
-            // We delay hiding to allow clicking the menu itself
+            // Logic to hide menu handled by click outside
         }
     }
 
     const handleMouseUp = () => {
-        // Small delay to let selection process
         setTimeout(handleSelection, 10)
     }
 
-    // Attach to passage area
     const el = passageRef.current
     if (el) {
         el.addEventListener('mouseup', handleMouseUp)
@@ -111,10 +149,9 @@ export default function QuestionViewer({
       const span = document.createElement('span')
       span.className = `highlight-${color} bg-opacity-50 border-b-2 border-${color}-500`
       
-      // Simple background colors mapping
-      if (color === 'yellow') span.style.backgroundColor = '#fef08a' // yellow-200
-      if (color === 'blue') span.style.backgroundColor = '#bae6fd' // blue-200
-      if (color === 'pink') span.style.backgroundColor = '#fbcfe8' // pink-200
+      if (color === 'yellow') span.style.backgroundColor = '#fef08a'
+      if (color === 'blue') span.style.backgroundColor = '#bae6fd'
+      if (color === 'pink') span.style.backgroundColor = '#fbcfe8'
       
       try {
         range.surroundContents(span)
@@ -144,7 +181,7 @@ export default function QuestionViewer({
   }
 
   return (
-    <div className="flex-1 flex overflow-hidden relative">
+    <div ref={containerRef} className="flex-1 flex overflow-hidden relative">
       {/* Decorative dashed line top */}
       <div className="absolute top-0 left-0 right-0 h-1 z-10 flex">
         {Array.from({ length: 40 }).map((_, i) => (
@@ -165,7 +202,6 @@ export default function QuestionViewer({
               <button onClick={applyUnderline} className="w-6 h-6 flex items-center justify-center text-black hover:bg-gray-100 rounded">
                   <span className="underline font-bold decoration-2">U</span>
               </button>
-              {/* Reset/Clear button implies removing formatting, complex with surroundContents, maybe just reload text? for now icon only */}
               <button className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-gray-100 rounded">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
@@ -175,8 +211,18 @@ export default function QuestionViewer({
       )}
 
       {/* Left Pane: Passage / Instructions */}
-      <div className="w-1/2 h-full overflow-y-auto border-r border-gray-300 bg-white p-10 pt-12 pb-20 font-serif text-lg leading-relaxed text-black" ref={passageRef}>
-        {/* Content - Removed Header from here */}
+      <div 
+        className="h-full overflow-y-auto border-r border-gray-300 bg-white p-10 pt-12 pb-20 font-serif text-lg leading-relaxed text-black" 
+        style={{ width: `${leftPaneWidth}%` }}
+        ref={passageRef}
+      >
+        <div className="mb-4">
+            <h3 className="font-serif font-bold text-black text-lg mb-1">
+                {isMathSection ? 'Section 2, Module 1: Math' : 'Section 1, Module 1: Reading and Writing'}
+            </h3>
+            <button className="text-blue-600 underline text-sm font-sans font-medium">Directions</button>
+        </div>
+
         {question.content.passage ? (
             <p className="whitespace-pre-wrap">{question.content.passage}</p>
         ) : isMathSection ? (
@@ -190,7 +236,6 @@ export default function QuestionViewer({
                     <li>If your answer is a mixed number (such as 3½), enter it as an improper fraction (7/2) or its decimal equivalent (3.5).</li>
                     <li>Don’t enter symbols such as a percent sign, comma, or dollar sign.</li>
                 </ul>
-                
                 <h5 className="font-bold mt-6 mb-2 text-black">Examples</h5>
                 <table className="w-full text-sm border-collapse border border-gray-200">
                     <thead className="bg-white">
@@ -224,17 +269,23 @@ export default function QuestionViewer({
         )}
       </div>
 
-      {/* Right Pane: Question */}
-      <div className="w-1/2 h-full overflow-y-auto bg-gray-50 p-10 pt-12 pb-20 relative">
-        {/* Center overlay button */}
-        <div className="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-             <button className="bg-[#4a4a4a] hover:bg-[#333] text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+      {/* Resizer Handle */}
+      <div
+        className="w-1 bg-gray-200 hover:bg-blue-500 cursor-col-resize z-30 transition-colors relative group"
+        onMouseDown={startResize}
+      >
+         {/* Center overlay button on the divider */}
+         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40">
+             <button className="bg-[#4a4a4a] hover:bg-[#333] text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white cursor-col-resize">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
              </button>
         </div>
+      </div>
 
+      {/* Right Pane: Question */}
+      <div className="h-full overflow-y-auto bg-gray-50 p-10 pt-12 pb-20 relative" style={{ width: `${100 - leftPaneWidth}%` }}>
         {/* Question Header Bar */}
         <div className="bg-[#eef0f2] border-b border-gray-300 flex items-center justify-between px-4 py-3 mb-6 rounded-t-md">
             <div className="flex items-center space-x-3">
@@ -257,8 +308,16 @@ export default function QuestionViewer({
                     <span className={`font-sans font-medium text-sm ${isMarked ? 'text-red-600' : ''}`}>Mark for Review</span>
                 </button>
             </div>
+            
+            {/* Progress Bar Mock */}
+            <div className="flex-1 mx-4 h-1.5 flex space-x-0.5">
+                {Array.from({length: 15}).map((_, i) => (
+                    <div key={i} className={`h-full rounded-full flex-1 ${i < 5 ? 'bg-blue-900' : 'bg-gray-200'}`}></div>
+                ))}
+            </div>
+
             <div className="text-gray-400">
-                <span className="border border-gray-300 rounded px-1 text-xs">ABC</span>
+                <span className="bg-blue-700 text-white rounded px-2 py-1 text-xs font-bold shadow-sm">ABC</span>
             </div>
         </div>
 
@@ -276,36 +335,62 @@ export default function QuestionViewer({
                     const isCrossed = crossedAnswers[key]
                     
                     return (
-                        <div key={key} className="relative group">
-                            {/* Strikethrough line overlay */}
-                            {isCrossed && (
-                                <div className="absolute inset-x-0 top-1/2 h-0.5 bg-red-500 z-20 pointer-events-none transform -translate-y-1/2 opacity-70" />
-                            )}
-                            
+                        <div key={key} className="relative group flex items-center">
                             <button
                                 onClick={() => onAnswerChange(key)}
-                                className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center relative
+                                className={`flex-1 text-left p-4 rounded-xl border-2 transition-all flex items-center relative
                                     ${isSelected 
-                                        ? 'border-indigo-600 bg-white shadow-md ring-1 ring-indigo-600' 
-                                        : 'border-gray-300 bg-white hover:border-gray-400'
+                                        ? 'border-blue-700 bg-white shadow-md ring-1 ring-blue-700' 
+                                        : isCrossed
+                                            ? 'border-gray-200 bg-white opacity-60'
+                                            : 'border-black bg-white hover:bg-gray-50'
                                     }
-                                    ${isCrossed ? 'opacity-50' : 'opacity-100'}
                                 `}
                             >
                                 <div 
                                     className={`
-                                        w-8 h-8 rounded-full border-2 flex items-center justify-center mr-4 font-sans font-bold text-sm flex-shrink-0 z-30
-                                        ${isSelected ? 'bg-black text-white border-black' : 'border-black text-black'}
-                                        hover:bg-red-100 hover:border-red-500 hover:text-red-600 cursor-pointer transition-colors
+                                        w-8 h-8 rounded-full flex items-center justify-center mr-4 font-sans font-bold text-sm flex-shrink-0 z-30
+                                        ${isSelected 
+                                            ? 'bg-blue-700 text-white' 
+                                            : isCrossed
+                                                ? 'bg-white border border-gray-300 text-gray-400'
+                                                : 'bg-white border border-black text-black'
+                                        }
                                     `}
-                                    onClick={(e) => toggleCrossOut(e, key)}
-                                    title="Click letter to cross out"
                                 >
                                     {key}
                                 </div>
-                                <span className="font-serif text-lg text-black">
+                                <span className={`font-serif text-lg ${isCrossed ? 'text-gray-400 line-through' : 'text-black'}`}>
                                     {value as string}
                                 </span>
+                                
+                                {isCrossed && (
+                                    <div className="ml-auto text-blue-600 text-sm font-sans font-medium hover:underline cursor-pointer px-2" onClick={(e) => {
+                                        e.stopPropagation()
+                                        toggleCrossOutDirect(key)
+                                    }}>
+                                        Undo
+                                    </div>
+                                )}
+                            </button>
+
+                            {/* Right-side Action Icon (Strikethrough) */}
+                            <button 
+                                onClick={() => toggleCrossOutDirect(key)}
+                                className={`ml-3 w-8 h-8 rounded-full border flex items-center justify-center transition-colors
+                                    ${isCrossed 
+                                        ? 'border-gray-300 text-gray-300' 
+                                        : 'border-black text-black hover:bg-gray-100'
+                                    }
+                                `}
+                                title={isCrossed ? "Undo strikethrough" : "Cross out answer"}
+                            >
+                                <div className="relative">
+                                    <span className="text-xs font-bold">{key}</span>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-full h-0.5 bg-current transform -rotate-45"></div>
+                                    </div>
+                                </div>
                             </button>
                         </div>
                     )

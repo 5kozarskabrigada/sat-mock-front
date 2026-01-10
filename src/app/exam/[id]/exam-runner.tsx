@@ -32,7 +32,7 @@ export default function ExamRunner({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
-  const [timeLeft, setTimeLeft] = useState(exam.duration ? exam.duration * 60 : 3600) // Default 60 mins
+  const [timeLeft, setTimeLeft] = useState(isMath(questions[0]) ? 35 * 60 : 32 * 60) // Default 32 mins for R&W, 35 for Math
   
   // Modal States
   const [isReviewOpen, setIsReviewOpen] = useState(false)
@@ -99,6 +99,10 @@ export default function ExamRunner({
 
   const currentQuestion = questions[currentQuestionIndex]
   const isMathSection = isMath(currentQuestion)
+  // Derive section title dynamically
+  const sectionTitle = isMathSection 
+    ? 'Section 2, Module 1: Math' 
+    : 'Section 1, Module 1: Reading and Writing'
 
   if (isBreakOpen) {
     return <BreakScreen timeLeft={600} onResume={() => setIsBreakOpen(false)} />
@@ -107,7 +111,7 @@ export default function ExamRunner({
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden font-sans">
       <ExamHeader 
-        title={exam.title} 
+        title={sectionTitle} 
         timeLeft={timeLeft}
         onReviewClick={() => setIsReviewOpen(true)}
         showMathTools={isMathSection}
