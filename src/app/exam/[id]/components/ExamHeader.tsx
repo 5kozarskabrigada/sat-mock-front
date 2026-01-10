@@ -96,7 +96,7 @@ export default function ExamHeader({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 19.425a1.875 1.875 0 01-2.652 0l-4.897-4.897a1.875 1.875 0 010-2.652l3.248-3.193" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                 </svg>
-                <span className="text-sm font-sans font-bold text-blue-600 group-hover:text-blue-800">Highlights & Notes</span>
+                <span className="text-sm font-sans font-bold text-gray-600 group-hover:text-black">Annotate</span>
             </div>
         </button>
 
