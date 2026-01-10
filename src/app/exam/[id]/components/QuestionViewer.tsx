@@ -119,8 +119,13 @@ export default function QuestionViewer({
                 show: true,
                 highlightId: target.id // Assuming we might identify by ID or just use the target reference if we had complex logic
             })
-            // Clear selection so we don't trigger new highlight menu
-            window.getSelection()?.removeAllRanges()
+            
+            // Select the text of the highlight so that applyHighlight/removeHighlight works
+            const range = document.createRange()
+            range.selectNodeContents(target)
+            const sel = window.getSelection()
+            sel?.removeAllRanges()
+            sel?.addRange(range)
         }
     }
 
@@ -159,19 +164,37 @@ export default function QuestionViewer({
 
   const applyHighlight = (color: string) => {
       const selection = window.getSelection()
-      
-      // If menu is open for an existing highlight, we are changing its color
-      if (selectionMenu?.highlightId || (document.activeElement?.classList.contains('annotation-highlight'))) {
-          // Simplification: We need reference to the clicked element. 
-          // For now, let's just handle new selections or rely on the fact that selection is empty
-          // If we want to change color of existing highlight, we need to store the element reference.
-          // Let's implement simpler: Delete removes, New selection adds.
-          // Changing color of existing: tricky without ref. 
-          // User said "change its color delete highlight". 
-          // I will implement "Delete" which un-wraps.
-      }
-
       if (!selection || selection.rangeCount === 0) return
+
+      // Check if we are already inside a highlight
+      let node = selection.anchorNode
+      // Climb up to find span.annotation-highlight
+      while (node && node !== passageRef.current) {
+          if (node.nodeType === 1 && (node as Element).classList.contains('annotation-highlight')) {
+               // We found an existing highlight. Change its color.
+               const el = node as HTMLElement
+               el.className = `annotation-highlight border-b-2 border-${color}-500 cursor-pointer`
+               el.dataset.color = color
+               // Apply specific styles
+               el.style.backgroundColor = '' // Reset
+               el.style.borderBottomColor = ''
+               
+               if (color === 'yellow') el.style.backgroundColor = 'rgba(254, 240, 138, 0.2)'
+               if (color === 'blue') el.style.backgroundColor = 'rgba(186, 230, 253, 0.2)'
+               if (color === 'pink') el.style.backgroundColor = 'rgba(251, 207, 232, 0.2)'
+               
+               el.style.borderBottomWidth = '1px'
+               el.style.borderBottomStyle = 'solid'
+               if (color === 'yellow') el.style.borderBottomColor = '#eab308'
+               if (color === 'blue') el.style.borderBottomColor = '#3b82f6'
+               if (color === 'pink') el.style.borderBottomColor = '#ec4899'
+               
+               setSelectionMenu(null)
+               window.getSelection()?.removeAllRanges()
+               return
+          }
+          node = node.parentNode
+      }
 
       const range = selection.getRangeAt(0)
       const span = document.createElement('span')
@@ -204,35 +227,24 @@ export default function QuestionViewer({
   }
 
   const removeHighlight = () => {
-      // Find the highlight element under the menu position or selection?
-      // Since we don't track the element easily, let's use the Selection API 
-      // If user clicked a highlight, the selection might be inside it or we can find it via coordinates?
-      // Actually, when we click a highlight, we set selectionMenu. 
-      // We didn't store the element.
-      
-      // Better approach: When clicking highlight, select its text content, then Unwrap?
-      // Or just find the element at selectionMenu.x/y?
-      
-      // For this iteration, I'll rely on the user selecting the text again or 
-      // simpler: The "Delete" button only works if you have selected text that IS a highlight?
-      // No, user said "click on highlighted object".
-      
-      // Let's find the element at the menu position's origin (roughly)
-      // Or better, when clicking highlight, store the element in state.
-      // I added highlightId to state, but didn't implement ID generation.
-      // Let's just use `document.elementFromPoint` if needed, or simpler:
-      // When clicking highlight, I can set `window.getSelection().selectAllChildren(target)`
-      // Then `document.execCommand('unlink')` or manual unwrap.
-      
-      const sel = window.getSelection()
-      if (sel && sel.anchorNode?.parentElement?.classList.contains('annotation-highlight')) {
-           const span = sel.anchorNode.parentElement
-           const parent = span.parentNode
-           if (parent) {
-               while (span.firstChild) parent.insertBefore(span.firstChild, span)
-               parent.removeChild(span)
-           }
-           setSelectionMenu(null)
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return
+
+      let node = selection.anchorNode
+      while (node && node !== passageRef.current) {
+          if (node.nodeType === 1 && (node as Element).classList.contains('annotation-highlight')) {
+               const el = node as HTMLElement
+               const parent = el.parentNode
+               if (parent) {
+                   // Unwrap
+                   while (el.firstChild) parent.insertBefore(el.firstChild, el)
+                   parent.removeChild(el)
+               }
+               setSelectionMenu(null)
+               window.getSelection()?.removeAllRanges()
+               return
+          }
+          node = node.parentNode
       }
   }
 
@@ -356,13 +368,6 @@ export default function QuestionViewer({
                 </button>
             </div>
             
-            {/* Progress Bar Mock */}
-            <div className="flex-1 mx-4 h-1.5 flex space-x-0.5">
-                {Array.from({length: 15}).map((_, i) => (
-                    <div key={i} className={`h-full rounded-full flex-1 ${i < 5 ? 'bg-blue-900' : 'bg-gray-200'}`}></div>
-                ))}
-            </div>
-
             <div className="text-gray-400">
                 <button 
                     onClick={() => setIsAbcMode(!isAbcMode)}
@@ -418,35 +423,30 @@ export default function QuestionViewer({
                                 <span className={`font-serif text-lg ${isCrossed ? 'text-gray-400 line-through' : 'text-black'}`}>
                                     {value as string}
                                 </span>
-                                
-                                {isCrossed && (
-                                    <div className="ml-auto text-blue-600 text-sm font-sans font-medium hover:underline cursor-pointer px-2 z-40" onClick={(e) => {
-                                        e.stopPropagation()
-                                        toggleCrossOutDirect(key)
-                                    }}>
-                                        Undo
-                                    </div>
-                                )}
                             </button>
 
-                            {/* Right-side Action Icon (Strikethrough) - Only if ABC mode is ON */}
+                            {/* Right-side Action Icon (Strikethrough) OR Undo */}
                             {isAbcMode && (
                                 <button 
                                     onClick={() => toggleCrossOutDirect(key)}
                                     className={`ml-3 w-8 h-8 rounded-full border flex items-center justify-center transition-colors
                                         ${isCrossed 
-                                            ? 'border-gray-300 text-gray-300' 
-                                            : 'border-black text-black hover:bg-gray-100'
+                                            ? 'border-transparent text-blue-600 hover:underline text-xs font-bold' // Undo Style
+                                            : 'border-black text-black hover:bg-gray-100' // Cross out style
                                         }
                                     `}
                                     title={isCrossed ? "Undo strikethrough" : "Cross out answer"}
                                 >
-                                    <div className="relative">
-                                        <span className="text-xs font-bold">{key}</span>
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-full h-0.5 bg-current transform -rotate-45"></div>
+                                    {isCrossed ? (
+                                        "Undo"
+                                    ) : (
+                                        <div className="relative w-full h-full">
+                                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold">{key}</span>
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="w-full h-0.5 bg-current transform -rotate-45"></div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </button>
                             )}
                         </div>
