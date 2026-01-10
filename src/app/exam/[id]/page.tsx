@@ -30,7 +30,6 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     .single()
 
   if (!studentExam) {
-    // If not joined, redirect to join page (student dashboard)
     redirect('/student')
   }
 
@@ -45,11 +44,21 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     .eq('exam_id', id)
     .order('created_at', { ascending: true })
 
+  // 4. Fetch student name
+  const { data: profile } = await supabase
+    .from('users')
+    .select('first_name, last_name')
+    .eq('id', user.id)
+    .single()
+
+  const studentName = profile ? `${profile.first_name} ${profile.last_name}` : 'Student'
+
   return (
     <ExamRunner 
       exam={exam} 
       questions={questions || []} 
-      studentExamId={studentExam.id} 
+      studentExamId={studentExam.id}
+      studentName={studentName}
     />
   )
 }
