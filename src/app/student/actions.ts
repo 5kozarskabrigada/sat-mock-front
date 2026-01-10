@@ -23,14 +23,41 @@ export async function joinExam(prevState: any, formData: FormData) {
     return { error: 'This exam has not been started by the instructor yet.' }
   }
 
-  // 2. Create or find student_exam record
+  // 2. Get authenticated user
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
     redirect('/login')
   }
 
-  // Check if already started
+  // 3. Ensure user profile exists (Lazy Sync)
+  // This prevents FK violations if the user creation trigger failed
+  const { data: profile } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile) {
+    console.log(`Lazy syncing user ${user.id} to public.users`)
+    const { error: syncError } = await supabase
+      .from('users')
+      .insert({
+        id: user.id,
+        username: user.user_metadata?.username || user.email?.split('@')[0] || 'student',
+        first_name: user.user_metadata?.first_name || 'Student',
+        last_name: user.user_metadata?.last_name || '',
+        role: 'student',
+        password_hash: 'managed_by_lazy_sync'
+      })
+    
+    if (syncError) {
+      console.error('Lazy sync failed:', syncError)
+      return { error: 'Account setup error: Could not sync user profile. Please contact support.' }
+    }
+  }
+
+  // 4. Check if already started
   const { data: existingAttempt } = await supabase
     .from('student_exams')
     .select('id')
@@ -48,7 +75,9 @@ export async function joinExam(prevState: any, formData: FormData) {
       })
     
     if (createError) {
-      return { error: 'Failed to join exam' }
+      console.error('Join exam error:', createError)
+      // Return specific error message if useful, otherwise generic
+      return { error: `Failed to join exam: ${createError.message}` }
     }
   }
 
