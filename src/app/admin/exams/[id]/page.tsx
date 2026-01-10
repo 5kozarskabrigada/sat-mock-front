@@ -25,6 +25,15 @@ export default async function ExamDetailsPage({ params }: { params: { id: string
     .eq('exam_id', params.id)
     .order('created_at', { ascending: true })
 
+  // Helper for status badge color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800'
+      case 'ended': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -34,10 +43,11 @@ export default async function ExamDetailsPage({ params }: { params: { id: string
             <p className="mt-1 max-w-2xl text-sm text-gray-500">{exam.description}</p>
           </div>
           <div className="flex items-center space-x-4">
-             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${exam.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                {exam.is_active ? 'Active' : 'Draft'}
+             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getStatusColor(exam.status)}`}>
+                {exam.status}
              </span>
-             <ExamStatusToggle examId={exam.id} isActive={exam.is_active} />
+             {/* Pass the status string, not boolean */}
+             <ExamStatusToggle examId={exam.id} status={exam.status} />
           </div>
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
@@ -68,6 +78,7 @@ export default async function ExamDetailsPage({ params }: { params: { id: string
                             <div className="flex justify-between">
                                 <div className="text-sm font-medium text-indigo-600">
                                     Q{index + 1} ({q.section === 'reading_writing' ? 'RW' : 'Math'} - M{q.module})
+                                    {q.domain && <span className="ml-2 text-xs text-gray-400">[{q.domain}]</span>}
                                 </div>
                                 <div className="text-sm text-gray-500">
                                     Answer: {q.correct_answer}
