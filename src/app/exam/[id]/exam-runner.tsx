@@ -31,6 +31,7 @@ export default function ExamRunner({
   const router = useRouter()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, any>>({})
+  const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
   const [timeLeft, setTimeLeft] = useState(exam.duration ? exam.duration * 60 : 3600) // Default 60 mins
   
   // Modal States
@@ -60,6 +61,14 @@ export default function ExamRunner({
     setAnswers(prev => ({
       ...prev,
       [questions[currentQuestionIndex].id]: value
+    }))
+  }
+
+  const handleToggleMark = () => {
+    const questionId = questions[currentQuestionIndex].id
+    setMarkedQuestions(prev => ({
+      ...prev,
+      [questionId]: !prev[questionId]
     }))
   }
 
@@ -114,6 +123,8 @@ export default function ExamRunner({
           selectedAnswer={answers[currentQuestion.id]}
           onAnswerChange={handleAnswerChange}
           isMathSection={isMathSection}
+          isMarked={!!markedQuestions[currentQuestion.id]}
+          onToggleMark={handleToggleMark}
         />
       </main>
 
@@ -123,6 +134,7 @@ export default function ExamRunner({
         totalQuestions={questions.length}
         onNext={handleNext}
         onBack={handleBack}
+        onReviewClick={() => setIsReviewOpen(true)}
       />
 
       {/* Modals */}
@@ -133,6 +145,7 @@ export default function ExamRunner({
         answers={answers}
         currentQuestionIndex={currentQuestionIndex}
         onNavigate={setCurrentQuestionIndex}
+        markedQuestions={markedQuestions}
       />
       
       <CalculatorModal 
