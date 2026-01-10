@@ -11,7 +11,7 @@ export async function joinExam(prevState: any, formData: FormData) {
   // 1. Find the exam by code
   const { data: exam, error } = await supabase
     .from('exams')
-    .select('id, is_active')
+    .select('id, status')
     .eq('code', code)
     .single()
 
@@ -19,7 +19,7 @@ export async function joinExam(prevState: any, formData: FormData) {
     return { error: 'Invalid exam code' }
   }
 
-  if (!exam.is_active) {
+  if (exam.status !== 'active') {
     return { error: 'This exam has not been started by the instructor yet.' }
   }
 
