@@ -19,9 +19,12 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
   }
 
   const handleSubmit = async (formData: FormData) => {
-    await addQuestion(examId, formData)
-    setIsExpanded(false)
-    // Optional: Reset form or show success toast
+    const result = await addQuestion(examId, formData)
+    if (result?.error) {
+      alert(result.error)
+    } else {
+      setIsExpanded(false)
+    }
   }
 
   return (
@@ -53,6 +56,17 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
                 <option value="1">Module 1</option>
                 <option value="2">Module 2</option>
               </select>
+            </div>
+
+            <div className="sm:col-span-6">
+              <label htmlFor="domain" className="block text-sm font-medium text-gray-700">Domain / Topic</label>
+              <input 
+                type="text" 
+                id="domain" 
+                name="domain" 
+                placeholder="e.g. Algebra, Heart of Algebra, Advanced Math"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" 
+              />
             </div>
 
             <div className="sm:col-span-6">

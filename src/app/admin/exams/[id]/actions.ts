@@ -17,6 +17,7 @@ export async function addQuestion(examId: string, formData: FormData) {
   const optionD = formData.get('optionD') as string
   const correctAnswer = formData.get('correctAnswer') as string
   const explanation = formData.get('explanation') as string
+  const domain = formData.get('domain') as string
 
   const content = {
     question: questionText,
@@ -37,10 +38,12 @@ export async function addQuestion(examId: string, formData: FormData) {
       module,
       content,
       correct_answer: correctAnswer,
-      explanation
+      explanation,
+      domain: domain || null
     })
 
   if (error) {
+    console.error("Error adding question:", error)
     return { error: error.message }
   }
 
@@ -48,12 +51,20 @@ export async function addQuestion(examId: string, formData: FormData) {
   return { success: true }
 }
 
-export async function toggleExamStatus(examId: string, currentStatus: boolean, prevState: any) {
+export async function toggleExamStatus(examId: string, currentStatus: string, prevState: any) {
   const supabase = await createClient()
+
+  // Logic: if 'active', toggle to 'ended' (or 'draft').
+  // Let's assume a simple toggle: draft -> active -> ended -> active
+  // But usually toggle is on/off.
+  // If status is 'active', set to 'ended' (to stop students).
+  // If status is 'draft' or 'ended', set to 'active'.
+  
+  const newStatus = currentStatus === 'active' ? 'ended' : 'active'
 
   const { error } = await supabase
     .from('exams')
-    .update({ is_active: !currentStatus })
+    .update({ status: newStatus })
     .eq('id', examId)
 
   if (error) {
