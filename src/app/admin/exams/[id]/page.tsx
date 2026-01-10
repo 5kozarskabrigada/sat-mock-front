@@ -6,13 +6,14 @@ import { toggleExamStatus } from './actions'
 
 import ExamStatusToggle from './exam-status-toggle'
 
-export default async function ExamDetailsPage({ params }: { params: { id: string } }) {
+export default async function ExamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
 
   const { data: exam } = await supabase
     .from('exams')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!exam) {
@@ -22,7 +23,7 @@ export default async function ExamDetailsPage({ params }: { params: { id: string
   const { data: questions } = await supabase
     .from('questions')
     .select('*')
-    .eq('exam_id', params.id)
+    .eq('exam_id', id)
     .order('created_at', { ascending: true })
 
   // Helper for status badge color

@@ -33,9 +33,22 @@ export async function createExam(prevState: any, formData: FormData) {
     .single()
 
   if (error) {
+    console.error('Create exam error:', error)
     return { error: error.message }
   }
 
   revalidatePath('/admin/exams')
-  redirect(`/admin/exams/${data.id}`)
+  // No immediate redirect here to prevent 404 race condition.
+  // We will return the ID to the client, and the client can redirect.
+  // OR we can rely on Next.js handling it if we trust the consistency.
+  // The 404 is likely due to the page not being revalidated/generated fast enough on Vercel's edge network 
+  // or simple latency.
+  
+  // Let's stick to redirect but maybe the ID type was an issue? UUID is string.
+  // The user reported 404 "This page could not be found".
+  // This usually means the route /admin/exams/[id] matches, but the page logic (notFound()) returns 404
+  // because the fetch for the exam failed (didn't find the record).
+  // This implies Supabase replica lag or just bad luck.
+  
+  return { success: true, examId: data.id }
 }

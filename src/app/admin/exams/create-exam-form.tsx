@@ -3,7 +3,8 @@
 
 import { useFormState, useFormStatus } from 'react-dom'
 import { createExam } from './actions'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -20,9 +21,14 @@ function SubmitButton() {
 
 export default function CreateExamForm() {
   const [state, formAction] = useFormState(createExam, null)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const router = useRouter()
 
-  // We could use useEffect to watch state, but simplistic is fine for now
+  useEffect(() => {
+    if (state?.success && state.examId) {
+       // Client-side redirect is safer for replication lag than server-side redirect immediately after write
+       router.push(`/admin/exams/${state.examId}`)
+    }
+  }, [state, router])
   
   return (
     <div className="bg-white shadow sm:rounded-lg overflow-hidden border border-gray-100">
