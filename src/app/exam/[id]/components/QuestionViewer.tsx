@@ -331,16 +331,10 @@ export default function QuestionViewer({
 
       {/* Resizer Handle */}
       <div
-        className="w-1 bg-gray-200 hover:bg-blue-500 cursor-col-resize z-30 transition-colors relative group"
+        className="w-4 hover:bg-blue-100 cursor-col-resize z-30 transition-colors relative group flex items-center justify-center -ml-2"
         onMouseDown={startResize}
       >
-         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40">
-             <button className="bg-[#4a4a4a] hover:bg-[#333] text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white cursor-col-resize">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-             </button>
-        </div>
+         <div className="w-1 h-full bg-gray-200 group-hover:bg-blue-400 transition-colors" />
       </div>
 
       {/* Right Pane: Question */}
