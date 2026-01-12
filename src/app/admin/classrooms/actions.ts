@@ -4,7 +4,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function createClassroom(formData: FormData) {
+export async function createClassroom(prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   const name = formData.get('name') as string
