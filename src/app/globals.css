@@ -3,6 +3,22 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Calm SAT-style Theme */
+  --sat-bg: #F6F7FB;
+  --sat-panel: #FFFFFF;
+  --sat-text: #111827;
+  --sat-muted: #6B7280;
+  --sat-border: #E5E7EB;
+  --sat-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  --sat-primary: #2563EB;
+  --sat-primary-weak: #DBEAFE;
+  --sat-amber: #D97706;
+  --sat-amber-weak: #FEF3C7;
+  --sat-red: #DC2626;
+  --sat-red-weak: #FEE2E2;
+  --sat-focus: #2563EB;
+  --sat-success: #16A34A;
 }
 
 @theme inline {
@@ -22,5 +38,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
