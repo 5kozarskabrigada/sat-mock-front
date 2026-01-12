@@ -16,6 +16,7 @@ export default function AdminSidebar({ email }: { email: string }) {
     { name: 'Students', href: '/admin/students' },
     { name: 'Classrooms', href: '/admin/classrooms' },
     { name: 'Exams', href: '/admin/exams' },
+    { name: 'Recycle Bin', href: '/admin/recycle-bin' },
   ]
 
   return (

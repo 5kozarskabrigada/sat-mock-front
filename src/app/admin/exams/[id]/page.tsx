@@ -4,8 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import AddQuestionForm from './add-question-form'
 import { toggleExamStatus } from './actions'
-
 import ExamStatusToggle from './exam-status-toggle'
+import DeleteExamButton from './delete-exam-button'
 
 export default async function ExamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -55,6 +55,9 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
              </span>
              {/* Pass the status string, not boolean */}
              <ExamStatusToggle examId={exam.id} status={exam.status} classrooms={classrooms || []} />
+             <div className="border-l pl-4 border-gray-200">
+                <DeleteExamButton examId={exam.id} />
+             </div>
           </div>
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
@@ -90,13 +93,21 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
                 ) : (
                     questions?.map((q, index) => (
                         <li key={q.id} className="px-4 py-4 sm:px-6">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-start">
                                 <div className="text-sm font-medium text-indigo-600">
                                     Q{index + 1} ({q.section === 'reading_writing' ? 'RW' : 'Math'} - M{q.module})
                                     {q.domain && <span className="ml-2 text-xs text-gray-400">[{q.domain}]</span>}
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                    Answer: {q.correct_answer}
+                                <div className="flex items-center space-x-4">
+                                    <div className="text-sm text-gray-500">
+                                        Answer: {q.correct_answer}
+                                    </div>
+                                    <Link 
+                                        href={`/admin/exams/${exam.id}/questions/${q.id}`}
+                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                    >
+                                        Edit
+                                    </Link>
                                 </div>
                             </div>
                             <div className="mt-2 text-sm text-gray-900">

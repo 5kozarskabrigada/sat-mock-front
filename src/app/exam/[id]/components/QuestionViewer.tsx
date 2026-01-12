@@ -322,11 +322,11 @@ export default function QuestionViewer({
         {/* Removed Header per request */}
         
         {question.content.passage ? (
-            <p className="whitespace-pre-wrap">{question.content.passage}</p>
+            <p className="whitespace-pre-wrap text-lg leading-loose">{question.content.passage}</p>
         ) : isMathSection ? (
             <div>
-                <h4 className="font-bold mb-4 text-black">Student-Produced Response Directions</h4>
-                <ul className="list-disc pl-5 space-y-2 text-base text-black">
+                <h4 className="font-bold mb-4 text-black text-lg">Student-Produced Response Directions</h4>
+                <ul className="list-disc pl-5 space-y-2 text-base text-black leading-relaxed">
                     <li>If you find more than one correct answer, enter only one answer.</li>
                     <li>You can enter up to 5 characters for a positive answer and up to 6 characters (including the negative sign) for a negative answer.</li>
                     <li>If your answer is a fraction that doesn’t fit in the provided space, enter the decimal equivalent.</li>
@@ -334,36 +334,36 @@ export default function QuestionViewer({
                     <li>If your answer is a mixed number (such as 3½), enter it as an improper fraction (7/2) or its decimal equivalent (3.5).</li>
                     <li>Don’t enter symbols such as a percent sign, comma, or dollar sign.</li>
                 </ul>
-                <h5 className="font-bold mt-6 mb-2 text-black">Examples</h5>
-                <table className="w-full text-sm border-collapse border border-gray-200">
-                    <thead className="bg-white">
+                <h5 className="font-bold mt-6 mb-2 text-black text-lg">Examples</h5>
+                <table className="w-full text-sm border-collapse border border-gray-200 mt-4">
+                    <thead className="bg-gray-50">
                         <tr>
-                            <th className="border border-gray-300 p-2 text-left font-bold text-black">Answer</th>
-                            <th className="border border-gray-300 p-2 text-left font-bold text-black">Acceptable ways to enter answer</th>
-                            <th className="border border-gray-300 p-2 text-left font-bold text-black">Unacceptable: will NOT receive credit</th>
+                            <th className="border border-gray-300 p-3 text-left font-bold text-black w-1/4">Answer</th>
+                            <th className="border border-gray-300 p-3 text-left font-bold text-black w-1/3">Acceptable ways to enter answer</th>
+                            <th className="border border-gray-300 p-3 text-left font-bold text-black">Unacceptable: will NOT receive credit</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td className="border border-gray-300 p-2 text-black">3.5</td>
-                            <td className="border border-gray-300 p-2 text-black">3.5, 3.50, 7/2</td>
-                            <td className="border border-gray-300 p-2 text-black">3 1/2, 31/2</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">3.5</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">3.5, 3.50, 7/2</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">3 1/2, 31/2</td>
                         </tr>
                         <tr>
-                            <td className="border border-gray-300 p-2 text-black">2/3</td>
-                            <td className="border border-gray-300 p-2 text-black">2/3, .6666, .6667, 0.666, 0.667</td>
-                            <td className="border border-gray-300 p-2 text-black">0.66, .66, 0.67, .67</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">2/3</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">2/3, .6666, .6667, 0.666, 0.667</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">0.66, .66, 0.67, .67</td>
                         </tr>
                         <tr>
-                            <td className="border border-gray-300 p-2 text-black">-1/3</td>
-                            <td className="border border-gray-300 p-2 text-black">-1/3, -.3333, -0.333</td>
-                            <td className="border border-gray-300 p-2 text-black">-.33, -0.33</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">-1/3</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">-1/3, -.3333, -0.333</td>
+                            <td className="border border-gray-300 p-3 text-black font-mono">-.33, -0.33</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         ) : (
-            <p className="text-gray-500 italic">[No passage provided for this question]</p>
+            <p className="text-gray-500 italic text-center mt-20">[No passage provided for this question]</p>
         )}
       </div>
 
