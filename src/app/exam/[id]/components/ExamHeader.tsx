@@ -17,6 +17,8 @@ export default function ExamHeader({
   showMathTools?: boolean
   onCalculatorClick?: () => void
   onReferenceClick?: () => void
+  isAnnotateActive?: boolean
+  onAnnotateClick?: () => void
 }) {
   const [isTimerHidden, setIsTimerHidden] = useState(false)
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
@@ -107,7 +109,8 @@ export default function ExamHeader({
                 </svg>
             }
             label="Annotate" 
-            onClick={() => {}} 
+            isActive={isAnnotateActive}
+            onClick={onAnnotateClick} 
         />
 
         <div className="relative">
@@ -132,16 +135,16 @@ export default function ExamHeader({
   )
 }
 
-function ToolButton({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick?: () => void }) {
+function ToolButton({ icon, label, onClick, isActive }: { icon: React.ReactNode, label: string, onClick?: () => void, isActive?: boolean }) {
     return (
         <button 
             onClick={onClick}
-            className="flex flex-col items-center justify-center w-14 h-14 rounded hover:bg-[var(--sat-bg)] transition-colors group"
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded transition-colors group ${isActive ? 'bg-[var(--sat-primary-weak)] text-[var(--sat-primary)]' : 'hover:bg-[var(--sat-bg)]'}`}
         >
-            <div className="text-[var(--sat-text)] mb-1 group-hover:text-black">
+            <div className={`mb-1 ${isActive ? 'text-[var(--sat-primary)]' : 'text-[var(--sat-text)] group-hover:text-black'}`}>
                 {icon}
             </div>
-            <span className="text-[10px] font-medium text-[var(--sat-text)] group-hover:text-black">{label}</span>
+            <span className={`text-[10px] font-medium ${isActive ? 'text-[var(--sat-primary)]' : 'text-[var(--sat-text)] group-hover:text-black'}`}>{label}</span>
         </button>
     )
 }

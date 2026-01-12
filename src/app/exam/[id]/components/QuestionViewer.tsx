@@ -48,7 +48,8 @@ export default function QuestionViewer({
   onAnswerChange,
   isMathSection,
   isMarked,
-  onToggleMark
+  onToggleMark,
+  isAnnotateActive
 }: { 
   question: any
   questionIndex: number
@@ -58,6 +59,7 @@ export default function QuestionViewer({
   isMathSection?: boolean
   isMarked: boolean
   onToggleMark: () => void
+  isAnnotateActive: boolean
 }) {
   const isMultipleChoice = question.content.options && question.content.options.A
   const [inputValue, setInputValue] = useState(selectedAnswer || '')
@@ -91,6 +93,9 @@ export default function QuestionViewer({
   // Annotation: Handle Text Selection & Click on Highlights
   useEffect(() => {
     const handleSelection = () => {
+        // Only allow selection menu if annotation mode is active
+        if (!isAnnotateActive) return
+
         const selection = window.getSelection()
         if (selection && selection.toString().trim().length > 0 && passageRef.current?.contains(selection.anchorNode)) {
             const range = selection.getRangeAt(0)
@@ -105,6 +110,9 @@ export default function QuestionViewer({
     }
     
     const handleClick = (e: MouseEvent) => {
+        // Only allow interaction with highlights if annotation mode is active
+        if (!isAnnotateActive) return
+
         const target = e.target as HTMLElement
         if (target.classList.contains('annotation-highlight')) {
             const rect = target.getBoundingClientRect()
@@ -138,10 +146,15 @@ export default function QuestionViewer({
             el.removeEventListener('click', handleClick)
         }
     }
-  }, [])
+  }, [isAnnotateActive]) // Add dependency on isAnnotateActive
 
-  // Clear menu on global click
+  // Clear menu on global click or when annotation mode is disabled
   useEffect(() => {
+      if (!isAnnotateActive) {
+          setSelectionMenu(null)
+          return
+      }
+
       const handleClickOutside = (e: MouseEvent) => {
           if ((e.target as HTMLElement).closest('.annotation-menu')) return
           if ((e.target as HTMLElement).classList.contains('annotation-highlight')) return
@@ -151,7 +164,7 @@ export default function QuestionViewer({
       }
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [isAnnotateActive])
 
   const applyHighlight = (color: string) => {
       const selection = window.getSelection()

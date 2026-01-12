@@ -42,6 +42,7 @@ export default function ExamRunner({
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
   const [isReferenceOpen, setIsReferenceOpen] = useState(false)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
+  const [isAnnotateActive, setIsAnnotateActive] = useState(false)
 
   // Timer
   useEffect(() => {
@@ -131,6 +132,8 @@ export default function ExamRunner({
           showMathTools={isMathSection}
           onCalculatorClick={() => setIsCalculatorOpen(true)}
           onReferenceClick={() => setIsReferenceOpen(true)}
+          isAnnotateActive={isAnnotateActive}
+          onAnnotateClick={() => setIsAnnotateActive(!isAnnotateActive)}
       />
 
       <main className="flex-1 overflow-hidden relative">
@@ -144,6 +147,7 @@ export default function ExamRunner({
                   isMathSection={isMathSection}
                   isMarked={!!markedQuestions[currentQuestion.id]}
                   onToggleMark={handleToggleMark}
+                  isAnnotateActive={isAnnotateActive}
               />
           ) : (
               <ReviewScreen 
