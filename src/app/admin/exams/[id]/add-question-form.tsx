@@ -131,25 +131,26 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
 
             <div className="sm:col-span-6">
               <label htmlFor="questionText" className="block text-sm font-medium text-gray-700">Question Text (Supports LaTeX e.g. \( x^2 \))</label>
-              <textarea id="questionText" name="questionText" rows={3} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <textarea id="questionText" name="questionText" rows={6} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <p className="mt-1 text-xs text-gray-500">Press Enter to create a new line.</p>
             </div>
 
             {/* Options */}
             <div className="sm:col-span-3">
               <label htmlFor="optionA" className="block text-sm font-medium text-gray-700">Option A</label>
-              <input type="text" name="optionA" id="optionA" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <textarea name="optionA" id="optionA" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
             </div>
             <div className="sm:col-span-3">
               <label htmlFor="optionB" className="block text-sm font-medium text-gray-700">Option B</label>
-              <input type="text" name="optionB" id="optionB" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <textarea name="optionB" id="optionB" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
             </div>
             <div className="sm:col-span-3">
               <label htmlFor="optionC" className="block text-sm font-medium text-gray-700">Option C</label>
-              <input type="text" name="optionC" id="optionC" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <textarea name="optionC" id="optionC" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
             </div>
             <div className="sm:col-span-3">
               <label htmlFor="optionD" className="block text-sm font-medium text-gray-700">Option D</label>
-              <input type="text" name="optionD" id="optionD" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <textarea name="optionD" id="optionD" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
             </div>
 
             <div className="sm:col-span-6">

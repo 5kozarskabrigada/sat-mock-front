@@ -24,7 +24,17 @@ const Latex = ({ children }: { children: string }) => {
                 } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
                     return <InlineMath key={index} math={part.slice(2, -2)} />;
                 } else {
-                    return <span key={index}>{part}</span>;
+                    // Handle newlines in text parts
+                    return (
+                        <span key={index}>
+                            {part.split('\n').map((subPart, subIndex) => (
+                                <span key={subIndex}>
+                                    {subPart}
+                                    {subIndex < part.split('\n').length - 1 && <br />}
+                                </span>
+                            ))}
+                        </span>
+                    );
                 }
             })}
         </span>
