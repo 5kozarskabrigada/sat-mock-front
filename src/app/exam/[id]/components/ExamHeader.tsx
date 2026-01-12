@@ -9,7 +9,9 @@ export default function ExamHeader({
   onReviewClick, 
   showMathTools,
   onCalculatorClick,
-  onReferenceClick
+  onReferenceClick,
+  isAnnotateActive,
+  onAnnotateClick
 }: { 
   title: string
   timeLeft: number
