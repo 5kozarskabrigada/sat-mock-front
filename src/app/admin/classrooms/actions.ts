@@ -90,3 +90,24 @@ export async function removeStudentFromClassroom(classroomId: string, studentId:
   revalidatePath(`/admin/classrooms/${classroomId}`)
   return { success: true }
 }
+
+export async function searchStudents(query: string) {
+  if (!query || query.length < 1) return []
+  
+  const supabase = await createClient()
+  
+  // ILIKE for case-insensitive partial match
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, username, first_name, last_name')
+    .eq('role', 'student')
+    .or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+    .limit(10)
+    
+  if (error) {
+    console.error('Search students error:', error)
+    return []
+  }
+  
+  return data || []
+}

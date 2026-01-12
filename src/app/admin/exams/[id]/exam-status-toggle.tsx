@@ -34,23 +34,26 @@ export default function ExamStatusToggle({ examId, status, classrooms }: { examI
   const isLive = status === 'active'
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
         {!isLive && (
-            <select 
-                className="text-sm border-gray-300 rounded-md shadow-sm p-1 text-black"
-                value={selectedClassroom}
-                onChange={(e) => setSelectedClassroom(e.target.value)}
-            >
-                <option value="">All Students (Public)</option>
-                {classrooms.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-            </select>
+            <div className="flex flex-col items-end">
+                <label className="text-xs text-gray-500 mb-1">Assign to:</label>
+                <select 
+                    className="text-sm border-gray-300 rounded-md shadow-sm p-1.5 text-black min-w-[150px]"
+                    value={selectedClassroom}
+                    onChange={(e) => setSelectedClassroom(e.target.value)}
+                >
+                    <option value="">All Students (Public)</option>
+                    {classrooms.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+            </div>
         )}
         <form action={formAction} className="inline-block">
         <SubmitButton status={status} />
         {state?.error && (
-            <span className="ml-2 text-xs text-red-600">{state.error}</span>
+            <p className="mt-1 text-xs text-red-600">{state.error}</p>
         )}
         </form>
     </div>

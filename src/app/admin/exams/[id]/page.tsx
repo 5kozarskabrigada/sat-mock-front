@@ -71,7 +71,15 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-900">Questions</h2>
+        <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Questions</h2>
+            <Link 
+                href={`/admin/exams/${exam.id}/results`}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+                View Results
+            </Link>
+        </div>
         
         {/* List Questions */}
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
