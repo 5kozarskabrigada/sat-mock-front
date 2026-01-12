@@ -1,6 +1,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import AddQuestionForm from './add-question-form'
 import { toggleExamStatus } from './actions'
 
