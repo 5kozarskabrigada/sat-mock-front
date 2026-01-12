@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import 'katex/dist/katex.min.css'
-import Latex from 'react-latex-next'
+import Latex from 'react-katex'
 
 export default function QuestionViewer({ 
   question, 
