@@ -83,21 +83,22 @@ export async function deleteStudent(studentId: string) {
   try {
     const supabaseAdmin = getAdminClient()
 
-    // Delete from Auth (this cascades to public.users via DB constraints usually, 
-    // but if not, triggers or manual deletion might be needed. 
-    // In our init.sql: "id uuid references auth.users not null primary key" -> deleting auth user should cascade or fail if RESTRICT.
-    // However, usually cascading deletion from auth.users isn't automatic unless configured on FK.
-    // Supabase Auth deletion is definitive.)
+    console.log(`[deleteStudent] Attempting to delete student ${studentId}`)
+
+    // Delete from Auth - this will now cascade to public.users and all related data
     const { error } = await supabaseAdmin.auth.admin.deleteUser(studentId)
 
     if (error) {
-      return { error: error.message }
+      console.error('[deleteStudent] Error deleting auth user:', error)
+      return { error: `Failed to delete student: ${error.message}` }
     }
 
+    console.log(`[deleteStudent] Successfully deleted student ${studentId}`)
     revalidatePath('/admin/students')
     return { success: true }
   } catch (err: any) {
-    return { error: err.message }
+    console.error('[deleteStudent] Unexpected error:', err)
+    return { error: `Unexpected error: ${err.message}` }
   }
 }
 
@@ -109,6 +110,9 @@ export async function updateStudent(studentId: string, formData: FormData) {
         const lastName = formData.get('lastName') as string
         const password = formData.get('password') as string
 
+        console.log(`[updateStudent] Updating student ${studentId}`)
+
+        // 1. Update Auth Metadata & Password
         const updates: any = {
             user_metadata: {
                 first_name: firstName,
@@ -120,17 +124,16 @@ export async function updateStudent(studentId: string, formData: FormData) {
             updates.password = password
         }
 
-        const { error } = await supabaseAdmin.auth.admin.updateUserById(studentId, updates)
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(studentId, updates)
 
-        if (error) {
-            return { error: error.message }
+        if (authError) {
+            console.error('[updateStudent] Auth update failed:', authError)
+            return { error: `Auth update failed: ${authError.message}` }
         }
         
-        // Also update public.users to keep sync if triggers don't handle updates (our trigger only handles INSERT)
-        // We need a separate client for public schema update or use Service Role key for public table too.
-        // supabaseAdmin can access public tables too if RLS allows or if it's superuser.
-        // Service role bypasses RLS.
-        
+        // 2. Update Public Profile
+        // We can use the supabaseAdmin client which has service role to bypass RLS if needed,
+        // or ensure RLS policies are correct.
         const { error: publicError } = await supabaseAdmin
             .from('users')
             .update({
@@ -140,13 +143,17 @@ export async function updateStudent(studentId: string, formData: FormData) {
             .eq('id', studentId)
 
         if (publicError) {
-             console.error('Failed to sync public profile', publicError)
+             console.error('[updateStudent] Public profile update failed:', publicError)
+             // We don't rollback auth update here (no distributed transaction), but we report error
+             return { error: `Public profile update failed: ${publicError.message}` }
         }
 
+        console.log(`[updateStudent] Successfully updated student ${studentId}`)
         revalidatePath('/admin/students')
         return { success: true }
 
     } catch (err: any) {
-        return { error: err.message }
+        console.error('[updateStudent] Unexpected error:', err)
+        return { error: `Unexpected error: ${err.message}` }
     }
 }
