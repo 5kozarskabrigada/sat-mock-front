@@ -41,8 +41,9 @@ export async function deleteClassroom(classroomId: string) {
   return { success: true }
 }
 
-export async function addStudentToClassroom(classroomId: string, username: string) {
+export async function addStudentToClassroom(classroomId: string, prevState: any, formData: FormData) {
   const supabase = await createClient()
+  const username = formData.get('username') as string
 
   // First find student by username
   const { data: user, error: userError } = await supabase
