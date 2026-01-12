@@ -53,7 +53,7 @@ export default function AddStudentForm() {
                 name="firstName"
                 id="firstName"
                 required
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
                 placeholder="Jane"
               />
             </div>
@@ -68,7 +68,7 @@ export default function AddStudentForm() {
                 name="lastName"
                 id="lastName"
                 required
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
                 placeholder="Doe"
               />
             </div>

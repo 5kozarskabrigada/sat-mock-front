@@ -1,11 +1,12 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, ChangeEvent } from 'react'
 import { addQuestion } from './actions'
 
 export default function AddQuestionForm({ examId }: { examId: string }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [imageBase64, setImageBase64] = useState<string>('')
   
   if (!isExpanded) {
     return (
@@ -18,7 +19,21 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
     )
   }
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImageBase64(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleSubmit = async (formData: FormData) => {
+    if (imageBase64) {
+        formData.set('imageUrl', imageBase64)
+    }
     const result = await addQuestion(examId, formData)
     if (result?.error) {
       alert(result.error)
@@ -82,14 +97,31 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
 
             <div className="sm:col-span-6">
               <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-              <input 
-                type="url" 
-                id="imageUrl" 
-                name="imageUrl" 
-                placeholder="https://example.com/image.png"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" 
-              />
-              <p className="mt-1 text-xs text-gray-500">Paste a link to an image to display it in the question.</p>
+              <div className="mt-1 flex space-x-4">
+                  <input 
+                    type="url" 
+                    id="imageUrl" 
+                    name="imageUrl" 
+                    placeholder="https://example.com/image.png"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black flex-1" 
+                  />
+                  <div className="flex items-center">
+                    <span className="text-gray-500 text-sm mr-2">OR Upload:</span>
+                    <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Paste a link OR upload an image (it will be embedded directly).</p>
+              {imageBase64 && (
+                  <div className="mt-2">
+                      <p className="text-xs text-green-600 font-semibold">Image selected ready for upload.</p>
+                      <img src={imageBase64} alt="Preview" className="h-20 w-auto mt-1 border border-gray-200 rounded" />
+                  </div>
+              )}
             </div>
 
             <div className="sm:col-span-6">

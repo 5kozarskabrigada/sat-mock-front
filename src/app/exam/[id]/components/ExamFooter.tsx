@@ -17,7 +17,7 @@ export default function ExamFooter({
   onReviewClick: () => void
 }) {
   return (
-    <footer className="h-16 bg-white border-t border-gray-200 flex items-center justify-between px-6 relative z-20">
+    <footer className="h-12 bg-white border-t border-gray-200 flex items-center justify-between px-6 relative z-20">
       <div className="text-gray-500 font-sans text-sm font-medium">
         {studentName}
       </div>

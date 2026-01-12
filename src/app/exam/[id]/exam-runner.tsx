@@ -8,6 +8,7 @@ import ExamHeader from './components/ExamHeader'
 import ExamFooter from './components/ExamFooter'
 import QuestionViewer from './components/QuestionViewer'
 import ReviewModal from './components/ReviewModal'
+import ReviewScreen from './components/ReviewScreen'
 import BreakScreen from './components/BreakScreen'
 import CalculatorModal from './components/CalculatorModal'
 import ReferenceSheetModal from './components/ReferenceSheetModal'
@@ -34,6 +35,9 @@ export default function ExamRunner({
   const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
   const [timeLeft, setTimeLeft] = useState(isMath(questions[0]) ? 35 * 60 : 32 * 60) // Default 32 mins for R&W, 35 for Math
   
+  // View State
+  const [view, setView] = useState<'question' | 'review'>('question')
+
   // Modal States
   const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [isBreakOpen, setIsBreakOpen] = useState(false)
@@ -76,13 +80,18 @@ export default function ExamRunner({
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
     } else {
-        // If last question, maybe show review modal or confirm submit?
-        // For now, let's open review modal on last "Next"
-        setIsReviewOpen(true)
+        // If last question, go to review screen
+        setView('review')
     }
   }
 
   const handleBack = () => {
+    if (view === 'review') {
+        setView('question')
+        // We stay at the last question
+        return
+    }
+
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1)
     }
@@ -110,49 +119,64 @@ export default function ExamRunner({
 
   return (
     <div className="flex flex-col h-screen bg-white overflow-hidden font-sans text-sm">
-      <div className="flex-none scale-95 origin-top-left w-[105%] h-full"> {/* Scaling Wrapper */}
+      <div className="flex-none scale-90 origin-top w-full h-full transform transition-transform"> {/* Scaling Wrapper - Adjusted to 90% and origin top */}
         <ExamHeader 
             title={sectionTitle} 
             timeLeft={timeLeft}
-            onReviewClick={() => setIsReviewOpen(true)}
+            onReviewClick={() => setView('review')} // Switch to full review screen
             showMathTools={isMathSection}
             onCalculatorClick={() => setIsCalculatorOpen(true)}
             onReferenceClick={() => setIsReferenceOpen(true)}
         />
 
         <main className="flex-1 h-[calc(100vh-8rem)] overflow-hidden relative">
-            <QuestionViewer 
-            question={currentQuestion}
-            questionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-            selectedAnswer={answers[currentQuestion.id]}
-            onAnswerChange={handleAnswerChange}
-            isMathSection={isMathSection}
-            isMarked={!!markedQuestions[currentQuestion.id]}
-            onToggleMark={handleToggleMark}
-            />
+            {view === 'question' ? (
+                <QuestionViewer 
+                    question={currentQuestion}
+                    questionIndex={currentQuestionIndex}
+                    totalQuestions={questions.length}
+                    selectedAnswer={answers[currentQuestion.id]}
+                    onAnswerChange={handleAnswerChange}
+                    isMathSection={isMathSection}
+                    isMarked={!!markedQuestions[currentQuestion.id]}
+                    onToggleMark={handleToggleMark}
+                />
+            ) : (
+                <ReviewScreen 
+                    questions={questions}
+                    answers={answers}
+                    currentQuestionIndex={currentQuestionIndex}
+                    onNavigate={(idx) => {
+                        setCurrentQuestionIndex(idx)
+                        setView('question')
+                    }}
+                    markedQuestions={markedQuestions}
+                    onSubmit={handleSubmit}
+                    onBackToQuestion={() => setView('question')}
+                />
+            )}
         </main>
 
-        <ExamFooter 
-            studentName={studentName}
-            currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-            onNext={handleNext}
-            onBack={handleBack}
-            onReviewClick={() => setIsReviewOpen(true)}
-        />
+        {view === 'question' && (
+            <ExamFooter 
+                studentName={studentName}
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={questions.length}
+                onNext={handleNext}
+                onBack={handleBack}
+                onReviewClick={() => setView('review')}
+            />
+        )}
       </div>
 
       {/* Modals */}
-      <ReviewModal 
-        isOpen={isReviewOpen}
-        onClose={() => setIsReviewOpen(false)}
-        questions={questions}
-        answers={answers}
-        currentQuestionIndex={currentQuestionIndex}
-        onNavigate={setCurrentQuestionIndex}
-        markedQuestions={markedQuestions}
-      />
+      {/* Keeping ReviewModal for quick navigation via header/footer button if user wants popup style? 
+          Actually user seems to want Review Page. But the "Review" button in header usually opens a grid.
+          Let's make onReviewClick in header/footer go to Review Screen to match "not even review page" complaint.
+          But if they want the popup grid, I should keep ReviewModal.
+          The prompt says "go next go to review page".
+          I will disable ReviewModal for now and use ReviewScreen for everything to be consistent with "Review Page".
+      */}
       
       <CalculatorModal 
         isOpen={isCalculatorOpen} 
