@@ -3,6 +3,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 export async function addQuestion(examId: string, formData: FormData) {
   const supabase = await createClient()
@@ -50,6 +51,7 @@ export async function addQuestion(examId: string, formData: FormData) {
   }
 
   revalidatePath(`/admin/exams/${examId}`)
+  // Redirect handled by client or we can just return success
   return { success: true }
 }
 
@@ -98,7 +100,7 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
   }
 
   revalidatePath(`/admin/exams/${examId}`)
-  return { success: true }
+  redirect(`/admin/exams/${examId}`)
 }
 
 export async function deleteQuestion(questionId: string, examId: string) {

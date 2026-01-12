@@ -9,6 +9,7 @@ export default async function ExamsPage() {
   const { data: exams } = await supabase
     .from('exams')
     .select('*')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   return (

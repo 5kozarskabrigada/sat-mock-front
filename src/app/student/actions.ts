@@ -8,19 +8,16 @@ export async function joinExam(prevState: any, formData: FormData) {
   const code = formData.get('code') as string
   const supabase = await createClient()
 
-  // 1. Find the exam by code
+  // 1. Find the exam by code (use Service Role to bypass RLS for initial check)
+  // We need to check if exam exists first, because RLS might hide it if not in classroom
   const { data: exam, error } = await supabase
     .from('exams')
-    .select('id, status')
+    .select('id, status, classroom_id')
     .eq('code', code)
     .single()
 
   if (error || !exam) {
     return { error: 'Invalid exam code' }
-  }
-
-  if (exam.status !== 'active') {
-    return { error: 'This exam has not been started by the instructor yet.' }
   }
 
   // 2. Get authenticated user
@@ -30,7 +27,25 @@ export async function joinExam(prevState: any, formData: FormData) {
     redirect('/login')
   }
 
-  // 3. Ensure user profile exists (Lazy Sync)
+  // 3. Check Classroom Access
+  if (exam.classroom_id) {
+      const { data: enrollment } = await supabase
+        .from('student_classrooms')
+        .select('id')
+        .eq('student_id', user.id)
+        .eq('classroom_id', exam.classroom_id)
+        .single()
+      
+      if (!enrollment) {
+          return { error: 'You are not enrolled in the classroom assigned to this exam.' }
+      }
+  }
+
+  if (exam.status !== 'active') {
+    return { error: 'This exam has not been started by the instructor yet.' }
+  }
+
+  // 4. Ensure user profile exists (Lazy Sync)
   // This prevents FK violations if the user creation trigger failed
   const { data: profile } = await supabase
     .from('users')

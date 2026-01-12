@@ -16,10 +16,14 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
-    return { error: error.message }
+    // If "invalid login credentials", just say "Invalid username or password"
+    // Sometimes Auth API returns generic "Invalid login credentials" which is fine, but sometimes obscure.
+    return { error: 'Invalid username or password' }
   }
 
   // Check role to redirect appropriately
+  // NOTE: This runs on server, so redirect throws error to navigate.
+  // We need to fetch profile.
   const { data: { user } } = await supabase.auth.getUser()
   
   if (user) {
@@ -30,11 +34,12 @@ export async function login(formData: FormData) {
       .single()
     
     if (profile?.role === 'admin') {
-      redirect('/admin')
+      redirect('/admin/exams') // Better default landing for admin
     } else {
       redirect('/student')
     }
   }
 
+  // Fallback if something weird happens
   redirect('/')
 }

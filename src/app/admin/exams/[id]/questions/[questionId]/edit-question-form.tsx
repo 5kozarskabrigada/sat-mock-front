@@ -1,8 +1,104 @@
 
 'use client'
 
+import { createClient } from '@/utils/supabase/client'
+import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { updateQuestion, deleteQuestion } from '../../actions'
+
+// Helper component for file upload
+function ImageUploader({ defaultUrl }: { defaultUrl: string }) {
+    const [uploading, setUploading] = useState(false)
+    const [imageUrl, setImageUrl] = useState(defaultUrl)
+    const [error, setError] = useState<string | null>(null)
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setError(null)
+            setUploading(true)
+
+            if (!e.target.files || e.target.files.length === 0) {
+                return
+            }
+
+            const file = e.target.files[0]
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${Math.random()}.${fileExt}`
+            const filePath = `${fileName}`
+
+            const supabase = createClient()
+            
+            // Upload to Supabase Storage (assuming bucket 'exam-images' exists and is public)
+            const { error: uploadError } = await supabase.storage
+                .from('exam-images')
+                .upload(filePath, file)
+
+            if (uploadError) {
+                throw uploadError
+            }
+
+            const { data } = supabase.storage
+                .from('exam-images')
+                .getPublicUrl(filePath)
+
+            setImageUrl(data.publicUrl)
+        } catch (err: any) {
+            console.error('Upload error:', err)
+            setError('Error uploading image. Ensure "exam-images" bucket exists and is public.')
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    return (
+        <div className="space-y-2">
+            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image</label>
+            
+            {/* Hidden input to store the actual URL submitted */}
+            <input type="hidden" name="imageUrl" value={imageUrl || ''} />
+
+            <div className="flex items-center gap-4">
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpload}
+                    disabled={uploading}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                />
+                {uploading && <span className="text-sm text-gray-500">Uploading...</span>}
+            </div>
+            
+            {error && <p className="text-xs text-red-600">{error}</p>}
+
+            {imageUrl && (
+                <div className="mt-2 relative group w-fit">
+                    <img src={imageUrl} alt="Question" className="h-32 w-auto object-contain rounded border border-gray-300" />
+                    <button
+                        type="button"
+                        onClick={() => setImageUrl('')}
+                        className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 shadow-sm hover:bg-red-200"
+                        title="Remove image"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                        </svg>
+                    </button>
+                </div>
+            )}
+            
+            {/* Fallback URL input if they want to paste external URL */}
+            <div className="mt-1">
+                <input 
+                    type="text" 
+                    placeholder="Or paste image URL directly" 
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs p-2 border text-gray-500"
+                    value={imageUrl || ''}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                />
+            </div>
+        </div>
+    )
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -70,8 +166,7 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-              <input type="text" name="imageUrl" id="imageUrl" defaultValue={question.content.image_url} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <ImageUploader defaultUrl={question.content.image_url} />
             </div>
 
             <div className="sm:col-span-6">
