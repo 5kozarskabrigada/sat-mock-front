@@ -53,14 +53,17 @@ export async function addQuestion(examId: string, formData: FormData) {
   return { success: true }
 }
 
-export async function toggleExamStatus(examId: string, currentStatus: string, prevState: any) {
+export async function toggleExamStatus(examId: string, currentStatus: string, classroomId: string | null, prevState: any) {
   const supabase = await createClient()
   
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'
 
   const { error } = await supabase
     .from('exams')
-    .update({ status: newStatus })
+    .update({ 
+        status: newStatus,
+        classroom_id: classroomId || null
+    })
     .eq('id', examId)
 
   if (error) {

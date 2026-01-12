@@ -26,6 +26,11 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
     .eq('exam_id', id)
     .order('created_at', { ascending: true })
 
+  const { data: classrooms } = await supabase
+    .from('classrooms')
+    .select('*')
+    .order('name')
+
   // Helper for status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -48,7 +53,7 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
                 {exam.status}
              </span>
              {/* Pass the status string, not boolean */}
-             <ExamStatusToggle examId={exam.id} status={exam.status} />
+             <ExamStatusToggle examId={exam.id} status={exam.status} classrooms={classrooms || []} />
           </div>
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:px-6">

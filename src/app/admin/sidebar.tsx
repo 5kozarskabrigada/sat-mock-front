@@ -14,6 +14,7 @@ export default function AdminSidebar({ email }: { email: string }) {
   const navItems = [
     { name: 'Dashboard', href: '/admin' },
     { name: 'Students', href: '/admin/students' },
+    { name: 'Classrooms', href: '/admin/classrooms' },
     { name: 'Exams', href: '/admin/exams' },
   ]
 
