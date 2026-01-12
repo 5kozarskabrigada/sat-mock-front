@@ -2,6 +2,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import 'katex/dist/katex.min.css'
+import Latex from 'react-latex-next'
 
 export default function QuestionViewer({ 
   question, 
@@ -376,7 +378,12 @@ export default function QuestionViewer({
 
         {/* Question Text */}
         <div className="mb-8 font-serif text-xl leading-relaxed text-black">
-            {question.content.question}
+            {question.content.image_url && (
+                <div className="mb-4">
+                    <img src={question.content.image_url} alt="Question Graphic" className="max-w-full h-auto rounded-lg border border-gray-200" />
+                </div>
+            )}
+            <Latex>{question.content.question}</Latex>
         </div>
 
         {/* Answer Area */}
@@ -448,14 +455,14 @@ export default function QuestionViewer({
                 })
             ) : (
                 <div className="bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
-                    <label className="block text-sm font-medium text-gray-500 mb-2 font-sans">
+                    <label className="block text-sm font-medium text-black mb-2 font-sans">
                         Enter your answer (e.g., 5.566, -5.566, 2/3, -2/3)
                     </label>
                     <input
                         type="text"
                         value={inputValue}
                         onChange={handleInputChange}
-                        className="w-full p-4 border border-gray-300 rounded-md font-serif text-xl focus:border-black focus:ring-1 focus:ring-black outline-none placeholder-gray-400"
+                        className="w-full p-4 border border-gray-300 rounded-md font-serif text-xl focus:border-black focus:ring-1 focus:ring-black outline-none placeholder-gray-400 text-black"
                         placeholder="Answer"
                     />
                 </div>

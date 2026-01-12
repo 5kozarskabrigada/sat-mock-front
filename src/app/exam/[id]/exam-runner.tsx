@@ -109,37 +109,39 @@ export default function ExamRunner({
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white overflow-hidden font-sans">
-      <ExamHeader 
-        title={sectionTitle} 
-        timeLeft={timeLeft}
-        onReviewClick={() => setIsReviewOpen(true)}
-        showMathTools={isMathSection}
-        onCalculatorClick={() => setIsCalculatorOpen(true)}
-        onReferenceClick={() => setIsReferenceOpen(true)}
-      />
-
-      <main className="flex-1 overflow-hidden relative">
-        <QuestionViewer 
-          question={currentQuestion}
-          questionIndex={currentQuestionIndex}
-          totalQuestions={questions.length}
-          selectedAnswer={answers[currentQuestion.id]}
-          onAnswerChange={handleAnswerChange}
-          isMathSection={isMathSection}
-          isMarked={!!markedQuestions[currentQuestion.id]}
-          onToggleMark={handleToggleMark}
+    <div className="flex flex-col h-screen bg-white overflow-hidden font-sans text-sm">
+      <div className="flex-none scale-95 origin-top-left w-[105%] h-full"> {/* Scaling Wrapper */}
+        <ExamHeader 
+            title={sectionTitle} 
+            timeLeft={timeLeft}
+            onReviewClick={() => setIsReviewOpen(true)}
+            showMathTools={isMathSection}
+            onCalculatorClick={() => setIsCalculatorOpen(true)}
+            onReferenceClick={() => setIsReferenceOpen(true)}
         />
-      </main>
 
-      <ExamFooter 
-        studentName={studentName}
-        currentQuestionIndex={currentQuestionIndex}
-        totalQuestions={questions.length}
-        onNext={handleNext}
-        onBack={handleBack}
-        onReviewClick={() => setIsReviewOpen(true)}
-      />
+        <main className="flex-1 h-[calc(100vh-8rem)] overflow-hidden relative">
+            <QuestionViewer 
+            question={currentQuestion}
+            questionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+            selectedAnswer={answers[currentQuestion.id]}
+            onAnswerChange={handleAnswerChange}
+            isMathSection={isMathSection}
+            isMarked={!!markedQuestions[currentQuestion.id]}
+            onToggleMark={handleToggleMark}
+            />
+        </main>
+
+        <ExamFooter 
+            studentName={studentName}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+            onNext={handleNext}
+            onBack={handleBack}
+            onReviewClick={() => setIsReviewOpen(true)}
+        />
+      </div>
 
       {/* Modals */}
       <ReviewModal 

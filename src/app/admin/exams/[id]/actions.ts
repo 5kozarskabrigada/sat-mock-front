@@ -18,10 +18,12 @@ export async function addQuestion(examId: string, formData: FormData) {
   const correctAnswer = formData.get('correctAnswer') as string
   const explanation = formData.get('explanation') as string
   const domain = formData.get('domain') as string
+  const imageUrl = formData.get('imageUrl') as string
 
   const content = {
     question: questionText,
     passage: passage || null,
+    image_url: imageUrl || null,
     options: {
       A: optionA,
       B: optionB,
@@ -53,12 +55,6 @@ export async function addQuestion(examId: string, formData: FormData) {
 
 export async function toggleExamStatus(examId: string, currentStatus: string, prevState: any) {
   const supabase = await createClient()
-
-  // Logic: if 'active', toggle to 'ended' (or 'draft').
-  // Let's assume a simple toggle: draft -> active -> ended -> active
-  // But usually toggle is on/off.
-  // If status is 'active', set to 'ended' (to stop students).
-  // If status is 'draft' or 'ended', set to 'active'.
   
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'
 
