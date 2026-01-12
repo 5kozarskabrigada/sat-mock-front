@@ -2,7 +2,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
-import { updateQuestion, deleteQuestion } from '../../../actions'
+import { updateQuestion, deleteQuestion } from '../../actions'
 
 function SubmitButton() {
   const { pending } = useFormStatus()

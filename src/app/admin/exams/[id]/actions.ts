@@ -53,7 +53,7 @@ export async function addQuestion(examId: string, formData: FormData) {
   return { success: true }
 }
 
-export async function updateQuestion(questionId: string, examId: string, formData: FormData) {
+export async function updateQuestion(questionId: string, examId: string, prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   const section = formData.get('section') as string
