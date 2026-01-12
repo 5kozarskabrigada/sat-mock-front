@@ -34,7 +34,7 @@ export default async function StudentsPage() {
                     <div className="truncate">
                       <div className="flex text-sm">
                         <p className="font-medium text-indigo-600 truncate">{student.username}</p>
-                        <p className="ml-1 flex-shrink-0 font-normal text-gray-500">
+                        <p className="ml-1 shrink-0 font-normal text-gray-500">
                           {student.first_name} {student.last_name}
                         </p>
                       </div>

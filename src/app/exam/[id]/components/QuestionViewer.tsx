@@ -3,7 +3,33 @@
 
 import { useState, useEffect, useRef } from 'react'
 import 'katex/dist/katex.min.css'
-import Latex from 'react-katex'
+import { InlineMath, BlockMath } from 'react-katex'
+
+const Latex = ({ children }: { children: string }) => {
+    if (!children) return null;
+    
+    // Split by delimiters: $$...$$, $...$, \[...\], \(...\)
+    const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g;
+    const parts = children.split(regex);
+
+    return (
+        <span>
+            {parts.map((part, index) => {
+                if (part.startsWith('$$') && part.endsWith('$$')) {
+                    return <BlockMath key={index} math={part.slice(2, -2)} />;
+                } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
+                    return <BlockMath key={index} math={part.slice(2, -2)} />;
+                } else if (part.startsWith('$') && part.endsWith('$')) {
+                    return <InlineMath key={index} math={part.slice(1, -1)} />;
+                } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
+                    return <InlineMath key={index} math={part.slice(2, -2)} />;
+                } else {
+                    return <span key={index}>{part}</span>;
+                }
+            })}
+        </span>
+    );
+};
 
 export default function QuestionViewer({ 
   question, 
