@@ -34,12 +34,12 @@ export async function login(formData: FormData) {
       .single()
     
     if (profile?.role === 'admin') {
-      redirect('/admin/exams') // Better default landing for admin
+      return { success: true, redirectUrl: '/admin/exams' }
     } else {
-      redirect('/student')
+      return { success: true, redirectUrl: '/student' }
     }
   }
 
   // Fallback if something weird happens
-  redirect('/')
+  return { success: true, redirectUrl: '/' }
 }

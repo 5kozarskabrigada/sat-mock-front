@@ -4,9 +4,25 @@
 import { useState, ChangeEvent } from 'react'
 import { addQuestion } from './actions'
 
+const DOMAINS = {
+  math: [
+    "Algebra",
+    "Advanced Math",
+    "Problem-Solving and Data Analysis",
+    "Geometry and Trigonometry"
+  ],
+  reading_writing: [
+    "Craft and Structure",
+    "Information and Ideas",
+    "Standard English Conventions",
+    "Expression of Ideas"
+  ]
+}
+
 export default function AddQuestionForm({ examId }: { examId: string }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [imageBase64, setImageBase64] = useState<string>('')
+  const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
   
   if (!isExpanded) {
     return (
@@ -59,7 +75,12 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             <div className="sm:col-span-3">
               <label htmlFor="section" className="block text-sm font-medium text-gray-700">Section</label>
-              <select id="section" name="section" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
+              <select 
+                id="section" 
+                name="section" 
+                onChange={(e) => setSelectedSection(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+              >
                 <option value="reading_writing">Reading & Writing</option>
                 <option value="math">Math</option>
               </select>
@@ -80,18 +101,13 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
                 name="domain" 
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
               >
-                <optgroup label="Math">
-                    <option value="Algebra">Algebra</option>
-                    <option value="Advanced Math">Advanced Math</option>
-                    <option value="Problem-Solving and Data Analysis">Problem-Solving and Data Analysis</option>
-                    <option value="Geometry and Trigonometry">Geometry and Trigonometry</option>
-                </optgroup>
-                <optgroup label="Reading & Writing">
-                    <option value="Craft and Structure">Craft and Structure</option>
-                    <option value="Information and Ideas">Information and Ideas</option>
-                    <option value="Standard English Conventions">Standard English Conventions</option>
-                    <option value="Expression of Ideas">Expression of Ideas</option>
-                </optgroup>
+                <option value="">Select Domain...</option>
+                {selectedSection === 'math' && DOMAINS.math.map(d => (
+                   <option key={d} value={d}>{d}</option>
+                ))}
+                {selectedSection === 'reading_writing' && DOMAINS.reading_writing.map(d => (
+                   <option key={d} value={d}>{d}</option>
+                ))}
               </select>
             </div>
 

@@ -2,6 +2,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import CreateExamForm from './create-exam-form'
+import ExamListActions from './exam-list-actions'
 
 export default async function ExamsPage() {
   const supabase = await createClient()
@@ -30,12 +31,14 @@ export default async function ExamsPage() {
 
         {/* Existing Exams Cards */}
         {exams?.map((exam) => (
-          <Link 
+          <div 
             key={exam.id} 
-            href={`/admin/exams/${exam.id}`}
-            className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md hover:ring-indigo-300"
+            className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md"
           >
-            <div className="flex-1 p-6 flex flex-col justify-between">
+            <Link 
+              href={`/admin/exams/${exam.id}`}
+              className="flex-1 p-6 flex flex-col justify-between hover:bg-gray-50/50"
+            >
               <div>
                 <div className="flex items-center justify-between">
                   <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
@@ -48,7 +51,7 @@ export default async function ExamsPage() {
                   </span>
                 </div>
                 <div className="mt-4">
-                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600">
+                  <h3 className="text-lg font-medium text-gray-900">
                     {exam.title}
                   </h3>
                   <p className="mt-1 text-sm text-gray-500 line-clamp-2">
@@ -56,16 +59,21 @@ export default async function ExamsPage() {
                   </p>
                 </div>
               </div>
-              <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                 <span className="capitalize px-2 py-1 bg-gray-50 rounded text-xs border border-gray-100">
                   {exam.type}
                 </span>
-                <span>
+              </div>
+            </Link>
+            
+            {/* Actions Footer */}
+            <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+                <span className="text-xs text-gray-400">
                   {new Date(exam.created_at).toLocaleDateString()}
                 </span>
-              </div>
+                <ExamListActions exam={exam} />
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

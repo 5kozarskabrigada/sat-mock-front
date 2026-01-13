@@ -129,9 +129,25 @@ function DeleteButton({ questionId, examId }: { questionId: string, examId: stri
     )
 }
 
+const DOMAINS = {
+  math: [
+    "Algebra",
+    "Advanced Math",
+    "Problem-Solving and Data Analysis",
+    "Geometry and Trigonometry"
+  ],
+  reading_writing: [
+    "Craft and Structure",
+    "Information and Ideas",
+    "Standard English Conventions",
+    "Expression of Ideas"
+  ]
+}
+
 export default function EditQuestionForm({ question, examId }: { question: any, examId: string }) {
   const updateQuestionWithId = updateQuestion.bind(null, question.id, examId)
   const [state, formAction] = useFormState(updateQuestionWithId, null)
+  const [selectedSection, setSelectedSection] = useState<string>(question.section)
 
   return (
     <div className="bg-white shadow sm:rounded-lg border border-gray-200">
@@ -141,7 +157,13 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
             
             <div className="sm:col-span-3">
               <label htmlFor="section" className="block text-sm font-medium text-gray-700">Section</label>
-              <select id="section" name="section" defaultValue={question.section} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
+              <select 
+                id="section" 
+                name="section" 
+                defaultValue={question.section} 
+                onChange={(e) => setSelectedSection(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+              >
                 <option value="reading_writing">Reading & Writing</option>
                 <option value="math">Math</option>
               </select>
@@ -156,8 +178,21 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
             </div>
 
             <div className="sm:col-span-6">
-               <label htmlFor="domain" className="block text-sm font-medium text-gray-700">Domain (Optional)</label>
-               <input type="text" name="domain" id="domain" defaultValue={question.domain} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" placeholder="e.g. Algebra" />
+               <label htmlFor="domain" className="block text-sm font-medium text-gray-700">Domain</label>
+               <select 
+                 id="domain" 
+                 name="domain" 
+                 defaultValue={question.domain} 
+                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+               >
+                 <option value="">Select Domain...</option>
+                 {selectedSection === 'math' && DOMAINS.math.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                 ))}
+                 {selectedSection === 'reading_writing' && DOMAINS.reading_writing.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                 ))}
+               </select>
             </div>
 
             <div className="sm:col-span-6">

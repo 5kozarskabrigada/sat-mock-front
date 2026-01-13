@@ -3,8 +3,10 @@
 
 import { useState } from 'react'
 import { login } from './actions'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -26,10 +28,13 @@ export default function LoginPage() {
       const result = await login(formData)
       if (result?.error) {
         setError(result.error)
+        setLoading(false)
+      } else if (result?.redirectUrl) {
+        router.push(result.redirectUrl)
+        // Keep loading true while redirecting
       }
     } catch (err) {
       setError('An unexpected error occurred')
-    } finally {
       setLoading(false)
     }
   }

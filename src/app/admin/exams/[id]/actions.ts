@@ -155,3 +155,42 @@ export async function toggleExamStatus(examId: string, currentStatus: string, cl
   revalidatePath(`/admin/exams/${examId}`)
   revalidatePath('/admin/exams')
 }
+
+export async function simpleToggleExamStatus(examId: string, currentStatus: string) {
+  const supabase = await createClient()
+  
+  if (currentStatus !== 'active') {
+      // Validate question counts before activating
+      const { count: mathCount } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', 'math')
+        .is('deleted_at', null)
+
+      const { count: rwCount } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', 'reading_writing')
+        .is('deleted_at', null)
+
+      // Validation Rules (following prompt strictness)
+      if (mathCount !== 27) {
+          return { error: `Math section must have exactly 27 questions (found ${mathCount}).` }
+      }
+      if (rwCount !== 27) {
+          return { error: `Reading & Writing section must have exactly 27 questions (found ${rwCount}).` }
+      }
+  }
+
+  const newStatus = currentStatus === 'active' ? 'ended' : 'active'
+  
+  const { error } = await supabase
+    .from('exams')
+    .update({ status: newStatus })
+    .eq('id', examId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/admin/exams')
+}

@@ -71,7 +71,7 @@ export default async function AdminDashboard() {
         </Link>
 
         {/* Card 3: Quick Action */}
-        <Link href="/admin/exams/create" className="block group h-full">
+        <Link href="/admin/exams" className="block group h-full">
            <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md transition-all duration-200 hover:shadow-lg hover:from-indigo-600 hover:to-purple-700 h-full flex flex-col justify-center items-center text-center p-6 text-white cursor-pointer">
               <svg className="h-12 w-12 mb-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
