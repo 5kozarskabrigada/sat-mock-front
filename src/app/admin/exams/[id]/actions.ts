@@ -175,13 +175,42 @@ export async function simpleToggleExamStatus(examId: string, currentStatus: stri
         .eq('section', 'reading_writing')
         .is('deleted_at', null)
 
-      // Validation Rules (following prompt strictness)
-      if (mathCount !== 27) {
-          return { error: `Math section must have exactly 27 questions (found ${mathCount}).` }
-      }
-      if (rwCount !== 27) {
-          return { error: `Reading & Writing section must have exactly 27 questions (found ${rwCount}).` }
-      }
+      const { count: rwCountM1 } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', 'reading_writing')
+        .eq('module', 1)
+        .is('deleted_at', null)
+
+      const { count: rwCountM2 } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', 'reading_writing')
+        .eq('module', 2)
+        .is('deleted_at', null)
+
+      const { count: mathCountM1 } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', 'math')
+        .eq('module', 1)
+        .is('deleted_at', null)
+
+      const { count: mathCountM2 } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', 'math')
+        .eq('module', 2)
+        .is('deleted_at', null)
+
+      if (rwCountM1 !== 32) return { error: `Reading & Writing Module 1 must have exactly 32 questions (found ${rwCountM1}).` }
+      if (rwCountM2 !== 32) return { error: `Reading & Writing Module 2 must have exactly 32 questions (found ${rwCountM2}).` }
+      if (mathCountM1 !== 28) return { error: `Math Module 1 must have exactly 28 questions (found ${mathCountM1}).` }
+      if (mathCountM2 !== 28) return { error: `Math Module 2 must have exactly 28 questions (found ${mathCountM2}).` }
   }
 
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'

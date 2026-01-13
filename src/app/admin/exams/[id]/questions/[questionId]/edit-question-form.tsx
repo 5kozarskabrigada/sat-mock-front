@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { updateQuestion, deleteQuestion } from '../../actions'
+import ConfirmationModal from '@/components/confirmation-modal'
 
 // Helper component for file upload
 function ImageUploader({ defaultUrl }: { defaultUrl: string }) {
@@ -113,15 +114,11 @@ function SubmitButton() {
   )
 }
 
-function DeleteButton({ questionId, examId }: { questionId: string, examId: string }) {
+function DeleteButton({ onClick }: { onClick: () => void }) {
     return (
         <button
             type="button"
-            onClick={async () => {
-                if (confirm('Are you sure you want to delete this question? This cannot be undone (but can be restored from DB if needed).')) {
-                    await deleteQuestion(questionId, examId)
-                }
-            }}
+            onClick={onClick}
             className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-red-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
         >
             Delete Question
@@ -148,6 +145,11 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
   const updateQuestionWithId = updateQuestion.bind(null, question.id, examId)
   const [state, formAction] = useFormState(updateQuestionWithId, null)
   const [selectedSection, setSelectedSection] = useState<string>(question.section)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+
+  const handleDelete = async () => {
+    await deleteQuestion(question.id, examId)
+  }
 
   return (
     <div className="bg-white shadow sm:rounded-lg border border-gray-200">
@@ -249,10 +251,20 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
           )}
 
           <div className="flex justify-between">
-            <DeleteButton questionId={question.id} examId={examId} />
+            <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
             <SubmitButton />
           </div>
         </form>
+
+        <ConfirmationModal 
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDelete}
+          title="Delete Question"
+          message="Are you sure you want to delete this question? It will be moved to the recycle bin and can be restored later."
+          confirmText="Delete"
+          isDangerous={true}
+        />
       </div>
     </div>
   )

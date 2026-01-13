@@ -45,7 +45,7 @@ export default function CreateExamForm() {
                 id="title"
                 required
                 placeholder="Exam Title (e.g. Mock #1)"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
               />
           </div>
 
@@ -56,7 +56,7 @@ export default function CreateExamForm() {
                 name="description"
                 rows={2}
                 placeholder="Description (optional)"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
               />
           </div>
 
