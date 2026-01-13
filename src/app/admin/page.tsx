@@ -8,7 +8,7 @@ export default async function AdminDashboard() {
   // Fetch stats in parallel
   const [studentsResult, examsResult] = await Promise.all([
     supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'student'),
-    supabase.from('exams').select('id', { count: 'exact', head: true }).eq('status', 'active')
+    supabase.from('exams').select('id', { count: 'exact', head: true }).eq('status', 'active').is('deleted_at', null)
   ])
 
   const studentCount = studentsResult.count || 0

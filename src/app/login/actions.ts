@@ -34,7 +34,7 @@ export async function login(formData: FormData) {
       .single()
     
     if (profile?.role === 'admin') {
-      return { success: true, redirectUrl: '/admin/exams' }
+      return { success: true, redirectUrl: '/admin' }
     } else {
       return { success: true, redirectUrl: '/student' }
     }
