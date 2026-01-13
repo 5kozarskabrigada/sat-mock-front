@@ -135,9 +135,58 @@ export async function deleteExam(examId: string) {
     return { success: true }
 }
 
+export async function validateExamQuestions(examId: string) {
+  const supabase = await createClient()
+
+  const getCount = async (section: string, module: number) => {
+    const { count } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('exam_id', examId)
+        .eq('section', section)
+        .eq('module', module)
+        .is('deleted_at', null)
+    return count || 0
+  }
+
+  const rwM1 = await getCount('reading_writing', 1)
+  const rwM2 = await getCount('reading_writing', 2)
+  const mathM1 = await getCount('math', 1)
+  const mathM2 = await getCount('math', 2)
+
+  const required = {
+      rwM1: 32,
+      rwM2: 32,
+      mathM1: 28,
+      mathM2: 28
+  }
+
+  const current = {
+      rwM1,
+      rwM2,
+      mathM1,
+      mathM2
+  }
+
+  const isValid = 
+      rwM1 === required.rwM1 && 
+      rwM2 === required.rwM2 && 
+      mathM1 === required.mathM1 && 
+      mathM2 === required.mathM2
+
+  return { isValid, current, required }
+}
+
 export async function toggleExamStatus(examId: string, currentStatus: string, classroomId: string | null, prevState: any) {
   const supabase = await createClient()
   
+  if (currentStatus !== 'active') {
+      const validation = await validateExamQuestions(examId)
+      if (!validation.isValid) {
+          return { validationError: validation }
+      }
+  }
+
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'
 
   const { error } = await supabase
@@ -154,63 +203,17 @@ export async function toggleExamStatus(examId: string, currentStatus: string, cl
 
   revalidatePath(`/admin/exams/${examId}`)
   revalidatePath('/admin/exams')
+  return { success: true }
 }
 
 export async function simpleToggleExamStatus(examId: string, currentStatus: string) {
   const supabase = await createClient()
   
   if (currentStatus !== 'active') {
-      // Validate question counts before activating
-      const { count: mathCount } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', 'math')
-        .is('deleted_at', null)
-
-      const { count: rwCount } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', 'reading_writing')
-        .is('deleted_at', null)
-
-      const { count: rwCountM1 } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', 'reading_writing')
-        .eq('module', 1)
-        .is('deleted_at', null)
-
-      const { count: rwCountM2 } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', 'reading_writing')
-        .eq('module', 2)
-        .is('deleted_at', null)
-
-      const { count: mathCountM1 } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', 'math')
-        .eq('module', 1)
-        .is('deleted_at', null)
-
-      const { count: mathCountM2 } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', 'math')
-        .eq('module', 2)
-        .is('deleted_at', null)
-
-      if (rwCountM1 !== 32) return { error: `Reading & Writing Module 1 must have exactly 32 questions (found ${rwCountM1}).` }
-      if (rwCountM2 !== 32) return { error: `Reading & Writing Module 2 must have exactly 32 questions (found ${rwCountM2}).` }
-      if (mathCountM1 !== 28) return { error: `Math Module 1 must have exactly 28 questions (found ${mathCountM1}).` }
-      if (mathCountM2 !== 28) return { error: `Math Module 2 must have exactly 28 questions (found ${mathCountM2}).` }
+      const validation = await validateExamQuestions(examId)
+      if (!validation.isValid) {
+          return { validationError: validation }
+      }
   }
 
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'
@@ -222,4 +225,5 @@ export async function simpleToggleExamStatus(examId: string, currentStatus: stri
 
   if (error) return { error: error.message }
   revalidatePath('/admin/exams')
+  return { success: true }
 }

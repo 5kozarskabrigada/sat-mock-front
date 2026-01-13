@@ -3,7 +3,8 @@
 
 import { useFormState, useFormStatus } from 'react-dom'
 import { toggleExamStatus } from './actions'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import ActivationErrorModal from '@/components/activation-error-modal'
 
 function SubmitButton({ status }: { status: string }) {
   const { pending } = useFormStatus()
@@ -30,10 +31,18 @@ export default function ExamStatusToggle({ examId, status, classrooms }: { examI
   // Bind the arguments to the action
   const toggleAction = toggleExamStatus.bind(null, examId, status, selectedClassroom || null)
   const [state, formAction] = useFormState(toggleAction, null)
+  const [showValidationModal, setShowValidationModal] = useState(false)
+
+  useEffect(() => {
+    if (state?.validationError) {
+      setShowValidationModal(true)
+    }
+  }, [state])
 
   const isLive = status === 'active'
 
   return (
+    <>
     <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
         {!isLive && (
             <div className="flex flex-col items-end">
@@ -57,5 +66,14 @@ export default function ExamStatusToggle({ examId, status, classrooms }: { examI
         )}
         </form>
     </div>
+
+    <ActivationErrorModal
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        validation={state?.validationError || null}
+        examId={examId}
+        context="details"
+    />
+    </>
   )
 }

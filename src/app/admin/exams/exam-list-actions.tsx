@@ -4,10 +4,12 @@
 import { deleteExam, simpleToggleExamStatus } from './[id]/actions'
 import { useState } from 'react'
 import ConfirmationModal from '@/components/confirmation-modal'
+import ActivationErrorModal from '@/components/activation-error-modal'
 
 export default function ExamListActions({ exam }: { exam: any }) {
   const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [validationError, setValidationError] = useState<any>(null)
 
   const handleDelete = async () => {
     setLoading(true)
@@ -19,8 +21,13 @@ export default function ExamListActions({ exam }: { exam: any }) {
     e.preventDefault()
     e.stopPropagation()
     setLoading(true)
+    setValidationError(null)
+    
     const result = await simpleToggleExamStatus(exam.id, exam.status)
-    if (result?.error) {
+    
+    if (result?.validationError) {
+        setValidationError(result.validationError)
+    } else if (result?.error) {
         alert(result.error)
     }
     setLoading(false)
@@ -63,6 +70,14 @@ export default function ExamListActions({ exam }: { exam: any }) {
             message={`Are you sure you want to delete "${exam.title}"? It will be moved to the recycle bin and can be restored later.`}
             confirmText="Delete"
             isDangerous={true}
+        />
+
+        <ActivationErrorModal
+            isOpen={!!validationError}
+            onClose={() => setValidationError(null)}
+            validation={validationError}
+            examId={exam.id}
+            context="list"
         />
     </>
   )
