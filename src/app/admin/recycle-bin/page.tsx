@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { RestoreExamButton, RestoreQuestionButton, PermanentDeleteExamButton, PermanentDeleteQuestionButton } from './buttons'
 import PreviewQuestion from './preview-question'
+import PreviewExam from './preview-exam'
 
 export default async function RecycleBinPage() {
   const supabase = await createClient()
@@ -40,7 +41,10 @@ export default async function RecycleBinPage() {
                     deletedExams.map((exam) => (
                         <li key={exam.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50 flex justify-between items-center">
                             <div>
-                                <p className="text-sm font-medium text-indigo-600">{exam.title}</p>
+                                <div className="flex items-center">
+                                    <p className="text-sm font-medium text-indigo-600">{exam.title}</p>
+                                    <PreviewExam exam={exam} />
+                                </div>
                                 <p className="text-xs text-gray-500">Deleted {new Date(exam.deleted_at).toLocaleString()}</p>
                             </div>
                             <div className="flex space-x-4">
