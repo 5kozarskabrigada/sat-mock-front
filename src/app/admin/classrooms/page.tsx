@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import CreateClassroomForm from './create-classroom-form'
-import { deleteClassroom } from './actions'
+import DeleteClassroomButton from './delete-classroom-button'
 
 export default async function ClassroomsPage() {
   const supabase = await createClient()
@@ -54,12 +54,7 @@ export default async function ClassroomsPage() {
                       </Link>
                   </div>
                   <div className="ml-5 flex-shrink-0">
-                      <form action={async () => {
-                          'use server'
-                          await deleteClassroom(classroom.id)
-                      }}>
-                          <button type="submit" className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
-                      </form>
+                      <DeleteClassroomButton classroomId={classroom.id} />
                   </div>
                 </div>
               </li>

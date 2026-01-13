@@ -21,13 +21,18 @@ export default function PreviewExam({ exam }: { exam: any }) {
                   <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">Description</p>
                       <p className="text-gray-800">{exam.description || 'No description provided.'}</p>
+                      
+                      <p className="text-xs text-gray-500 uppercase font-semibold mt-3">Original Status</p>
+                      <p className="text-gray-800 capitalize">{exam.status}</p>
                   </div>
                   <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">Metadata</p>
                       <div className="mt-1 space-y-1">
+                          <p><span className="text-gray-500">ID:</span> <span className="font-mono text-xs">{exam.id}</span></p>
                           <p><span className="text-gray-500">Code:</span> <span className="font-mono">{exam.code}</span></p>
                           <p><span className="text-gray-500">Type:</span> <span className="capitalize">{exam.type}</span></p>
                           <p><span className="text-gray-500">Created:</span> {new Date(exam.created_at).toLocaleDateString()}</p>
+                          <p><span className="text-gray-500">Deleted:</span> {exam.deleted_at ? new Date(exam.deleted_at).toLocaleString() : 'N/A'}</p>
                       </div>
                   </div>
               </div>

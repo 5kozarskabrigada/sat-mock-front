@@ -3,10 +3,12 @@
 
 import { useState } from 'react'
 import { deleteStudent, updateStudent } from './actions'
+import ConfirmationModal from '@/components/confirmation-modal'
 
 export default function StudentList({ students }: { students: any[] }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const filteredStudents = students.filter(student => 
     student.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -21,8 +23,25 @@ export default function StudentList({ students }: { students: any[] }) {
       }
   }
 
+  const handleDelete = async () => {
+      if (deleteId) {
+          await deleteStudent(deleteId)
+          setDeleteId(null)
+      }
+  }
+
   return (
     <div>
+        <ConfirmationModal 
+            isOpen={!!deleteId}
+            onClose={() => setDeleteId(null)}
+            onConfirm={handleDelete}
+            title="Delete Student"
+            message="Are you sure you want to delete this student? This action cannot be undone."
+            confirmText="Delete"
+            isDangerous={true}
+        />
+
         <div className="mb-4">
             <input 
                 type="text" 
@@ -75,13 +94,7 @@ export default function StudentList({ students }: { students: any[] }) {
                             </div>
                             <div className="flex space-x-4">
                                 <button onClick={() => setEditingId(student.id)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Edit</button>
-                                <form action={async () => {
-                                    if(confirm('Are you sure you want to delete this student?')) {
-                                        await deleteStudent(student.id)
-                                    }
-                                }}>
-                                    <button type="submit" className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
-                                </form>
+                                <button onClick={() => setDeleteId(student.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
                             </div>
                         </div>
                     )}

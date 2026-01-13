@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import AddStudentToClassroomForm from './add-student-form'
-import { removeStudentFromClassroom } from '../actions'
+import RemoveStudentButton from './remove-student-button'
 import { notFound } from 'next/navigation'
 
 export default async function ClassroomDetailPage({ params }: { params: { id: string } }) {
@@ -59,12 +59,7 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
                       <span className="mr-4">Joined {new Date(enrollment.joined_at).toLocaleDateString()}</span>
-                      <form action={async () => {
-                          'use server'
-                          await removeStudentFromClassroom(id, enrollment.student_id)
-                      }}>
-                          <button type="submit" className="text-red-600 hover:text-red-900 font-medium">Remove</button>
-                      </form>
+                      <RemoveStudentButton classroomId={id} studentId={enrollment.student_id} />
                   </div>
                 </div>
               </li>
