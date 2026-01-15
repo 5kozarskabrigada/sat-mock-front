@@ -24,7 +24,8 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Card 1: Students */}
         <Link href="/admin/students" className="block group">
-          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-indigo-300">
+          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-indigo-300 relative">
+             <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 rounded-md bg-indigo-50 p-3">
@@ -48,7 +49,8 @@ export default async function AdminDashboard() {
         
         {/* Card 2: Exams */}
         <Link href="/admin/exams" className="block group">
-          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-green-300">
+          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-green-300 relative">
+             <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 rounded-md bg-green-50 p-3">
@@ -69,14 +71,15 @@ export default async function AdminDashboard() {
             </div>
           </div>
         </Link>
-
+        
         {/* Card 3: Quick Action */}
         <Link href="/admin/exams" className="block group h-full">
-           <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md transition-all duration-200 hover:shadow-lg hover:from-indigo-600 hover:to-purple-700 h-full flex flex-col justify-center items-center text-center p-6 text-white cursor-pointer">
-              <svg className="h-12 w-12 mb-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md transition-all duration-200 hover:shadow-lg hover:from-indigo-600 hover:to-purple-700 h-full flex flex-col justify-center items-center text-center p-6 text-white cursor-pointer relative">
+               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <svg className="h-12 w-12 mb-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              <h3 className="text-lg font-bold">Create New Exam</h3>
+              <h3 className="text-xl font-bold">Create New Exam</h3>
               <p className="text-indigo-100 text-sm mt-1">Set up a mock test in seconds</p>
            </div>
         </Link>

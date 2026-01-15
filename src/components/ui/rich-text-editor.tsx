@@ -163,7 +163,7 @@ export default function RichTextEditor({
                     ref={textareaRef}
                     rows={rows}
                     required={required}
-                    className="block w-full p-3 border-0 focus:ring-0 sm:text-sm resize-y min-h-[100px]"
+                    className="block w-full p-3 border-0 focus:ring-0 sm:text-sm resize-y min-h-[100px] text-gray-900 placeholder:text-gray-400"
                     placeholder={placeholder || "Type here... Use the toolbar for math symbols."}
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
