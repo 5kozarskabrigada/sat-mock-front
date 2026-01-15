@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, ChangeEvent } from 'react'
+import { useState, ChangeEvent, useRef } from 'react'
 import { addQuestion } from './actions'
 
 const DOMAINS = {
@@ -23,7 +23,15 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [imageBase64, setImageBase64] = useState<string>('')
   const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
-  
+  const questionInputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Reset form state helper
+  const resetForm = () => {
+      setIsExpanded(false)
+      setImageBase64('')
+      if (questionInputRef.current) questionInputRef.current.value = ''
+  }
+
   if (!isExpanded) {
     return (
       <button
@@ -46,6 +54,33 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
     }
   }
 
+  const clearImage = () => {
+      setImageBase64('')
+      // Reset file input if possible, though React state is enough for the preview
+      const fileInput = document.getElementById('imageUpload') as HTMLInputElement
+      if (fileInput) fileInput.value = ''
+  }
+
+  const insertFormat = (tag: string) => {
+      const textarea = questionInputRef.current
+      if (!textarea) return
+
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const text = textarea.value
+      const before = text.substring(0, start)
+      const selection = text.substring(start, end)
+      const after = text.substring(end)
+
+      const newText = `${before}<${tag}>${selection}</${tag}>${after}`
+      textarea.value = newText
+      
+      // Restore selection
+      const newCursorPos = end + tag.length * 2 + 5 // <tag></tag> is length + 5
+      textarea.focus()
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+  }
+
   const handleSubmit = async (formData: FormData) => {
     if (imageBase64) {
         formData.set('imageUrl', imageBase64)
@@ -54,7 +89,7 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
     if (result?.error) {
       alert(result.error)
     } else {
-      setIsExpanded(false)
+      resetForm()
     }
   }
 
@@ -124,6 +159,7 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
                   <div className="flex items-center">
                     <span className="text-gray-500 text-sm mr-2">OR Upload:</span>
                     <input 
+                        id="imageUpload"
                         type="file" 
                         accept="image/*"
                         onChange={handleFileChange}
@@ -133,22 +169,44 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
               </div>
               <p className="mt-1 text-xs text-gray-500">Paste a link OR upload an image (it will be embedded directly).</p>
               {imageBase64 && (
-                  <div className="mt-2">
+                  <div className="mt-2 relative inline-block group">
                       <p className="text-xs text-green-600 font-semibold">Image selected ready for upload.</p>
                       <img src={imageBase64} alt="Preview" className="h-20 w-auto mt-1 border border-gray-200 rounded" />
+                      <button 
+                          type="button" 
+                          onClick={clearImage}
+                          className="absolute top-6 right-0 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove Image"
+                      >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
                   </div>
               )}
             </div>
 
             <div className="sm:col-span-6">
               <label htmlFor="passage" className="block text-sm font-medium text-gray-700">Passage (Optional)</label>
-              <textarea id="passage" name="passage" rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <textarea id="passage" name="passage" rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white" />
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="questionText" className="block text-sm font-medium text-gray-700">Question Text (Supports LaTeX e.g. \( x^2 \))</label>
-              <textarea id="questionText" name="questionText" rows={6} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
-              <p className="mt-1 text-xs text-gray-500">Press Enter to create a new line.</p>
+              <div className="flex justify-between items-center">
+                  <label htmlFor="questionText" className="block text-sm font-medium text-gray-700">Question Text</label>
+                  <div className="flex space-x-1">
+                      <button type="button" onClick={() => insertFormat('b')} className="px-2 py-0.5 text-xs font-bold border rounded hover:bg-gray-100" title="Bold">B</button>
+                      <button type="button" onClick={() => insertFormat('i')} className="px-2 py-0.5 text-xs italic border rounded hover:bg-gray-100" title="Italic">I</button>
+                      <button type="button" onClick={() => insertFormat('u')} className="px-2 py-0.5 text-xs underline border rounded hover:bg-gray-100" title="Underline">U</button>
+                  </div>
+              </div>
+              <textarea 
+                  id="questionText" 
+                  name="questionText" 
+                  ref={questionInputRef}
+                  rows={6} 
+                  required 
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white" 
+              />
+              <p className="mt-1 text-xs text-gray-500">Supports LaTeX (e.g. \( x^2 \)) and basic formatting.</p>
             </div>
 
             {/* Options */}

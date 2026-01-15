@@ -42,100 +42,74 @@ export default function ExamFooter({
   const isCurrentMarked = markedQuestions[currentQuestionId]
 
   return (
-    <footer 
-      className="flex items-center justify-between px-6 bg-[var(--sat-panel)] border-t border-[var(--sat-border)] z-20 relative select-none"
-      style={{ height: 'clamp(64px, 10vh, 80px)' }}
-    >
-      {/* Left: Back and Next Buttons */}
-      <div className="flex items-center space-x-3 w-1/4">
-        <button 
-          onClick={onBack}
-          disabled={currentQuestionIndex === 0}
-          className="px-6 py-2.5 rounded-[12px] border border-[var(--sat-primary)] text-[var(--sat-primary)] font-bold text-sm hover:bg-[var(--sat-primary-weak)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Back
-        </button>
-        <button 
-          onClick={onNext}
-          className="px-6 py-2.5 rounded-[12px] bg-[var(--sat-primary)] text-white font-bold text-sm hover:bg-blue-700 shadow-[var(--sat-shadow)] transition-colors"
-        >
-          Next
-        </button>
+    <>
+      {/* Dashed Line Decoration */}
+      <div className="h-[2px] w-full flex">
+          {Array.from({ length: 40 }).map((_, i) => (
+              <div key={i} className="flex-1 h-full flex">
+                  <div className="h-full w-1/4 bg-green-500"></div>
+                  <div className="h-full w-1/4 bg-red-500"></div>
+                  <div className="h-full w-1/4 bg-blue-500"></div>
+                  <div className="h-full w-1/4 bg-purple-500"></div>
+              </div>
+          ))}
       </div>
 
-      {/* Center: Question Navigation Strip */}
-      <div className="flex-1 flex justify-center mx-4 overflow-hidden">
-        <div 
-            ref={scrollContainerRef}
-            className="flex space-x-2 overflow-x-auto no-scrollbar max-w-full px-2 py-1 items-center"
-            style={{ scrollBehavior: 'smooth' }}
-        >
-            {questions.map((q, idx) => {
-                const isActive = idx === currentQuestionIndex
-                const isAnswered = answers[q.id] !== undefined && answers[q.id] !== ''
-                const isMarked = markedQuestions[q.id]
-                
-                return (
-                    <NavButton 
-                        key={q.id}
-                        index={idx}
-                        isActive={isActive}
-                        isAnswered={isAnswered}
-                        isMarked={isMarked}
-                        onClick={() => onNavigate(idx)}
-                    />
-                )
-            })}
+      <footer 
+        className="flex items-center justify-between px-6 bg-[var(--sat-panel)] z-20 relative select-none"
+        style={{ height: '72px' }}
+      >
+        {/* Left: User Info */}
+        <div className="flex items-center space-x-3 w-1/4">
+            <div className="font-bold text-[14px] text-[var(--sat-text)]">
+                {studentName}
+            </div>
         </div>
-      </div>
 
-      {/* Right: Mark for Review + Submit */}
-      <div className="flex items-center justify-end space-x-4 w-1/4">
-         <button 
-            onClick={onToggleMark}
-            className={`flex items-center space-x-2 font-medium text-sm transition-colors group ${isCurrentMarked ? 'text-[var(--sat-text)]' : 'text-[var(--sat-muted)] hover:text-[var(--sat-text)]'}`}
-         >
-             <div className="relative">
-                 <svg xmlns="http://www.w3.org/2000/svg" fill={isCurrentMarked ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 ${isCurrentMarked ? 'text-[var(--sat-red)]' : 'group-hover:text-[var(--sat-red)]'}`}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
-                 </svg>
-             </div>
-             <span className={isCurrentMarked ? 'text-[var(--sat-text)] font-bold' : ''}>Mark for Review</span>
-         </button>
+        {/* Center: Question Navigation Pill */}
+        <div className="flex-1 flex justify-center">
+            <button 
+                onClick={() => {}} // Could trigger dropdown
+                className="bg-black text-white px-4 py-1.5 rounded-full text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
+            >
+                <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                </svg>
+            </button>
+        </div>
 
-         {(currentQuestionIndex === questions.length - 1) && (
+        {/* Right: Back/Next Buttons */}
+        <div className="flex items-center justify-end space-x-3 w-1/4">
+          <button 
+            onClick={onBack}
+            disabled={currentQuestionIndex === 0}
+            className="px-6 py-1.5 rounded-[4px] bg-[var(--sat-primary)] text-white font-bold text-[14px] hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+          >
+            Back
+          </button>
+          {currentQuestionIndex === questions.length - 1 ? (
              <button 
                 onClick={onSubmit}
-                className="px-4 py-2 rounded-[12px] border border-[var(--sat-border)] text-[var(--sat-text)] font-medium text-sm hover:bg-[var(--sat-bg)] transition-colors"
+                className="px-6 py-1.5 rounded-[4px] bg-[var(--sat-primary)] text-white font-bold text-[14px] hover:bg-blue-700 transition-colors min-w-[80px]"
              >
                  Submit
              </button>
-         )}
-      </div>
-    </footer>
+          ) : (
+              <button 
+                onClick={onNext}
+                className="px-6 py-1.5 rounded-[4px] bg-[var(--sat-primary)] text-white font-bold text-[14px] hover:bg-blue-700 transition-colors min-w-[80px]"
+              >
+                Next
+              </button>
+          )}
+        </div>
+      </footer>
+    </>
   )
 }
 
 function NavButton({ index, isActive, isAnswered, isMarked, onClick }: any) {
-    return (
-        <button
-            onClick={onClick}
-            className={`
-                relative flex items-center justify-center w-8 h-8 rounded-[4px] text-sm font-bold transition-all flex-shrink-0
-                ${isActive 
-                    ? 'bg-[var(--sat-text)] text-white' 
-                    : 'bg-transparent text-[var(--sat-text)] border border-[var(--sat-border)] hover:bg-[var(--sat-bg)]'
-                }
-            `}
-        >
-            {index + 1}
-            {/* Indicators */}
-            {isMarked && (
-                <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-[var(--sat-red)] rounded-full"></div>
-            )}
-            {isAnswered && !isActive && (
-                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-[var(--sat-text)] rounded-full"></div>
-            )}
-        </button>
-    )
+    // Note: This is no longer used in the main footer view but could be used in the "More" dropdown
+    return null
 }

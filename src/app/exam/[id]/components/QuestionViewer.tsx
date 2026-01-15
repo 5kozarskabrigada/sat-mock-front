@@ -12,6 +12,33 @@ const Latex = ({ children }: { children: string }) => {
     const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g;
     const parts = children.split(regex);
 
+    const renderText = (text: string) => {
+        // Parse HTML tags for Bold, Italic, Underline
+        // We use a simple regex approach since we only support B, I, U
+        const htmlRegex = /(<b>[\s\S]*?<\/b>|<i>[\s\S]*?<\/i>|<u>[\s\S]*?<\/u>)/g
+        const segments = text.split(htmlRegex)
+
+        return segments.map((seg, i) => {
+            if (seg.startsWith('<b>') && seg.endsWith('</b>')) {
+                return <b key={i}>{seg.slice(3, -4)}</b>
+            }
+            if (seg.startsWith('<i>') && seg.endsWith('</i>')) {
+                return <i key={i}>{seg.slice(3, -4)}</i>
+            }
+            if (seg.startsWith('<u>') && seg.endsWith('</u>')) {
+                return <u key={i}>{seg.slice(3, -4)}</u>
+            }
+            
+            // Handle line breaks
+            return seg.split('\n').map((line, j) => (
+                <span key={`${i}-${j}`}>
+                    {line}
+                    {j < seg.split('\n').length - 1 && <br />}
+                </span>
+            ))
+        })
+    }
+
     return (
         <span>
             {parts.map((part, index) => {
@@ -24,16 +51,7 @@ const Latex = ({ children }: { children: string }) => {
                 } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
                     return <InlineMath key={index} math={part.slice(2, -2)} />;
                 } else {
-                    return (
-                        <span key={index}>
-                            {part.split('\n').map((subPart, subIndex) => (
-                                <span key={subIndex}>
-                                    {subPart}
-                                    {subIndex < part.split('\n').length - 1 && <br />}
-                                </span>
-                            ))}
-                        </span>
-                    );
+                    return <span key={index}>{renderText(part)}</span>;
                 }
             })}
         </span>
@@ -418,20 +436,57 @@ function QuestionContent({
                         )
                     })
                 ) : (
-                    <div className="bg-white p-6 rounded-lg border border-[var(--sat-border)] shadow-sm">
-                        <label className="block text-sm font-medium text-[var(--sat-text)] mb-2 font-sans">
-                            Student-Produced Response
-                        </label>
-                        <input
-                            type="text"
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            className="w-full p-3 border border-[var(--sat-border)] rounded-md font-serif text-xl focus:border-[var(--sat-primary)] focus:ring-1 focus:ring-[var(--sat-primary)] outline-none placeholder-[var(--sat-muted)] text-[var(--sat-text)]"
-                            placeholder="Enter answer"
-                        />
-                        <p className="mt-2 text-xs text-[var(--sat-muted)]">
-                            Acceptable formats: integers, decimals (e.g., 3.5), fractions (e.g., 2/3).
-                        </p>
+                    <div className="flex h-full w-full gap-8">
+                        {/* Directions Side */}
+                        <div className="w-1/2 p-6 border-r border-[var(--sat-border)] overflow-y-auto">
+                            <h3 className="font-bold mb-4 text-[var(--sat-text)]">Student-Produced Response Directions</h3>
+                            <ul className="list-disc pl-5 space-y-2 text-sm text-[var(--sat-text)] mb-6">
+                                <li>If you find more than one correct answer, enter only one answer.</li>
+                                <li>You can enter up to 5 characters for a positive answer and up to 6 characters (including the negative sign) for a negative answer.</li>
+                                <li>If your answer is a fraction that doesn’t fit in the provided space, enter the decimal equivalent.</li>
+                                <li>If your answer is a decimal that doesn’t fit in the provided space, enter it by truncating or rounding at the fourth digit.</li>
+                                <li>If your answer is a mixed number (such as 3½), enter it as an improper fraction (7/2) or its decimal equivalent (3.5).</li>
+                                <li>Don’t enter symbols such as a percent sign, comma, or dollar sign.</li>
+                            </ul>
+                            
+                            <h4 className="font-bold mb-3 text-[var(--sat-text)]">Examples</h4>
+                            <div className="border border-[var(--sat-border)] text-sm">
+                                <div className="grid grid-cols-3 border-b border-[var(--sat-border)] bg-[var(--sat-bg)] font-bold p-2">
+                                    <div>Answer</div>
+                                    <div>Acceptable ways to enter answer</div>
+                                    <div>Unacceptable: will NOT receive credit</div>
+                                </div>
+                                <div className="grid grid-cols-3 border-b border-[var(--sat-border)] p-2">
+                                    <div>3.5</div>
+                                    <div>3.5, 3.50, 7/2</div>
+                                    <div>3½, 3 1/2</div>
+                                </div>
+                                <div className="grid grid-cols-3 border-b border-[var(--sat-border)] p-2">
+                                    <div>2/3</div>
+                                    <div>2/3, .6666, .6667, .666, .667</div>
+                                    <div>0.66, .66, 0.67, .67</div>
+                                </div>
+                                <div className="grid grid-cols-3 p-2">
+                                    <div>-1/3</div>
+                                    <div>-1/3, -.3333, -0.333</div>
+                                    <div>-.33, -0.33</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Question Side */}
+                        <div className="w-1/2 p-6 flex flex-col justify-center">
+                            <label className="block text-sm font-medium text-[var(--sat-text)] mb-4 font-sans">
+                                Enter your answer
+                            </label>
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                className="w-full p-4 border border-[var(--sat-border)] rounded-lg font-serif text-xl focus:border-[var(--sat-primary)] focus:ring-1 focus:ring-[var(--sat-primary)] outline-none placeholder-[var(--sat-muted)] text-[var(--sat-text)]"
+                                placeholder="Enter your answer (e.g., 5.566, -5.566, 2/3, -2/3)"
+                            />
+                        </div>
                     </div>
                 )}
             </div>
