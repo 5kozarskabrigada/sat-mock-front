@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { updateQuestion, deleteQuestion } from '../../actions'
 import ConfirmationModal from '@/components/confirmation-modal'
+import RichTextEditor from '@/components/ui/rich-text-editor'
 
 // Helper component for file upload
 function ImageUploader({ defaultUrl }: { defaultUrl: string }) {
@@ -198,8 +199,13 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="passage" className="block text-sm font-medium text-gray-700">Passage (Optional)</label>
-              <textarea id="passage" name="passage" rows={3} defaultValue={question.content.passage} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <RichTextEditor
+                id="passage"
+                name="passage"
+                label="Passage (Optional)"
+                defaultValue={question.content.passage}
+                rows={3}
+              />
             </div>
 
             <div className="sm:col-span-6">
@@ -207,8 +213,14 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="questionText" className="block text-sm font-medium text-gray-700">Question Text (Supports LaTeX e.g. \( x^2 \))</label>
-              <textarea id="questionText" name="questionText" rows={3} defaultValue={question.content.question} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <RichTextEditor
+                id="questionText"
+                name="questionText"
+                label="Question Text"
+                defaultValue={question.content.question}
+                rows={6}
+                required
+              />
             </div>
 
             <div className="sm:col-span-6">
@@ -216,14 +228,13 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {['A', 'B', 'C', 'D'].map((opt) => (
                         <div key={opt}>
-                            <label htmlFor={`option${opt}`} className="block text-xs font-medium text-gray-500">Option {opt}</label>
-                            <textarea 
+                            <RichTextEditor 
                                 id={`option${opt}`} 
                                 name={`option${opt}`} 
+                                label={`Option ${opt}`}
                                 rows={2} 
                                 defaultValue={question.content.options[opt]}
                                 required 
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" 
                             />
                         </div>
                     ))}
@@ -241,8 +252,13 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="explanation" className="block text-sm font-medium text-gray-700">Explanation (Optional)</label>
-              <textarea id="explanation" name="explanation" rows={3} defaultValue={question.explanation} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <RichTextEditor
+                id="explanation"
+                name="explanation"
+                label="Explanation (Optional)"
+                defaultValue={question.explanation}
+                rows={3}
+              />
             </div>
           </div>
           

@@ -3,6 +3,7 @@
 
 import { useState, ChangeEvent, useRef } from 'react'
 import { addQuestion } from './actions'
+import RichTextEditor from '@/components/ui/rich-text-editor'
 
 const DOMAINS = {
   math: [
@@ -185,46 +186,41 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="passage" className="block text-sm font-medium text-gray-700">Passage (Optional)</label>
-              <textarea id="passage" name="passage" rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white" />
+              <RichTextEditor
+                id="passage"
+                name="passage"
+                label="Passage (Optional)"
+                rows={3}
+              />
             </div>
 
             <div className="sm:col-span-6">
-              <div className="flex justify-between items-center">
-                  <label htmlFor="questionText" className="block text-sm font-medium text-gray-700">Question Text</label>
-                  <div className="flex space-x-1">
-                      <button type="button" onClick={() => insertFormat('b')} className="px-2 py-0.5 text-xs font-bold border rounded hover:bg-gray-100" title="Bold">B</button>
-                      <button type="button" onClick={() => insertFormat('i')} className="px-2 py-0.5 text-xs italic border rounded hover:bg-gray-100" title="Italic">I</button>
-                      <button type="button" onClick={() => insertFormat('u')} className="px-2 py-0.5 text-xs underline border rounded hover:bg-gray-100" title="Underline">U</button>
-                  </div>
-              </div>
-              <textarea 
-                  id="questionText" 
-                  name="questionText" 
-                  ref={questionInputRef}
-                  rows={6} 
-                  required 
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white" 
+              <RichTextEditor
+                id="questionText"
+                name="questionText"
+                label="Question Text"
+                rows={6}
+                required
               />
-              <p className="mt-1 text-xs text-gray-500">Supports LaTeX (e.g. \( x^2 \)) and basic formatting.</p>
             </div>
 
             {/* Options */}
-            <div className="sm:col-span-3">
-              <label htmlFor="optionA" className="block text-sm font-medium text-gray-700">Option A</label>
-              <textarea name="optionA" id="optionA" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
-            </div>
-            <div className="sm:col-span-3">
-              <label htmlFor="optionB" className="block text-sm font-medium text-gray-700">Option B</label>
-              <textarea name="optionB" id="optionB" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
-            </div>
-            <div className="sm:col-span-3">
-              <label htmlFor="optionC" className="block text-sm font-medium text-gray-700">Option C</label>
-              <textarea name="optionC" id="optionC" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
-            </div>
-            <div className="sm:col-span-3">
-              <label htmlFor="optionD" className="block text-sm font-medium text-gray-700">Option D</label>
-              <textarea name="optionD" id="optionD" required rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+            <div className="sm:col-span-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-1">
+                        <RichTextEditor id="optionA" name="optionA" label="Option A" required rows={2} />
+                    </div>
+                    <div className="sm:col-span-1">
+                        <RichTextEditor id="optionB" name="optionB" label="Option B" required rows={2} />
+                    </div>
+                    <div className="sm:col-span-1">
+                        <RichTextEditor id="optionC" name="optionC" label="Option C" required rows={2} />
+                    </div>
+                    <div className="sm:col-span-1">
+                        <RichTextEditor id="optionD" name="optionD" label="Option D" required rows={2} />
+                    </div>
+                </div>
             </div>
 
             <div className="sm:col-span-6">
@@ -238,8 +234,12 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="explanation" className="block text-sm font-medium text-gray-700">Explanation (Optional)</label>
-              <textarea id="explanation" name="explanation" rows={2} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black" />
+              <RichTextEditor
+                id="explanation"
+                name="explanation"
+                label="Explanation (Optional)"
+                rows={2}
+              />
             </div>
           </div>
 
