@@ -24,12 +24,14 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [imageBase64, setImageBase64] = useState<string>('')
   const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
+  const [questionType, setQuestionType] = useState<string>('multiple_choice')
   const questionInputRef = useRef<HTMLTextAreaElement>(null)
 
   // Reset form state helper
   const resetForm = () => {
       setIsExpanded(false)
       setImageBase64('')
+      setQuestionType('multiple_choice')
       if (questionInputRef.current) questionInputRef.current.value = ''
   }
 
@@ -122,6 +124,25 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
               </select>
             </div>
 
+            {selectedSection === 'math' && (
+                <div className="sm:col-span-3">
+                    <label htmlFor="questionType" className="block text-sm font-medium text-gray-700">Question Type</label>
+                    <select 
+                        id="questionType" 
+                        name="questionType" 
+                        value={questionType}
+                        onChange={(e) => setQuestionType(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                    >
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="spr">Student-Produced Response</option>
+                    </select>
+                </div>
+            )}
+            
+            {/* Hidden input for non-math sections which default to MC */}
+            {selectedSection !== 'math' && <input type="hidden" name="questionType" value="multiple_choice" />}
+
             <div className="sm:col-span-3">
               <label htmlFor="module" className="block text-sm font-medium text-gray-700">Module</label>
               <select id="module" name="module" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
@@ -185,14 +206,17 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
               )}
             </div>
 
-            <div className="sm:col-span-6">
-              <RichTextEditor
-                id="passage"
-                name="passage"
-                label="Passage (Optional)"
-                rows={3}
-              />
-            </div>
+            {/* Passage - Only for Reading & Writing sections */}
+            {selectedSection === 'reading_writing' && (
+                <div className="sm:col-span-6">
+                  <RichTextEditor
+                    id="passage"
+                    name="passage"
+                    label="Passage"
+                    rows={3}
+                  />
+                </div>
+            )}
 
             <div className="sm:col-span-6">
               <RichTextEditor
@@ -204,34 +228,55 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
               />
             </div>
 
-            {/* Options */}
-            <div className="sm:col-span-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
-                        <RichTextEditor id="optionA" name="optionA" label="Option A" required rows={2} />
+            {/* Options or Direct Answer based on type */}
+            {questionType === 'multiple_choice' ? (
+                <>
+                    <div className="sm:col-span-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="sm:col-span-1">
+                                <RichTextEditor id="optionA" name="optionA" label="Option A" required rows={2} />
+                            </div>
+                            <div className="sm:col-span-1">
+                                <RichTextEditor id="optionB" name="optionB" label="Option B" required rows={2} />
+                            </div>
+                            <div className="sm:col-span-1">
+                                <RichTextEditor id="optionC" name="optionC" label="Option C" required rows={2} />
+                            </div>
+                            <div className="sm:col-span-1">
+                                <RichTextEditor id="optionD" name="optionD" label="Option D" required rows={2} />
+                            </div>
+                        </div>
                     </div>
-                    <div className="sm:col-span-1">
-                        <RichTextEditor id="optionB" name="optionB" label="Option B" required rows={2} />
+
+                    <div className="sm:col-span-6">
+                      <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
+                      <select id="correctAnswer" name="correctAnswer" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                      </select>
                     </div>
-                    <div className="sm:col-span-1">
-                        <RichTextEditor id="optionC" name="optionC" label="Option C" required rows={2} />
-                    </div>
-                    <div className="sm:col-span-1">
-                        <RichTextEditor id="optionD" name="optionD" label="Option D" required rows={2} />
+                </>
+            ) : (
+                <div className="sm:col-span-6">
+                    <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
+                    <div className="mt-1">
+                        <input
+                            type="text"
+                            name="correctAnswer"
+                            id="correctAnswer"
+                            required
+                            placeholder="e.g. 3.5, 1/2, or 25"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                            Enter the exact value students must type. For multiple valid answers, create separate questions or use explanation to note it (system currently supports single string match).
+                        </p>
                     </div>
                 </div>
-            </div>
-
-            <div className="sm:col-span-6">
-              <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
-              <select id="correctAnswer" name="correctAnswer" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
-                <option value="A">Option A</option>
-                <option value="B">Option B</option>
-                <option value="C">Option C</option>
-                <option value="D">Option D</option>
-              </select>
-            </div>
+            )}
 
             <div className="sm:col-span-6">
               <RichTextEditor

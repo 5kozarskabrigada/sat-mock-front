@@ -147,6 +147,9 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
   const [state, formAction] = useFormState(updateQuestionWithId, null)
   const [selectedSection, setSelectedSection] = useState<string>(question.section)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [questionType, setQuestionType] = useState<string>(
+      question.content.options && question.content.options.A ? 'multiple_choice' : 'spr'
+  )
 
   const handleDelete = async () => {
     await deleteQuestion(question.id, examId)
@@ -171,6 +174,26 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
                 <option value="math">Math</option>
               </select>
             </div>
+
+            {selectedSection === 'math' && (
+                <div className="sm:col-span-3">
+                    <label htmlFor="questionType" className="block text-sm font-medium text-gray-700">Question Type</label>
+                    <select 
+                        id="questionType" 
+                        name="questionType" 
+                        value={questionType}
+                        onChange={(e) => setQuestionType(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                    >
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="spr">Student-Produced Response</option>
+                    </select>
+                </div>
+            )}
+            
+            {/* Hidden input for non-math sections which default to MC */}
+            {selectedSection !== 'math' && <input type="hidden" name="questionType" value="multiple_choice" />}
+            {selectedSection === 'math' && <input type="hidden" name="questionType" value={questionType} />}
 
             <div className="sm:col-span-3">
               <label htmlFor="module" className="block text-sm font-medium text-gray-700">Module</label>
@@ -198,15 +221,18 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
                </select>
             </div>
 
-            <div className="sm:col-span-6">
-              <RichTextEditor
-                id="passage"
-                name="passage"
-                label="Passage (Optional)"
-                defaultValue={question.content.passage}
-                rows={3}
-              />
-            </div>
+            {/* Passage - Only for Reading & Writing sections */}
+            {selectedSection === 'reading_writing' && (
+                <div className="sm:col-span-6">
+                  <RichTextEditor
+                    id="passage"
+                    name="passage"
+                    label="Passage"
+                    defaultValue={question.content.passage}
+                    rows={3}
+                  />
+                </div>
+            )}
 
             <div className="sm:col-span-6">
               <ImageUploader defaultUrl={question.content.image_url} />
@@ -223,33 +249,56 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
               />
             </div>
 
-            <div className="sm:col-span-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {['A', 'B', 'C', 'D'].map((opt) => (
-                        <div key={opt}>
-                            <RichTextEditor 
-                                id={`option${opt}`} 
-                                name={`option${opt}`} 
-                                label={`Option ${opt}`}
-                                rows={2} 
-                                defaultValue={question.content.options[opt]}
-                                required 
-                            />
+            {/* Options or Direct Answer based on type */}
+            {questionType === 'multiple_choice' ? (
+                <>
+                    <div className="sm:col-span-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            {['A', 'B', 'C', 'D'].map((opt) => (
+                                <div key={opt}>
+                                    <RichTextEditor 
+                                        id={`option${opt}`} 
+                                        name={`option${opt}`} 
+                                        label={`Option ${opt}`}
+                                        rows={2} 
+                                        defaultValue={question.content.options ? question.content.options[opt] : ''}
+                                        required 
+                                    />
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
 
-            <div className="sm:col-span-6">
-              <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
-              <select id="correctAnswer" name="correctAnswer" defaultValue={question.correct_answer} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
-                <option value="A">Option A</option>
-                <option value="B">Option B</option>
-                <option value="C">Option C</option>
-                <option value="D">Option D</option>
-              </select>
-            </div>
+                    <div className="sm:col-span-6">
+                      <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
+                      <select id="correctAnswer" name="correctAnswer" defaultValue={question.correct_answer} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                      </select>
+                    </div>
+                </>
+            ) : (
+                <div className="sm:col-span-6">
+                    <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
+                    <div className="mt-1">
+                        <input
+                            type="text"
+                            name="correctAnswer"
+                            id="correctAnswer"
+                            required
+                            defaultValue={question.correct_answer}
+                            placeholder="e.g. 3.5, 1/2, or 25"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                            Enter the exact value students must type.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="sm:col-span-6">
               <RichTextEditor

@@ -20,17 +20,23 @@ export async function addQuestion(examId: string, formData: FormData) {
   const explanation = formData.get('explanation') as string
   const domain = formData.get('domain') as string
   const imageUrl = formData.get('imageUrl') as string
+  const questionType = formData.get('questionType') as string
+
+  let options = {}
+  if (questionType !== 'spr') {
+      options = {
+          A: formData.get('optionA') as string,
+          B: formData.get('optionB') as string,
+          C: formData.get('optionC') as string,
+          D: formData.get('optionD') as string
+      }
+  }
 
   const content = {
     question: questionText,
     passage: passage || null,
     image_url: imageUrl || null,
-    options: {
-      A: optionA,
-      B: optionB,
-      C: optionC,
-      D: optionD
-    }
+    options: Object.keys(options).length > 0 ? options : null
   }
 
   const { error } = await supabase
@@ -70,17 +76,23 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
   const explanation = formData.get('explanation') as string
   const domain = formData.get('domain') as string
   const imageUrl = formData.get('imageUrl') as string
+  const questionType = formData.get('questionType') as string
+
+  let options = {}
+  if (questionType !== 'spr') {
+      options = {
+          A: formData.get('optionA') as string,
+          B: formData.get('optionB') as string,
+          C: formData.get('optionC') as string,
+          D: formData.get('optionD') as string
+      }
+  }
 
   const content = {
     question: questionText,
     passage: passage || null,
     image_url: imageUrl || null,
-    options: {
-      A: optionA,
-      B: optionB,
-      C: optionC,
-      D: optionD
-    }
+    options: Object.keys(options).length > 0 ? options : null
   }
 
   const { error } = await supabase
