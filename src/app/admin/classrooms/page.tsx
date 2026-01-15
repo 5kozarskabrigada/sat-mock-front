@@ -1,7 +1,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import CreateClassroomForm from './create-classroom-form'
+import CreateClassroomModal from './create-classroom-modal'
 import DeleteClassroomButton from './delete-classroom-button'
 
 export default async function ClassroomsPage() {
@@ -13,54 +13,60 @@ export default async function ClassroomsPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Classroom Management</h1>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Classroom Management</h1>
+          <p className="mt-1 text-sm text-gray-500">Create groups and assign students.</p>
+        </div>
+        <CreateClassroomModal />
       </div>
       
-      <CreateClassroomForm />
-
-      <div className="bg-white shadow sm:rounded-lg overflow-hidden border border-gray-200">
-        <div className="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">All Classrooms</h3>
-        </div>
-        <ul role="list" className="divide-y divide-gray-200">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {classrooms?.length === 0 ? (
-            <li className="px-4 py-8 text-center text-gray-500">No classrooms found. Create one to get started.</li>
+            <div className="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-gray-300">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No classrooms</h3>
+                <p className="mt-1 text-sm text-gray-500">Get started by creating a new classroom.</p>
+            </div>
           ) : (
             classrooms?.map((classroom) => (
-              <li key={classroom.id} className="hover:bg-gray-50">
-                <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                      <Link href={`/admin/classrooms/${classroom.id}`} className="block focus:outline-none">
-                        <div className="flex items-center justify-between">
-                            <p className="text-lg font-medium text-indigo-600 truncate">{classroom.name}</p>
-                            <div className="ml-2 flex-shrink-0 flex">
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+              <div 
+                key={classroom.id} 
+                className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md group"
+              >
+                <Link href={`/admin/classrooms/${classroom.id}`} className="flex-1 p-6 flex flex-col justify-between hover:bg-gray-50/50">
+                    <div>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                                 {classroom.student_classrooms[0].count} Students
-                                </span>
-                            </div>
+                            </span>
                         </div>
-                        <div className="mt-2 sm:flex sm:justify-between">
-                            <div className="sm:flex">
-                                <p className="flex items-center text-sm text-gray-500">
-                                {classroom.description || 'No description'}
-                                </p>
-                            </div>
-                            <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                <p>Created {new Date(classroom.created_at).toLocaleDateString()}</p>
-                            </div>
-                        </div>
-                      </Link>
-                  </div>
-                  <div className="ml-5 flex-shrink-0">
-                      <DeleteClassroomButton classroomId={classroom.id} />
-                  </div>
+                        <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                            {classroom.name}
+                        </h3>
+                        <p className="mt-2 text-sm text-gray-500 line-clamp-2 min-h-[40px]">
+                            {classroom.description || 'No description provided.'}
+                        </p>
+                    </div>
+                </Link>
+                
+                <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                        Created {new Date(classroom.created_at).toLocaleDateString()}
+                    </span>
+                    <DeleteClassroomButton classroomId={classroom.id} />
                 </div>
-              </li>
+              </div>
             ))
           )}
-        </ul>
       </div>
     </div>
   )
