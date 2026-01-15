@@ -19,13 +19,17 @@
   --sat-red-weak: #FEE2E2;
   --sat-focus: #2563EB;
   --sat-success: #16A34A;
+
+  --font-serif-family: "Minion Pro", "Times New Roman", Times, serif;
+  --font-sans-family: "Myriad Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans-family);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif-family);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,5 +42,13 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  font-family: var(--font-sans-family);
+}
+
+.font-serif {
+  font-family: var(--font-serif-family);
+}
+
+.font-sans {
+  font-family: var(--font-sans-family);
 }

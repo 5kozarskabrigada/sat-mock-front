@@ -4,56 +4,46 @@
 import { useState, useEffect, useRef } from 'react'
 import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
+import parse from 'html-react-parser'
 
 const Latex = ({ children }: { children: string }) => {
     if (!children) return null;
     
-    // Split by delimiters: $$...$$, $...$, \[...\], \(...\)
-    const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g;
-    const parts = children.split(regex);
-
-    const renderText = (text: string) => {
-        // Parse HTML tags for Bold, Italic, Underline
-        // We use a simple regex approach since we only support B, I, U
-        const htmlRegex = /(<b>[\s\S]*?<\/b>|<i>[\s\S]*?<\/i>|<u>[\s\S]*?<\/u>)/g
-        const segments = text.split(htmlRegex)
-
-        return segments.map((seg, i) => {
-            if (seg.startsWith('<b>') && seg.endsWith('</b>')) {
-                return <b key={i}>{seg.slice(3, -4)}</b>
+    // If content contains standard LaTeX delimiters, we try to parse them
+    // Note: This simple parser handles LaTeX mixed with HTML from Tiptap
+    const options = {
+        replace: (domNode: any) => {
+            if (domNode.type === 'text') {
+                const text = domNode.data
+                const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g
+                const parts = text.split(regex)
+                
+                if (parts.length > 1) {
+                    return (
+                        <>
+                            {parts.map((part: string, index: number) => {
+                                if (part.startsWith('$$') && part.endsWith('$$')) {
+                                    return <BlockMath key={index} math={part.slice(2, -2)} />
+                                } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
+                                    return <BlockMath key={index} math={part.slice(2, -2)} />
+                                } else if (part.startsWith('$') && part.endsWith('$')) {
+                                    return <InlineMath key={index} math={part.slice(1, -1)} />
+                                } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
+                                    return <InlineMath key={index} math={part.slice(2, -2)} />
+                                } else {
+                                    return <span key={index}>{part}</span>
+                                }
+                            })}
+                        </>
+                    )
+                }
             }
-            if (seg.startsWith('<i>') && seg.endsWith('</i>')) {
-                return <i key={i}>{seg.slice(3, -4)}</i>
-            }
-            if (seg.startsWith('<u>') && seg.endsWith('</u>')) {
-                return <u key={i}>{seg.slice(3, -4)}</u>
-            }
-            
-            // Handle line breaks
-            return seg.split('\n').map((line, j) => (
-                <span key={`${i}-${j}`}>
-                    {line}
-                    {j < seg.split('\n').length - 1 && <br />}
-                </span>
-            ))
-        })
+        }
     }
 
     return (
-        <span>
-            {parts.map((part, index) => {
-                if (part.startsWith('$$') && part.endsWith('$$')) {
-                    return <BlockMath key={index} math={part.slice(2, -2)} />;
-                } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
-                    return <BlockMath key={index} math={part.slice(2, -2)} />;
-                } else if (part.startsWith('$') && part.endsWith('$')) {
-                    return <InlineMath key={index} math={part.slice(1, -1)} />;
-                } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
-                    return <InlineMath key={index} math={part.slice(2, -2)} />;
-                } else {
-                    return <span key={index}>{renderText(part)}</span>;
-                }
-            })}
+        <span className="prose prose-lg max-w-none text-[var(--sat-text)]">
+            {parse(children, options)}
         </span>
     );
 };
