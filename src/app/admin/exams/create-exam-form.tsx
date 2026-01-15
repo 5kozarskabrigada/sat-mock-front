@@ -30,42 +30,42 @@ export default function CreateExamForm() {
   }, [state, router])
   
   return (
-    <div className="h-full flex flex-col justify-center items-center">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Create New Exam</h3>
-        <p className="text-sm text-gray-500 mb-6 max-w-sm">
-          Set up a new mock exam or practice set to get started.
+    <div className="w-full">
+        <h3 className="text-lg font-medium leading-6 text-gray-900 mb-2 text-center">Create New Exam</h3>
+        <p className="text-sm text-gray-500 mb-6 text-center">
+          Set up a new mock exam or practice set.
         </p>
       
-        <form action={formAction} className="w-full max-w-xs space-y-4">
+        <form action={formAction} className="space-y-4">
           <div>
-              <label htmlFor="title" className="sr-only">Exam Title</label>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700">Exam Title</label>
               <input
                 type="text"
                 name="title"
                 id="title"
                 required
-                placeholder="Exam Title (e.g. Mock #1)"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
+                placeholder="e.g. SAT Mock #1"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
               />
           </div>
 
           <div>
-              <label htmlFor="description" className="sr-only">Description</label>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
               <textarea
                 id="description"
                 name="description"
-                rows={2}
-                placeholder="Description (optional)"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
+                rows={3}
+                placeholder="Optional description..."
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
               />
           </div>
 
           <div>
-              <label htmlFor="type" className="sr-only">Type</label>
+              <label htmlFor="type" className="block text-sm font-medium text-gray-700">Exam Type</label>
               <select
                 id="type"
                 name="type"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white text-black"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white text-black"
               >
                 <option value="mock">Full Mock Exam</option>
                 <option value="practice">Practice Set</option>
@@ -73,15 +73,18 @@ export default function CreateExamForm() {
           </div>
 
           {state?.error && (
-            <div className="text-xs text-red-600">
-              {state.error}
+            <div className="rounded-md bg-red-50 p-2">
+                <div className="text-sm text-red-700">{state.error}</div>
             </div>
           )}
 
           <div className="pt-2">
-              <div className="flex justify-center">
-                <SubmitButton />
-              </div>
+             <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+             >
+                Create Exam
+             </button>
           </div>
         </form>
     </div>

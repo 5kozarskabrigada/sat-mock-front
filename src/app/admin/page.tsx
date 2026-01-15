@@ -5,10 +5,12 @@ import Link from 'next/link'
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  // Fetch stats in parallel
-  const [studentsResult, examsResult] = await Promise.all([
+  // Fetch stats and recent activity in parallel
+  const [studentsResult, examsResult, recentStudents, recentExams] = await Promise.all([
     supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'student'),
-    supabase.from('exams').select('id', { count: 'exact', head: true }).eq('status', 'active').is('deleted_at', null)
+    supabase.from('exams').select('id', { count: 'exact', head: true }).eq('status', 'active').is('deleted_at', null),
+    supabase.from('users').select('*').eq('role', 'student').order('created_at', { ascending: false }).limit(5),
+    supabase.from('exams').select('*').is('deleted_at', null).order('created_at', { ascending: false }).limit(5)
   ])
 
   const studentCount = studentsResult.count || 0
@@ -85,23 +87,82 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
-      {/* Recent Activity Section Placeholder */}
-      <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Links</h2>
-        <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden divide-y divide-gray-200">
-           <div className="p-4 hover:bg-gray-50 transition-colors">
-              <Link href="/admin/students" className="flex items-center space-x-3">
-                 <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">Students</span>
-                 <span className="text-gray-600 text-sm">Manage student accounts and credentials</span>
-              </Link>
-           </div>
-           <div className="p-4 hover:bg-gray-50 transition-colors">
-              <Link href="/admin/exams" className="flex items-center space-x-3">
-                 <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-0.5 rounded">Exams</span>
-                 <span className="text-gray-600 text-sm">Edit questions and manage exam availability</span>
-              </Link>
-           </div>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Students */}
+          <div>
+              <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-medium text-gray-900">Recent Students</h2>
+                  <Link href="/admin/students" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
+              </div>
+              <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
+                  <ul role="list" className="divide-y divide-gray-200">
+                      {recentStudents?.data?.map((student: any) => (
+                          <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
+                              <div className="flex items-center space-x-3">
+                                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                                      {student.first_name?.[0]}{student.last_name?.[0]}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium text-gray-900 truncate">
+                                          {student.first_name} {student.last_name}
+                                      </p>
+                                      <p className="text-xs text-gray-500 truncate">{student.email}</p>
+                                  </div>
+                                  <div className="flex-shrink-0 text-xs text-gray-400">
+                                      {new Date(student.created_at).toLocaleDateString()}
+                                  </div>
+                              </div>
+                          </li>
+                      ))}
+                      {(!recentStudents?.data || recentStudents.data.length === 0) && (
+                          <li className="p-4 text-center text-sm text-gray-500">No recent students</li>
+                      )}
+                  </ul>
+              </div>
+          </div>
+
+          {/* Recent Exams */}
+          <div>
+              <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-medium text-gray-900">Recent Exams</h2>
+                  <Link href="/admin/exams" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
+              </div>
+              <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
+                  <ul role="list" className="divide-y divide-gray-200">
+                      {recentExams?.data?.map((exam: any) => (
+                          <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
+                              <Link href={`/admin/exams/${exam.id}`} className="block group">
+                                  <div className="flex items-center justify-between">
+                                      <div className="min-w-0 flex-1">
+                                          <p className="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                              {exam.title}
+                                          </p>
+                                          <div className="flex items-center mt-1 space-x-2">
+                                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
+                                                  exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                              }`}>
+                                                  {exam.status}
+                                              </span>
+                                              <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 rounded">
+                                                  {exam.code}
+                                              </span>
+                                          </div>
+                                      </div>
+                                      <div className="flex-shrink-0">
+                                          <svg className="h-5 w-5 text-gray-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                          </svg>
+                                      </div>
+                                  </div>
+                              </Link>
+                          </li>
+                      ))}
+                      {(!recentExams?.data || recentExams.data.length === 0) && (
+                          <li className="p-4 text-center text-sm text-gray-500">No recent exams</li>
+                      )}
+                  </ul>
+              </div>
+          </div>
       </div>
     </div>
   )
