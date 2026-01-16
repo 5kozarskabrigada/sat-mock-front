@@ -49,7 +49,7 @@ const LatexPreview = ({ content }: { content: string }) => {
     }
 
     return (
-        <div className="p-4 bg-gray-50 rounded-md border border-gray-200 mt-2 font-serif text-sm min-h-[60px] prose prose-sm max-w-none">
+        <div className="p-4 bg-gray-50 rounded-md border border-gray-200 mt-2 font-serif text-sm min-h-[60px] prose prose-sm max-w-none text-gray-900">
             {parse(content, options)}
         </div>
     )

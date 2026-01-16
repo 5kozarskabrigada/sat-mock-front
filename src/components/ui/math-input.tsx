@@ -21,7 +21,7 @@ const MathQuill = dynamic(
       if (mod.addStyles) {
         mod.addStyles()
       }
-      return mod.default
+      return mod.default as any
     } catch (e) {
       console.error("Error loading react-mathquill", e)
       return () => <div>Error loading editor</div>
@@ -31,7 +31,7 @@ const MathQuill = dynamic(
     ssr: false,
     loading: () => <div className="p-2 text-gray-400">Loading Math Editor...</div>
   }
-)
+) as React.ComponentType<any>
 
 interface MathInputProps {
   value: string
