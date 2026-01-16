@@ -1,163 +1,216 @@
 'use client'
 
 import { Editor } from '@tiptap/react'
+import { useState } from 'react'
+import { useEditorContext } from './editor-context'
 
-export default function UnifiedToolbar({ editor, showMath = true }: { editor: Editor | null, showMath?: boolean }) {
+interface UnifiedToolbarProps {
+  editor: Editor | null
+  showMath?: boolean
+}
+
+export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolbarProps) {
   // Helper to check if button should be disabled
   const isDisabled = !editor || !editor.isEditable
   const activeEditor = editor
-
-  // Helper for button classes
-  const getButtonClass = (isActive: boolean = false, isMath: boolean = false) => {
-    return `px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center ${
-      isActive 
-        ? 'bg-indigo-100 text-indigo-700' 
-        : isDisabled
-          ? 'text-gray-300 cursor-not-allowed'
-          : isMath 
-            ? 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 border border-transparent font-serif'
-            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-    }`
-  }
-
-  const handleAction = (action: () => void) => {
-    if (!isDisabled) {
-      action()
-    }
+  
+  let activeMathField: any = null
+  try {
+      const ctx = useEditorContext()
+      activeMathField = ctx.activeMathField
+  } catch (e) {
+      // Ignore
   }
 
   const insertMath = (latex: string) => {
-    if (activeEditor && !isDisabled) {
-        // Insert Math Node
-        activeEditor.chain().focus().insertContent({
-            type: 'mathComponent',
-            attrs: { latex }
-        }).run()
+    if (activeMathField) {
+        activeMathField.cmd(latex)
+        activeMathField.focus()
+    } else if (activeEditor && !isDisabled) {
+      activeEditor.chain().focus().insertContent({
+        type: 'mathComponent',
+        attrs: { latex }
+      }).run()
     }
   }
 
   const insertMathNode = () => {
-      if (activeEditor && !isDisabled) {
-          activeEditor.chain().focus().insertContent({
-              type: 'mathComponent',
-              attrs: { latex: '' }
-          }).run()
-      }
+    if (activeEditor && !isDisabled) {
+      activeEditor.chain().focus().insertContent({
+        type: 'mathComponent',
+        attrs: { latex: '' }
+      }).run()
+    }
   }
 
   return (
-    <div className="w-full bg-white border-b border-gray-200 shadow-sm py-2 px-4 flex items-center gap-2 flex-wrap transition-all duration-200">
-      <div className="flex items-center gap-1 mr-4">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Formatting</span>
-      </div>
-
-      {/* Text Style Group */}
-      <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleBold().run())}
-          disabled={isDisabled || !activeEditor?.can().chain().focus().toggleBold().run()}
-          className={getButtonClass(activeEditor?.isActive('bold'))}
-          title="Bold (Ctrl+B)"
-        >
-          <strong>B</strong>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleItalic().run())}
-          disabled={isDisabled || !activeEditor?.can().chain().focus().toggleItalic().run()}
-          className={getButtonClass(activeEditor?.isActive('italic'))}
-          title="Italic (Ctrl+I)"
-        >
-          <em>I</em>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleUnderline().run())}
-          disabled={isDisabled || !activeEditor?.can().chain().focus().toggleUnderline().run()}
-          className={getButtonClass(activeEditor?.isActive('underline'))}
-          title="Underline (Ctrl+U)"
-        >
-          <u>U</u>
-        </button>
-      </div>
-
-      {/* Structure Group */}
-      <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleBulletList().run())}
-          className={getButtonClass(activeEditor?.isActive('bulletList'))}
-          disabled={isDisabled}
-          title="Bullet List"
-        >
-          • List
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleOrderedList().run())}
-          className={getButtonClass(activeEditor?.isActive('orderedList'))}
-          disabled={isDisabled}
-          title="Numbered List"
-        >
-          1. List
-        </button>
-      </div>
-
-      {showMath && (
-        <>
-            {/* Math Group */}
-            <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
-                <button
-                type="button"
-                onClick={insertMathNode}
-                className={getButtonClass(false, true)}
-                disabled={isDisabled}
-                title="Insert Math Formula"
-                >
-                Formula
-                </button>
-                <button
-                    type="button"
-                    onClick={() => insertMath('\\frac{}{}')}
-                    className={getButtonClass(false, true)}
-                    disabled={isDisabled}
-                    title="Fraction"
-                >
-                    a/b
-                </button>
-                <button
-                    type="button"
-                    onClick={() => insertMath('\\sqrt{}')}
-                    className={getButtonClass(false, true)}
-                    disabled={isDisabled}
-                    title="Square Root"
-                >
-                    √
-                </button>
-                <button
-                    type="button"
-                    onClick={() => insertMath('^{}')}
-                    className={getButtonClass(false, true)}
-                    disabled={isDisabled}
-                    title="Power"
-                >
-                    xⁿ
-                </button>
-            </div>
-
-            {/* Greek/Symbols Group */}
-            <div className="flex items-center gap-1">
-                <button onClick={() => insertMath('\\pi')} className={getButtonClass(false, true)} disabled={isDisabled}>π</button>
-                <button onClick={() => insertMath('\\theta')} className={getButtonClass(false, true)} disabled={isDisabled}>θ</button>
-                <button onClick={() => insertMath('\\le')} className={getButtonClass(false, true)} disabled={isDisabled}>≤</button>
-                <button onClick={() => insertMath('\\ge')} className={getButtonClass(false, true)} disabled={isDisabled}>≥</button>
-                <button onClick={() => insertMath('\\ne')} className={getButtonClass(false, true)} disabled={isDisabled}>≠</button>
-            </div>
-        </>
-      )}
+    <div className="w-full bg-white border-b border-gray-200 shadow-sm transition-all duration-200">
       
-      {/* Active Field Indicator (Optional) */}
+      {/* Primary Toolbar - Always Visible */}
+      <div className="flex flex-wrap items-center gap-1 p-2">
+        
+        {/* Text Formatting */}
+        <div className="flex items-center gap-0.5 border-r border-gray-200 pr-2 mr-1">
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().toggleBold().run()}
+            isActive={activeEditor?.isActive('bold')}
+            disabled={isDisabled}
+            title="Bold (Ctrl+B)"
+          >
+            <span className="font-bold">B</span>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().toggleItalic().run()}
+            isActive={activeEditor?.isActive('italic')}
+            disabled={isDisabled}
+            title="Italic (Ctrl+I)"
+          >
+            <span className="italic font-serif">I</span>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().toggleUnderline().run()}
+            isActive={activeEditor?.isActive('underline')}
+            disabled={isDisabled}
+            title="Underline (Ctrl+U)"
+          >
+            <span className="underline">U</span>
+          </ToolbarButton>
+        </div>
+
+        {/* Lists */}
+        <div className="flex items-center gap-0.5 border-r border-gray-200 pr-2 mr-1">
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().toggleBulletList().run()}
+            isActive={activeEditor?.isActive('bulletList')}
+            disabled={isDisabled}
+            title="Bullet List"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().toggleOrderedList().run()}
+            isActive={activeEditor?.isActive('orderedList')}
+            disabled={isDisabled}
+            title="Numbered List"
+          >
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+          </ToolbarButton>
+        </div>
+
+        {showMath && (
+          <>
+            {/* Math Entry */}
+            <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-1">
+               <button
+                  type="button"
+                  onClick={insertMathNode}
+                  disabled={isDisabled}
+                  className="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded text-sm font-semibold flex items-center gap-2 transition-colors"
+                  title="Insert Interactive Formula Box"
+                >
+                  <span className="font-serif italic">f(x)</span> Insert Math
+                </button>
+            </div>
+
+            {/* Quick Math Symbols - Basics */}
+            <div className="flex items-center gap-0.5">
+               <ToolbarButton onClick={() => insertMath('\\frac{}{}')} disabled={isDisabled} title="Fraction" isMath>
+                  <span className="text-xs">½</span>
+               </ToolbarButton>
+               <ToolbarButton onClick={() => insertMath('\\sqrt{}')} disabled={isDisabled} title="Square Root" isMath>
+                  √
+               </ToolbarButton>
+               <ToolbarButton onClick={() => insertMath('^{}')} disabled={isDisabled} title="Superscript / Power" isMath>
+                  xʸ
+               </ToolbarButton>
+               <ToolbarButton onClick={() => insertMath('_{}')} disabled={isDisabled} title="Subscript" isMath>
+                  x_y
+               </ToolbarButton>
+               <ToolbarButton onClick={() => insertMath('|')} disabled={isDisabled} title="Absolute Value" isMath>
+                  |x|
+               </ToolbarButton>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Secondary Math Toolbar - Only if Math is enabled */}
+      {showMath && (
+        <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border-t border-gray-200 text-xs">
+           <div className="flex items-center gap-1 mr-2">
+             <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Trig</span>
+             <ToolbarButton onClick={() => insertMath('\\sin')} disabled={isDisabled} title="Sine" isMath className="w-auto px-2">sin</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\cos')} disabled={isDisabled} title="Cosine" isMath className="w-auto px-2">cos</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\tan')} disabled={isDisabled} title="Tangent" isMath className="w-auto px-2">tan</ToolbarButton>
+           </div>
+           
+           <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
+           <div className="flex items-center gap-1 mr-2">
+             <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Rel</span>
+             <ToolbarButton onClick={() => insertMath('\\le')} disabled={isDisabled} title="Less than or equal" isMath>≤</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\ge')} disabled={isDisabled} title="Greater than or equal" isMath>≥</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\ne')} disabled={isDisabled} title="Not equal" isMath>≠</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\approx')} disabled={isDisabled} title="Approximately" isMath>≈</ToolbarButton>
+           </div>
+
+           <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
+           <div className="flex items-center gap-1 mr-2">
+             <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Sym</span>
+             <ToolbarButton onClick={() => insertMath('\\pi')} disabled={isDisabled} title="Pi" isMath>π</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\theta')} disabled={isDisabled} title="Theta" isMath>θ</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\infty')} disabled={isDisabled} title="Infinity" isMath>∞</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('^{\\circ}')} disabled={isDisabled} title="Degree" isMath>°</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('^{\\circ}C')} disabled={isDisabled} title="Celsius" isMath>°C</ToolbarButton>
+           </div>
+
+           <div className="w-px h-4 bg-gray-300 mx-1"></div>
+           
+           <div className="flex items-center gap-1">
+             <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Geo</span>
+             <ToolbarButton onClick={() => insertMath('\\angle')} disabled={isDisabled} title="Angle" isMath>∠</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\triangle')} disabled={isDisabled} title="Triangle" isMath>△</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\parallel')} disabled={isDisabled} title="Parallel" isMath>∥</ToolbarButton>
+             <ToolbarButton onClick={() => insertMath('\\perp')} disabled={isDisabled} title="Perpendicular" isMath>⊥</ToolbarButton>
+           </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+interface ToolbarButtonProps {
+  onClick: () => void
+  isActive?: boolean
+  disabled?: boolean
+  children: React.ReactNode
+  title?: string
+  isMath?: boolean
+  className?: string
+}
+
+function ToolbarButton({ onClick, isActive, disabled, children, title, isMath, className = '' }: ToolbarButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`
+        min-w-[28px] h-7 px-1.5 rounded flex items-center justify-center text-sm transition-all
+        ${isActive 
+          ? 'bg-indigo-100 text-indigo-700 font-medium' 
+          : disabled
+            ? 'text-gray-300 cursor-not-allowed'
+            : isMath
+              ? 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 font-serif'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }
+        ${className}
+      `}
+    >
+      {children}
+    </button>
   )
 }

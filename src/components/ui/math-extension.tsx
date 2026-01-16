@@ -5,16 +5,33 @@ import MathInput from './math-input'
 import { useState, useRef, useEffect } from 'react'
 import { InlineMath } from 'react-katex'
 import 'katex/dist/katex.min.css'
+import { useEditorContext } from './editor-context'
 
 // Component to render the Math Node
 const MathComponent = ({ node, updateAttributes, getPos }: any) => {
   const [isEditing, setIsEditing] = useState(false)
   const [latex, setLatex] = useState(node.attrs.latex || '')
+  
+  // Try to get context, but don't crash if used outside provider (e.g. tests)
+  let setActiveMathField: ((field: any) => void) | undefined
+  try {
+      const context = useEditorContext()
+      setActiveMathField = context.setActiveMathField
+  } catch (e) {
+      // No context available
+  }
 
   const handleUpdate = (newLatex: string) => {
     setLatex(newLatex)
     updateAttributes({ latex: newLatex })
   }
+
+  // Handle focus tracking
+  useEffect(() => {
+    if (!isEditing && setActiveMathField) {
+        setActiveMathField(null)
+    }
+  }, [isEditing, setActiveMathField])
 
   // If clicked, enable editing
   // We use a wrapper that handles the click
@@ -27,7 +44,10 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
               onChange={handleUpdate}
               className="border border-indigo-500 shadow-lg !min-h-[40px] !p-1"
               onInit={(mf) => {
-                  setTimeout(() => mf.focus(), 50)
+                  setTimeout(() => {
+                      mf.focus()
+                      if (setActiveMathField) setActiveMathField(mf)
+                  }, 50)
               }}
            />
            {/* Overlay to close on click outside - simplified */}
@@ -36,6 +56,7 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
              onClick={(e) => {
                  e.stopPropagation()
                  setIsEditing(false)
+                 if (setActiveMathField) setActiveMathField(null)
              }} 
            />
         </div>

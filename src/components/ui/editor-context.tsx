@@ -8,6 +8,8 @@ interface EditorContextType {
   setActiveEditor: (editor: Editor | null) => void
   activeFieldId: string | null
   setActiveFieldId: (id: string | null) => void
+  activeMathField: any
+  setActiveMathField: (field: any) => void
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined)
@@ -15,6 +17,7 @@ const EditorContext = createContext<EditorContextType | undefined>(undefined)
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [activeEditor, setActiveEditor] = useState<Editor | null>(null)
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null)
+  const [activeMathField, setActiveMathField] = useState<any>(null)
 
   return (
     <EditorContext.Provider 
@@ -22,7 +25,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         activeEditor, 
         setActiveEditor,
         activeFieldId,
-        setActiveFieldId
+        setActiveFieldId,
+        activeMathField,
+        setActiveMathField
       }}
     >
       {children}
