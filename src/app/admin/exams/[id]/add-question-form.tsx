@@ -7,6 +7,8 @@ import RichTextEditor from '@/components/ui/rich-text-editor'
 import MathToolbar from '@/components/ui/math-toolbar'
 import MathInput from '@/components/ui/math-input'
 import EquationDisplay from '@/components/ui/equation-display'
+import { EditorProvider } from '@/components/ui/editor-context'
+import UnifiedToolbar from '@/components/ui/unified-toolbar'
 
 const DOMAINS = {
   math: [
@@ -61,6 +63,43 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
     )
   }
 
+  return (
+    <EditorProvider>
+        <AddQuestionContent 
+            examId={examId} 
+            isExpanded={isExpanded} 
+            setIsExpanded={setIsExpanded} 
+        />
+    </EditorProvider>
+  )
+}
+
+function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: string, isExpanded: boolean, setIsExpanded: (v: boolean) => void }) {
+  const [imageBase64, setImageBase64] = useState<string>('')
+  const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
+  const [questionType, setQuestionType] = useState<string>('multiple_choice')
+  const questionInputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Math Editor State
+  const [mathEquation, setMathEquation] = useState('')
+  const mathFieldRef = useRef<any>(null)
+
+  const handleMathInsert = (latex: string) => {
+    if (mathFieldRef.current) {
+      mathFieldRef.current.cmd(latex)
+      mathFieldRef.current.focus()
+    }
+  }
+
+  // Reset form state helper
+  const resetForm = () => {
+      setIsExpanded(false)
+      setImageBase64('')
+      setQuestionType('multiple_choice')
+      setMathEquation('')
+      if (questionInputRef.current) questionInputRef.current.value = ''
+  }
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -79,26 +118,6 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
       if (fileInput) fileInput.value = ''
   }
 
-  const insertFormat = (tag: string) => {
-      const textarea = questionInputRef.current
-      if (!textarea) return
-
-      const start = textarea.selectionStart
-      const end = textarea.selectionEnd
-      const text = textarea.value
-      const before = text.substring(0, start)
-      const selection = text.substring(start, end)
-      const after = text.substring(end)
-
-      const newText = `${before}<${tag}>${selection}</${tag}>${after}`
-      textarea.value = newText
-      
-      // Restore selection
-      const newCursorPos = end + tag.length * 2 + 5 // <tag></tag> is length + 5
-      textarea.focus()
-      textarea.setSelectionRange(newCursorPos, newCursorPos)
-  }
-
   const handleSubmit = async (formData: FormData) => {
     if (imageBase64) {
         formData.set('imageUrl', imageBase64)
@@ -112,7 +131,10 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
   }
 
   return (
-    <div className="mt-6 bg-white shadow sm:rounded-lg border border-gray-200">
+    <div className="mt-6 bg-white shadow sm:rounded-lg border border-gray-200 relative">
+      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 rounded-t-lg">
+          <UnifiedToolbar />
+      </div>
       <div className="px-4 py-5 sm:p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Add Question</h3>

@@ -11,6 +11,7 @@ import Superscript from '@tiptap/extension-superscript'
 import Subscript from '@tiptap/extension-subscript'
 import TextAlign from '@tiptap/extension-text-align'
 import parse from 'html-react-parser'
+import { useEditorContext } from './editor-context'
 
 // LaTeX Preview Component
 const LatexPreview = ({ content }: { content: string }) => {
@@ -65,103 +66,6 @@ interface RichTextEditorProps {
     placeholder?: string
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
-    if (!editor) {
-        return null
-    }
-
-    return (
-        <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border-b border-gray-200">
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                disabled={!editor.can().chain().focus().toggleBold().run()}
-                className={`px-2 py-1 text-xs font-bold rounded transition-colors ${editor.isActive('bold') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Bold (Ctrl+B)"
-            >
-                B
-            </button>
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                disabled={!editor.can().chain().focus().toggleItalic().run()}
-                className={`px-2 py-1 text-xs italic rounded transition-colors ${editor.isActive('italic') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Italic (Ctrl+I)"
-            >
-                I
-            </button>
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
-                disabled={!editor.can().chain().focus().toggleUnderline().run()}
-                className={`px-2 py-1 text-xs underline rounded transition-colors ${editor.isActive('underline') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Underline (Ctrl+U)"
-            >
-                U
-            </button>
-            
-            <div className="w-px h-4 bg-gray-300 mx-1" />
-
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleSuperscript().run()}
-                disabled={!editor.can().chain().focus().toggleSuperscript().run()}
-                className={`px-2 py-1 text-xs rounded transition-colors ${editor.isActive('superscript') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Superscript (x²)"
-            >
-                x²
-            </button>
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleSubscript().run()}
-                disabled={!editor.can().chain().focus().toggleSubscript().run()}
-                className={`px-2 py-1 text-xs rounded transition-colors ${editor.isActive('subscript') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Subscript (x₂)"
-            >
-                x₂
-            </button>
-
-            <div className="w-px h-4 bg-gray-300 mx-1" />
-
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={`px-2 py-1 text-xs font-bold rounded transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Heading"
-            >
-                H2
-            </button>
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={`px-2 py-1 text-xs rounded transition-colors ${editor.isActive('bulletList') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Bullet List"
-            >
-                • List
-            </button>
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={`px-2 py-1 text-xs rounded transition-colors ${editor.isActive('orderedList') ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
-                title="Numbered List"
-            >
-                1. List
-            </button>
-
-            <div className="w-px h-4 bg-gray-300 mx-1" />
-            
-            <button
-                type="button"
-                onClick={() => editor.chain().focus().insertContent('\\(  \\)').run()}
-                className="px-2 py-1 text-xs font-mono rounded transition-colors text-gray-700 hover:bg-white hover:shadow-sm"
-                title="Insert Inline Math ($...$)"
-            >
-                Math
-            </button>
-        </div>
-    )
-}
-
 export default function RichTextEditor({ 
     id, 
     name, 
@@ -173,6 +77,7 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
     const [value, setValue] = useState(defaultValue)
     const [showPreview, setShowPreview] = useState(false)
+    const { setActiveEditor, setActiveFieldId, activeFieldId } = useEditorContext()
 
     const editor = useEditor({
         extensions: [
@@ -189,6 +94,27 @@ export default function RichTextEditor({
             attributes: {
                 class: 'prose prose-sm max-w-none focus:outline-none min-h-[100px] p-3 text-gray-900',
             },
+            handleDOMEvents: {
+                focus: (view, event) => {
+                    // Update context when focused
+                    // We need to pass the editor instance, but view.props.editor is internal
+                    // We can use the 'editor' returned by useEditor, but we need to ensure it's up to date?
+                    // Actually, onFocus is called, we can set it then.
+                    return false
+                }
+            }
+        },
+        onFocus: ({ editor }) => {
+            setActiveEditor(editor)
+            setActiveFieldId(id)
+        },
+        onBlur: ({ editor }) => {
+            // Optional: we can clear it or leave it. 
+            // Leaving it allows clicking buttons without re-focusing first (though buttons take focus usually)
+            // But usually clicking a toolbar button that is NOT part of the editor might blur the editor.
+            // Tiptap's chain().focus() handles refocusing.
+            // If we clear activeEditor here, clicking the toolbar might fail if the click event happens after blur.
+            // So let's NOT clear it immediately.
         },
         onUpdate: ({ editor }) => {
             setValue(editor.getHTML())
@@ -198,18 +124,21 @@ export default function RichTextEditor({
     // Update editor content if defaultValue changes externally
     useEffect(() => {
         if (editor && defaultValue !== editor.getHTML()) {
-             // Only update if content is significantly different to avoid cursor jumps
-             // For simplicity in this admin context, we can trust defaultValue updates usually mean data load
              if (editor.getText() === '' && defaultValue) {
                  editor.commands.setContent(defaultValue)
              }
         }
     }, [defaultValue, editor])
 
+    const isActive = activeFieldId === id
+
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-end">
-                <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
+                <label htmlFor={id} className={`block text-sm font-medium transition-colors ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
+                    {label}
+                    {isActive && <span className="ml-2 text-xs font-normal text-indigo-500">• Editing</span>}
+                </label>
                 <div className="flex gap-2">
                     <button 
                         type="button" 
@@ -233,8 +162,14 @@ export default function RichTextEditor({
                 </div>
             </div>
 
-            <div className="border border-gray-300 rounded-md shadow-sm overflow-hidden bg-white focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500">
-                <MenuBar editor={editor} />
+            <div 
+                className={`border rounded-md shadow-sm overflow-hidden bg-white transition-all duration-200 
+                    ${isActive 
+                        ? 'border-indigo-500 ring-1 ring-indigo-500' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+            >
+                {/* Internal MenuBar removed in favor of UnifiedToolbar */}
                 <EditorContent editor={editor} />
                 
                 {/* Hidden input to submit form data */}

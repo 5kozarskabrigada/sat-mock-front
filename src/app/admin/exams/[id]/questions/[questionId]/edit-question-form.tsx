@@ -11,6 +11,8 @@ import MathToolbar from '@/components/ui/math-toolbar'
 import MathInput from '@/components/ui/math-input'
 import EquationDisplay from '@/components/ui/equation-display'
 import { useRef } from 'react'
+import { EditorProvider } from '@/components/ui/editor-context'
+import UnifiedToolbar from '@/components/ui/unified-toolbar'
 
 // Helper component for file upload
 function ImageUploader({ defaultUrl }: { defaultUrl: string }) {
@@ -147,6 +149,14 @@ const DOMAINS = {
 }
 
 export default function EditQuestionForm({ question, examId }: { question: any, examId: string }) {
+  return (
+    <EditorProvider>
+        <EditQuestionContent question={question} examId={examId} />
+    </EditorProvider>
+  )
+}
+
+function EditQuestionContent({ question, examId }: { question: any, examId: string }) {
   const updateQuestionWithId = updateQuestion.bind(null, question.id, examId)
   const [state, formAction] = useFormState(updateQuestionWithId, null)
   const [selectedSection, setSelectedSection] = useState<string>(question.section)
@@ -171,7 +181,10 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
   }
 
   return (
-    <div className="bg-white shadow sm:rounded-lg border border-gray-200">
+    <div className="bg-white shadow sm:rounded-lg border border-gray-200 relative">
+      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 rounded-t-lg">
+          <UnifiedToolbar />
+      </div>
       <div className="px-4 py-5 sm:p-6">
         <form action={formAction} className="space-y-6">
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
