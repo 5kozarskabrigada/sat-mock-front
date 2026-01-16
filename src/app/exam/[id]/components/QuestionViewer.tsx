@@ -479,7 +479,7 @@ function QuestionContent({
                                 type="text"
                                 value={inputValue}
                                 onChange={handleInputChange}
-                                className="w-full p-4 border border-[var(--sat-border)] rounded-lg font-serif text-xl focus:border-[var(--sat-primary)] focus:ring-1 focus:ring-[var(--sat-primary)] outline-none placeholder-[var(--sat-muted)] text-[var(--sat-text)]"
+                                className="w-full p-4 border border-[var(--sat-border)] rounded-lg font-serif text-xl focus:border-[var(--sat-primary)] focus:ring-1 focus:ring-[var(--sat-primary)] outline-none placeholder-[var(--sat-muted)] text-[var(--sat-text)] text-center"
                                 placeholder="Enter your answer (e.g., 5.566, -5.566, 2/3, -2/3)"
                             />
                         </div>

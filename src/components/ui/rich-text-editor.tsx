@@ -22,6 +22,14 @@ const LatexPreview = ({ content }: { content: string }) => {
     // Note: This simple parser handles LaTeX mixed with HTML from Tiptap
     const options = {
         replace: (domNode: any) => {
+            // Handle Tiptap math-component tags
+            if (domNode.type === 'tag' && domNode.name === 'math-component') {
+                const latex = domNode.attribs?.latex
+                if (latex) {
+                    return <InlineMath math={latex} />
+                }
+            }
+
             if (domNode.type === 'text') {
                 const text = domNode.data
                 const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g
