@@ -12,6 +12,7 @@ import Subscript from '@tiptap/extension-subscript'
 import TextAlign from '@tiptap/extension-text-align'
 import parse from 'html-react-parser'
 import UnifiedToolbar from './unified-toolbar'
+import { MathExtension } from './math-extension'
 
 // LaTeX Preview Component
 const LatexPreview = ({ content }: { content: string }) => {
@@ -64,6 +65,7 @@ interface RichTextEditorProps {
     required?: boolean
     label: string
     placeholder?: string
+    enableMath?: boolean
 }
 
 // Extend Superscript to add input rules
@@ -115,7 +117,8 @@ export default function RichTextEditor({
     rows = 4, 
     required = false,
     label,
-    placeholder 
+    placeholder,
+    enableMath = true
 }: RichTextEditorProps) {
     const [value, setValue] = useState(defaultValue)
     const [showPreview, setShowPreview] = useState(false)
@@ -127,6 +130,7 @@ export default function RichTextEditor({
             Underline,
             CustomSuperscript,
             Subscript,
+            MathExtension,
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
             }),
@@ -189,7 +193,7 @@ export default function RichTextEditor({
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
             >
-                <UnifiedToolbar editor={editor} />
+                <UnifiedToolbar editor={editor} showMath={enableMath} />
                 <EditorContent editor={editor} />
                 
                 {/* Hidden input to submit form data */}

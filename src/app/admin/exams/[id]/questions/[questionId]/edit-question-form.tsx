@@ -162,6 +162,9 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
       question.content.options && question.content.options.A ? 'multiple_choice' : 'spr'
   )
 
+  // Determine if math is enabled
+  const enableMath = selectedSection === 'math'
+
   const handleDelete = async () => {
     await deleteQuestion(question.id, examId)
   }
@@ -241,6 +244,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                     label="Passage"
                     defaultValue={question.content.passage}
                     rows={3}
+                    enableMath={false}
                   />
                 </div>
             )}
@@ -257,6 +261,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                 defaultValue={question.content.question}
                 rows={6}
                 required
+                enableMath={enableMath}
               />
             </div>
 
@@ -275,6 +280,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                                         rows={2} 
                                         defaultValue={question.content.options ? question.content.options[opt] : ''}
                                         required 
+                                        enableMath={enableMath}
                                     />
                                 </div>
                             ))}
@@ -318,6 +324,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                 label="Explanation (Optional)"
                 defaultValue={question.explanation}
                 rows={3}
+                enableMath={enableMath}
               />
             </div>
           </div>

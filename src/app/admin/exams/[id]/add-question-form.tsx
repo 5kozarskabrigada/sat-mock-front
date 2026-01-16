@@ -77,6 +77,9 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
   const [questionType, setQuestionType] = useState<string>('multiple_choice')
   const questionInputRef = useRef<HTMLTextAreaElement>(null)
 
+  // Determine if math is enabled
+  const enableMath = selectedSection === 'math'
+
   // Reset form state helper
   const resetForm = () => {
       setIsExpanded(false)
@@ -233,6 +236,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                     name="passage"
                     label="Passage"
                     rows={3}
+                    enableMath={false}
                   />
                 </div>
             )}
@@ -244,6 +248,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                 label="Question Text"
                 rows={6}
                 required
+                enableMath={enableMath}
               />
             </div>
 
@@ -254,16 +259,16 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                         <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-1">
-                                <RichTextEditor id="optionA" name="optionA" label="Option A" required rows={2} />
+                                <RichTextEditor id="optionA" name="optionA" label="Option A" required rows={2} enableMath={enableMath} />
                             </div>
                             <div className="sm:col-span-1">
-                                <RichTextEditor id="optionB" name="optionB" label="Option B" required rows={2} />
+                                <RichTextEditor id="optionB" name="optionB" label="Option B" required rows={2} enableMath={enableMath} />
                             </div>
                             <div className="sm:col-span-1">
-                                <RichTextEditor id="optionC" name="optionC" label="Option C" required rows={2} />
+                                <RichTextEditor id="optionC" name="optionC" label="Option C" required rows={2} enableMath={enableMath} />
                             </div>
                             <div className="sm:col-span-1">
-                                <RichTextEditor id="optionD" name="optionD" label="Option D" required rows={2} />
+                                <RichTextEditor id="optionD" name="optionD" label="Option D" required rows={2} enableMath={enableMath} />
                             </div>
                         </div>
                     </div>
@@ -303,6 +308,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                 name="explanation"
                 label="Explanation (Optional)"
                 rows={2}
+                enableMath={enableMath}
               />
             </div>
           </div>

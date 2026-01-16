@@ -2,7 +2,7 @@
 
 import { Editor } from '@tiptap/react'
 
-export default function UnifiedToolbar({ editor }: { editor: Editor | null }) {
+export default function UnifiedToolbar({ editor, showMath = true }: { editor: Editor | null, showMath?: boolean }) {
   // Helper to check if button should be disabled
   const isDisabled = !editor || !editor.isEditable
   const activeEditor = editor
@@ -28,11 +28,21 @@ export default function UnifiedToolbar({ editor }: { editor: Editor | null }) {
 
   const insertMath = (latex: string) => {
     if (activeEditor && !isDisabled) {
-        // Wrap in LaTeX delimiters
-        // Check if we are already inside a math node? Not easily possible with just text regex.
-        // We just insert \( latex \)
-        activeEditor.chain().focus().insertContent(`\\(${latex}\\)`).run()
+        // Insert Math Node
+        activeEditor.chain().focus().insertContent({
+            type: 'mathComponent',
+            attrs: { latex }
+        }).run()
     }
+  }
+
+  const insertMathNode = () => {
+      if (activeEditor && !isDisabled) {
+          activeEditor.chain().focus().insertContent({
+              type: 'mathComponent',
+              attrs: { latex: '' }
+          }).run()
+      }
   }
 
   return (
@@ -72,39 +82,8 @@ export default function UnifiedToolbar({ editor }: { editor: Editor | null }) {
         </button>
       </div>
 
-      {/* Script Group */}
-      <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleSuperscript().run())}
-          disabled={isDisabled || !activeEditor?.can().chain().focus().toggleSuperscript().run()}
-          className={getButtonClass(activeEditor?.isActive('superscript'))}
-          title="Superscript"
-        >
-          x²
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleSubscript().run())}
-          disabled={isDisabled || !activeEditor?.can().chain().focus().toggleSubscript().run()}
-          className={getButtonClass(activeEditor?.isActive('subscript'))}
-          title="Subscript"
-        >
-          x₂
-        </button>
-      </div>
-
       {/* Structure Group */}
       <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().toggleHeading({ level: 2 }).run())}
-          className={getButtonClass(activeEditor?.isActive('heading', { level: 2 }))}
-          disabled={isDisabled}
-          title="Heading 2"
-        >
-          H2
-        </button>
         <button
           type="button"
           onClick={() => handleAction(() => activeEditor?.chain().focus().toggleBulletList().run())}
@@ -125,54 +104,58 @@ export default function UnifiedToolbar({ editor }: { editor: Editor | null }) {
         </button>
       </div>
 
-      {/* Math Group */}
-      <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
-        <button
-          type="button"
-          onClick={() => handleAction(() => activeEditor?.chain().focus().insertContent('\\(  \\)').run())}
-          className={getButtonClass(false, true)}
-          disabled={isDisabled}
-          title="Insert Math"
-        >
-          Math
-        </button>
-        <button
-            type="button"
-            onClick={() => insertMath('\\frac{}{}')}
-            className={getButtonClass(false, true)}
-            disabled={isDisabled}
-            title="Fraction"
-        >
-            a/b
-        </button>
-        <button
-            type="button"
-            onClick={() => insertMath('\\sqrt{}')}
-            className={getButtonClass(false, true)}
-            disabled={isDisabled}
-            title="Square Root"
-        >
-            √
-        </button>
-        <button
-            type="button"
-            onClick={() => insertMath('^{}')}
-            className={getButtonClass(false, true)}
-            disabled={isDisabled}
-            title="Power"
-        >
-            xⁿ
-        </button>
-      </div>
+      {showMath && (
+        <>
+            {/* Math Group */}
+            <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
+                <button
+                type="button"
+                onClick={insertMathNode}
+                className={getButtonClass(false, true)}
+                disabled={isDisabled}
+                title="Insert Math Formula"
+                >
+                Formula
+                </button>
+                <button
+                    type="button"
+                    onClick={() => insertMath('\\frac{}{}')}
+                    className={getButtonClass(false, true)}
+                    disabled={isDisabled}
+                    title="Fraction"
+                >
+                    a/b
+                </button>
+                <button
+                    type="button"
+                    onClick={() => insertMath('\\sqrt{}')}
+                    className={getButtonClass(false, true)}
+                    disabled={isDisabled}
+                    title="Square Root"
+                >
+                    √
+                </button>
+                <button
+                    type="button"
+                    onClick={() => insertMath('^{}')}
+                    className={getButtonClass(false, true)}
+                    disabled={isDisabled}
+                    title="Power"
+                >
+                    xⁿ
+                </button>
+            </div>
 
-      {/* Greek/Symbols Group */}
-      <div className="flex items-center gap-1">
-        <button onClick={() => insertMath('\\pi')} className={getButtonClass(false, true)} disabled={isDisabled}>π</button>
-        <button onClick={() => insertMath('\\theta')} className={getButtonClass(false, true)} disabled={isDisabled}>θ</button>
-        <button onClick={() => insertMath('\\le')} className={getButtonClass(false, true)} disabled={isDisabled}>≤</button>
-        <button onClick={() => insertMath('\\ge')} className={getButtonClass(false, true)} disabled={isDisabled}>≥</button>
-        <button onClick={() => insertMath('\\ne')} className={getButtonClass(false, true)} disabled={isDisabled}>≠</button>
-      </div>
+            {/* Greek/Symbols Group */}
+            <div className="flex items-center gap-1">
+                <button onClick={() => insertMath('\\pi')} className={getButtonClass(false, true)} disabled={isDisabled}>π</button>
+                <button onClick={() => insertMath('\\theta')} className={getButtonClass(false, true)} disabled={isDisabled}>θ</button>
+                <button onClick={() => insertMath('\\le')} className={getButtonClass(false, true)} disabled={isDisabled}>≤</button>
+                <button onClick={() => insertMath('\\ge')} className={getButtonClass(false, true)} disabled={isDisabled}>≥</button>
+                <button onClick={() => insertMath('\\ne')} className={getButtonClass(false, true)} disabled={isDisabled}>≠</button>
+            </div>
+        </>
+      )}
       
       {/* Active Field Indicator (Optional) */}
     </div>
