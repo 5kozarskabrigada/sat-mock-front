@@ -299,7 +299,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                 </>
             ) : (
                 <div className="sm:col-span-6">
-                    <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
+                    <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer(s)</label>
                     <div className="mt-1">
                         <input
                             type="text"
@@ -311,7 +311,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
                         />
                         <p className="mt-1 text-xs text-gray-500">
-                            Enter the exact value students must type.
+                            Enter the exact value students must type. For multiple valid answers, separate them with a vertical bar (|). Example: <strong>3.5|7/2</strong>
                         </p>
                     </div>
                 </div>

@@ -285,7 +285,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                 </>
             ) : (
                 <div className="sm:col-span-6">
-                    <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
+                    <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer(s)</label>
                     <div className="mt-1">
                         <input
                             type="text"
@@ -296,7 +296,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
                         />
                         <p className="mt-1 text-xs text-gray-500">
-                            Enter the exact value students must type. For multiple valid answers, create separate questions or use explanation to note it (system currently supports single string match).
+                            Enter the exact value students must type. For multiple valid answers, separate them with a vertical bar (|). Example: <strong>3.5|7/2</strong>
                         </p>
                     </div>
                 </div>
