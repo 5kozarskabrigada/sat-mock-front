@@ -9,19 +9,30 @@ export default function UnifiedToolbar() {
   const isDisabled = !activeEditor || !activeEditor.isEditable
 
   // Helper for button classes
-  const getButtonClass = (isActive: boolean = false) => {
-    return `px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+  const getButtonClass = (isActive: boolean = false, isMath: boolean = false) => {
+    return `px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center ${
       isActive 
         ? 'bg-indigo-100 text-indigo-700' 
         : isDisabled
           ? 'text-gray-300 cursor-not-allowed'
-          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+          : isMath 
+            ? 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 border border-transparent font-serif'
+            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
     }`
   }
 
   const handleAction = (action: () => void) => {
     if (!isDisabled) {
       action()
+    }
+  }
+
+  const insertMath = (latex: string) => {
+    if (activeEditor && !isDisabled) {
+        // Wrap in LaTeX delimiters
+        // Check if we are already inside a math node? Not easily possible with just text regex.
+        // We just insert \( latex \)
+        activeEditor.chain().focus().insertContent(`\\(${latex}\\)`).run()
     }
   }
 
@@ -115,23 +126,59 @@ export default function UnifiedToolbar() {
         </button>
       </div>
 
-      {/* Special Group */}
-      <div className="flex items-center gap-1">
+      {/* Math Group */}
+      <div className="flex items-center gap-1 border-r border-gray-200 pr-2 mr-2">
         <button
           type="button"
           onClick={() => handleAction(() => activeEditor?.chain().focus().insertContent('\\(  \\)').run())}
-          className={getButtonClass()}
+          className={getButtonClass(false, true)}
           disabled={isDisabled}
           title="Insert Math"
         >
           Math
         </button>
+        <button
+            type="button"
+            onClick={() => insertMath('\\frac{}{}')}
+            className={getButtonClass(false, true)}
+            disabled={isDisabled}
+            title="Fraction"
+        >
+            a/b
+        </button>
+        <button
+            type="button"
+            onClick={() => insertMath('\\sqrt{}')}
+            className={getButtonClass(false, true)}
+            disabled={isDisabled}
+            title="Square Root"
+        >
+            √
+        </button>
+        <button
+            type="button"
+            onClick={() => insertMath('^{}')}
+            className={getButtonClass(false, true)}
+            disabled={isDisabled}
+            title="Power"
+        >
+            xⁿ
+        </button>
+      </div>
+
+      {/* Greek/Symbols Group */}
+      <div className="flex items-center gap-1">
+        <button onClick={() => insertMath('\\pi')} className={getButtonClass(false, true)} disabled={isDisabled}>π</button>
+        <button onClick={() => insertMath('\\theta')} className={getButtonClass(false, true)} disabled={isDisabled}>θ</button>
+        <button onClick={() => insertMath('\\le')} className={getButtonClass(false, true)} disabled={isDisabled}>≤</button>
+        <button onClick={() => insertMath('\\ge')} className={getButtonClass(false, true)} disabled={isDisabled}>≥</button>
+        <button onClick={() => insertMath('\\ne')} className={getButtonClass(false, true)} disabled={isDisabled}>≠</button>
       </div>
       
       {/* Active Field Indicator (Optional) */}
       {!activeEditor && (
         <div className="ml-auto text-xs text-gray-400 italic">
-          Select a text field to edit formatting
+          Select a text field to edit
         </div>
       )}
     </div>

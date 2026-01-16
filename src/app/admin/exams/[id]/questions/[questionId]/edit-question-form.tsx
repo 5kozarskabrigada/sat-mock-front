@@ -7,9 +7,6 @@ import { useFormState, useFormStatus } from 'react-dom'
 import { updateQuestion, deleteQuestion } from '../../actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 import RichTextEditor from '@/components/ui/rich-text-editor'
-import MathToolbar from '@/components/ui/math-toolbar'
-import MathInput from '@/components/ui/math-input'
-import EquationDisplay from '@/components/ui/equation-display'
 import { useRef } from 'react'
 import { EditorProvider } from '@/components/ui/editor-context'
 import UnifiedToolbar from '@/components/ui/unified-toolbar'
@@ -165,17 +162,6 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
       question.content.options && question.content.options.A ? 'multiple_choice' : 'spr'
   )
 
-  // Math Editor State
-  const [mathEquation, setMathEquation] = useState(question.equation_latex || '')
-  const mathFieldRef = useRef<any>(null)
-
-  const handleMathInsert = (latex: string) => {
-    if (mathFieldRef.current) {
-      mathFieldRef.current.cmd(latex)
-      mathFieldRef.current.focus()
-    }
-  }
-
   const handleDelete = async () => {
     await deleteQuestion(question.id, examId)
   }
@@ -276,29 +262,6 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                 required
               />
             </div>
-
-            {/* Math Equation Editor */}
-            {selectedSection === 'math' && (
-            <div className="sm:col-span-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mathematical Expression (Optional)</label>
-                <div className="border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
-                    <MathToolbar onInsert={handleMathInsert} />
-                    <MathInput
-                        value={mathEquation}
-                        onChange={setMathEquation}
-                        onInit={(mf) => { mathFieldRef.current = mf }}
-                        className="border-t-0"
-                    />
-                </div>
-                <input type="hidden" name="equation_latex" value={mathEquation} />
-                {mathEquation && (
-                    <div className="mt-2">
-                        <p className="text-xs text-gray-500 mb-1 uppercase font-semibold">Equation Preview</p>
-                        <EquationDisplay latex={mathEquation} className="p-4 bg-gray-50 rounded border border-gray-200 min-h-[40px] flex items-center justify-center text-lg" />
-                    </div>
-                )}
-            </div>
-            )}
 
             {/* Options or Direct Answer based on type */}
             {questionType === 'multiple_choice' ? (
