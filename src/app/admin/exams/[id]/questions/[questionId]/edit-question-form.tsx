@@ -168,9 +168,6 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
 
   return (
     <div className="bg-white shadow sm:rounded-lg border border-gray-200 relative">
-      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 rounded-t-lg">
-          <UnifiedToolbar />
-      </div>
       <div className="px-4 py-5 sm:p-6">
         <form action={formAction} className="space-y-6">
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">

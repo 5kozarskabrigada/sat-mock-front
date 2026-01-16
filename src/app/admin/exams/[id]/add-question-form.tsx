@@ -117,9 +117,6 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
 
   return (
     <div className="mt-6 bg-white shadow sm:rounded-lg border border-gray-200 relative">
-      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 rounded-t-lg">
-          <UnifiedToolbar />
-      </div>
       <div className="px-4 py-5 sm:p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Add Question</h3>

@@ -4,14 +4,14 @@
 import { useState, useEffect } from 'react'
 import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, InputRule } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Superscript from '@tiptap/extension-superscript'
 import Subscript from '@tiptap/extension-subscript'
 import TextAlign from '@tiptap/extension-text-align'
 import parse from 'html-react-parser'
-import { useEditorContext } from './editor-context'
+import UnifiedToolbar from './unified-toolbar'
 
 // LaTeX Preview Component
 const LatexPreview = ({ content }: { content: string }) => {
@@ -66,6 +66,48 @@ interface RichTextEditorProps {
     placeholder?: string
 }
 
+// Extend Superscript to add input rules
+const CustomSuperscript = Superscript.extend({
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /\^(\w+)$/,
+        handler: ({ state, range, match }) => {
+            const { tr } = state
+            const start = range.from
+            const end = range.to
+            const text = match[1]
+            
+            if (text) {
+                tr.replaceWith(start, end, state.schema.text(text))
+                tr.addMark(start, start + text.length, this.type.create())
+                tr.removeMark(start + text.length, start + text.length, this.type)
+            }
+        },
+      }),
+      // Handle x^2 followed by space to convert previous char?
+      // Actually common pattern is: type char, type ^, then next char is superscript.
+      // Or type char^2 then space -> char²
+      // Let's support: word^number -> word + superscript number
+      new InputRule({
+          find: /(\w+)\^(\d+)$/,
+          handler: ({ state, range, match }) => {
+              const { tr } = state
+              const start = range.from
+              const end = range.to
+              const base = match[1]
+              const sup = match[2]
+              
+              tr.insertText(base, start, end)
+              const supStart = start + base.length
+              tr.insertText(sup, supStart)
+              tr.addMark(supStart, supStart + sup.length, this.type.create())
+          }
+      })
+    ]
+  },
+})
+
 export default function RichTextEditor({ 
     id, 
     name, 
@@ -77,13 +119,13 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
     const [value, setValue] = useState(defaultValue)
     const [showPreview, setShowPreview] = useState(false)
-    const { setActiveEditor, setActiveFieldId, activeFieldId } = useEditorContext()
+    const [isFocused, setIsFocused] = useState(false)
 
     const editor = useEditor({
         extensions: [
             StarterKit,
             Underline,
-            Superscript,
+            CustomSuperscript,
             Subscript,
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
@@ -94,28 +136,9 @@ export default function RichTextEditor({
             attributes: {
                 class: 'prose prose-sm max-w-none focus:outline-none min-h-[100px] p-3 text-gray-900',
             },
-            handleDOMEvents: {
-                focus: (view, event) => {
-                    // Update context when focused
-                    // We need to pass the editor instance, but view.props.editor is internal
-                    // We can use the 'editor' returned by useEditor, but we need to ensure it's up to date?
-                    // Actually, onFocus is called, we can set it then.
-                    return false
-                }
-            }
         },
-        onFocus: ({ editor }) => {
-            setActiveEditor(editor)
-            setActiveFieldId(id)
-        },
-        onBlur: ({ editor }) => {
-            // Optional: we can clear it or leave it. 
-            // Leaving it allows clicking buttons without re-focusing first (though buttons take focus usually)
-            // But usually clicking a toolbar button that is NOT part of the editor might blur the editor.
-            // Tiptap's chain().focus() handles refocusing.
-            // If we clear activeEditor here, clicking the toolbar might fail if the click event happens after blur.
-            // So let's NOT clear it immediately.
-        },
+        onFocus: () => setIsFocused(true),
+        onBlur: () => setIsFocused(false),
         onUpdate: ({ editor }) => {
             setValue(editor.getHTML())
         },
@@ -130,14 +153,11 @@ export default function RichTextEditor({
         }
     }, [defaultValue, editor])
 
-    const isActive = activeFieldId === id
-
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-end">
-                <label htmlFor={id} className={`block text-sm font-medium transition-colors ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
+                <label htmlFor={id} className={`block text-sm font-medium transition-colors ${isFocused ? 'text-indigo-700' : 'text-gray-700'}`}>
                     {label}
-                    {isActive && <span className="ml-2 text-xs font-normal text-indigo-500">• Editing</span>}
                 </label>
                 <div className="flex gap-2">
                     <button 
@@ -164,12 +184,12 @@ export default function RichTextEditor({
 
             <div 
                 className={`border rounded-md shadow-sm overflow-hidden bg-white transition-all duration-200 
-                    ${isActive 
+                    ${isFocused 
                         ? 'border-indigo-500 ring-1 ring-indigo-500' 
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
             >
-                {/* Internal MenuBar removed in favor of UnifiedToolbar */}
+                <UnifiedToolbar editor={editor} />
                 <EditorContent editor={editor} />
                 
                 {/* Hidden input to submit form data */}

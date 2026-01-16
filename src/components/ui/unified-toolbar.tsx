@@ -1,12 +1,11 @@
 'use client'
 
-import { useEditorContext } from './editor-context'
+import { Editor } from '@tiptap/react'
 
-export default function UnifiedToolbar() {
-  const { activeEditor } = useEditorContext()
-
+export default function UnifiedToolbar({ editor }: { editor: Editor | null }) {
   // Helper to check if button should be disabled
-  const isDisabled = !activeEditor || !activeEditor.isEditable
+  const isDisabled = !editor || !editor.isEditable
+  const activeEditor = editor
 
   // Helper for button classes
   const getButtonClass = (isActive: boolean = false, isMath: boolean = false) => {
@@ -37,7 +36,7 @@ export default function UnifiedToolbar() {
   }
 
   return (
-    <div className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm py-2 px-4 flex items-center gap-2 flex-wrap transition-all duration-200">
+    <div className="w-full bg-white border-b border-gray-200 shadow-sm py-2 px-4 flex items-center gap-2 flex-wrap transition-all duration-200">
       <div className="flex items-center gap-1 mr-4">
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Formatting</span>
       </div>
@@ -176,11 +175,6 @@ export default function UnifiedToolbar() {
       </div>
       
       {/* Active Field Indicator (Optional) */}
-      {!activeEditor && (
-        <div className="ml-auto text-xs text-gray-400 italic">
-          Select a text field to edit
-        </div>
-      )}
     </div>
   )
 }
