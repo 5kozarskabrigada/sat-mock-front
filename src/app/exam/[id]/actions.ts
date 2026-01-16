@@ -37,7 +37,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
 
     if (question && question.correct_answer) {
         // Support multiple correct answers separated by '|'
-        const correctAnswers = question.correct_answer.split('|').map(a => a.trim())
+        const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
         
         // Check if student answer matches any of the correct answers
         // For Math (SPR), we might want to be more lenient (e.g. 0.5 vs .5), but strict string match is standard for now unless parsed.
