@@ -18,14 +18,19 @@
     "@tiptap/extension-underline": "^3.15.3",
     "@tiptap/react": "^3.15.3",
     "@tiptap/starter-kit": "^3.15.3",
+    "@types/jquery": "^3.5.33",
+    "@types/katex": "^0.16.8",
     "html-react-parser": "^5.2.11",
     "html2canvas": "^1.4.1",
+    "jquery": "^3.7.1",
     "jspdf": "^4.0.0",
     "katex": "^0.16.27",
+    "mathquill": "^0.10.1-a",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-katex": "^3.1.0"
+    "react-katex": "^3.1.0",
+    "react-mathquill": "^1.0.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

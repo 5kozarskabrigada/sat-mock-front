@@ -365,6 +365,12 @@ function QuestionContent({
                     </div>
                 )}
                 <Latex>{question.content.question}</Latex>
+                
+                {question.equation_latex && (
+                    <div className="mt-4 flex justify-center">
+                         <BlockMath math={question.equation_latex} />
+                    </div>
+                )}
             </div>
 
             {/* Answer Area */}

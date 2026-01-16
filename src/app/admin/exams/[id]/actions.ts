@@ -21,6 +21,7 @@ export async function addQuestion(examId: string, formData: FormData) {
   const domain = formData.get('domain') as string
   const imageUrl = formData.get('imageUrl') as string
   const questionType = formData.get('questionType') as string
+  const equationLatex = formData.get('equation_latex') as string
 
   let options = {}
   if (questionType !== 'spr') {
@@ -48,7 +49,8 @@ export async function addQuestion(examId: string, formData: FormData) {
       content,
       correct_answer: correctAnswer,
       explanation,
-      domain: domain || null
+      domain: domain || null,
+      equation_latex: equationLatex || null
     })
 
   if (error) {
@@ -77,6 +79,7 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
   const domain = formData.get('domain') as string
   const imageUrl = formData.get('imageUrl') as string
   const questionType = formData.get('questionType') as string
+  const equationLatex = formData.get('equation_latex') as string
 
   let options = {}
   if (questionType !== 'spr') {
@@ -103,7 +106,8 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
       content,
       correct_answer: correctAnswer,
       explanation,
-      domain: domain || null
+      domain: domain || null,
+      equation_latex: equationLatex || null
     })
     .eq('id', questionId)
 
