@@ -38,7 +38,7 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
     if (activeEditor && !isDisabled) {
       activeEditor.chain().focus().insertContent({
         type: 'mathComponent',
-        attrs: { latex: '' }
+        attrs: { latex: '', display: 'block' }
       }).run()
     }
   }

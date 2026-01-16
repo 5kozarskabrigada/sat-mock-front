@@ -25,7 +25,11 @@ const LatexPreview = ({ content }: { content: string }) => {
             // Handle Tiptap math-component tags
             if (domNode.type === 'tag' && domNode.name === 'math-component') {
                 const latex = domNode.attribs?.latex
+                const display = domNode.attribs?.display
                 if (latex) {
+                    if (display === 'block') {
+                        return <BlockMath math={latex} />
+                    }
                     return <InlineMath math={latex} />
                 }
             }

@@ -87,6 +87,9 @@ export const MathExtension = Node.create({
       latex: {
         default: '',
       },
+      display: {
+        default: 'inline',
+      }
     }
   },
 
