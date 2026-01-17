@@ -130,7 +130,8 @@ export default function RichTextEditor({
     required = false,
     label,
     placeholder,
-    enableMath = true
+    enableMath = true,
+    onChange
 }: RichTextEditorProps) {
     const [value, setValue] = useState(defaultValue)
     const [showPreview, setShowPreview] = useState(false)
