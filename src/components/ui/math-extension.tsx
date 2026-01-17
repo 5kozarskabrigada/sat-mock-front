@@ -104,6 +104,9 @@ export const MathExtension = Node.create({
       },
       display: {
         default: 'inline',
+      },
+      align: {
+        default: 'left',
       }
     }
   },
