@@ -26,6 +26,12 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
     updateAttributes({ latex: newLatex })
   }
 
+  // Handle alignment and display mode
+  const toggleAlign = () => {
+      const newAlign = node.attrs.align === 'center' ? 'left' : 'center'
+      updateAttributes({ align: newAlign, display: newAlign === 'center' ? 'block' : 'inline' })
+  }
+
   // Handle focus tracking
   useEffect(() => {
     if (!isEditing && setActiveMathField) {
