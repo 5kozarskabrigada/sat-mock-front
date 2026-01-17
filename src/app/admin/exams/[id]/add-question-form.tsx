@@ -73,6 +73,7 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
 
 function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: string, isExpanded: boolean, setIsExpanded: (v: boolean) => void }) {
   const [imageBase64, setImageBase64] = useState<string>('')
+  const [imageDescription, setImageDescription] = useState<string>('')
   const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
   const [questionType, setQuestionType] = useState<string>('multiple_choice')
   const questionInputRef = useRef<HTMLTextAreaElement>(null)
