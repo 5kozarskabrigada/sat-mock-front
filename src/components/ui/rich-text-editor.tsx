@@ -156,7 +156,9 @@ export default function RichTextEditor({
         onFocus: () => setIsFocused(true),
         onBlur: () => setIsFocused(false),
         onUpdate: ({ editor }) => {
-            setValue(editor.getHTML())
+            const html = editor.getHTML()
+            setValue(html)
+            if (onChange) onChange(html)
         },
     })
 
