@@ -374,10 +374,10 @@ function QuestionContent({
                 {question.content.image_url && (
                     <div className="mb-4">
                         {question.content.image_description && (
-                            <p className="text-lg text-[var(--sat-text)] font-serif mb-2">
-                                {question.content.image_description}
-                            </p>
-                        )}
+                                <div className="mb-2">
+                                    <Latex>{question.content.image_description}</Latex>
+                                </div>
+                            )}
                         <img 
                             src={question.content.image_url} 
                             alt={question.content.image_description || "Question Graphic"} 

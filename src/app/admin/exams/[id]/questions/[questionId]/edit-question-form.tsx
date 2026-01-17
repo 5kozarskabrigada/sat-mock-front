@@ -88,8 +88,7 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
 
             {imageUrl && (
                 <div className="mt-2 relative group w-fit">
-                    {imageDescription && <p className="text-sm text-gray-700 mb-1 font-serif">{imageDescription}</p>}
-                    <img src={imageUrl} alt={imageDescription || "Question Image"} className="h-32 w-auto object-contain rounded border border-gray-300" />
+                    <img src={imageUrl} alt="Question Image" className="h-32 w-auto object-contain rounded border border-gray-300" />
                     <button
                         type="button"
                         onClick={() => setImageUrl('')}

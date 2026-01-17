@@ -226,7 +226,6 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
               {imageBase64 && (
                   <div className="mt-2 relative inline-block group">
                       <p className="text-xs text-green-600 font-semibold">Image selected ready for upload.</p>
-                      {imageDescription && <p className="text-sm text-gray-700 mb-1 font-serif">{imageDescription}</p>}
                       <img src={imageBase64} alt="Preview" className="h-20 w-auto mt-1 border border-gray-200 rounded" />
                       <button 
                           type="button" 

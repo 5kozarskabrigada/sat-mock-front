@@ -163,7 +163,12 @@ export default function RichTextEditor({
     // Update editor content if defaultValue changes externally
     useEffect(() => {
         if (editor && defaultValue !== editor.getHTML()) {
-             if (editor.getText() === '' && defaultValue) {
+             // If default value is empty but editor has content, clear it (reset case)
+             if (defaultValue === '') {
+                 editor.commands.clearContent()
+             } 
+             // If editor is empty but default value has content, set it (initial load case)
+             else if (editor.isEmpty && defaultValue) {
                  editor.commands.setContent(defaultValue)
              }
         }
@@ -182,6 +187,7 @@ export default function RichTextEditor({
                             if (editor) {
                                 editor.commands.clearContent()
                                 setValue('')
+                                if (onChange) onChange('')
                             }
                         }}
                         className="text-xs text-red-600 hover:text-red-800 font-medium"
