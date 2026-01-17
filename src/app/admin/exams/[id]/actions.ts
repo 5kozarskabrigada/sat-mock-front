@@ -20,6 +20,7 @@ export async function addQuestion(examId: string, formData: FormData) {
   const explanation = formData.get('explanation') as string
   const domain = formData.get('domain') as string
   const imageUrl = formData.get('imageUrl') as string
+  const imageDescription = formData.get('imageDescription') as string
   const questionType = formData.get('questionType') as string
   const equationLatex = formData.get('equation_latex') as string
 
@@ -37,6 +38,7 @@ export async function addQuestion(examId: string, formData: FormData) {
     question: questionText,
     passage: passage || null,
     image_url: imageUrl || null,
+    image_description: imageDescription || null,
     options: Object.keys(options).length > 0 ? options : null
   }
 
@@ -78,6 +80,7 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
   const explanation = formData.get('explanation') as string
   const domain = formData.get('domain') as string
   const imageUrl = formData.get('imageUrl') as string
+  const imageDescription = formData.get('imageDescription') as string
   const questionType = formData.get('questionType') as string
   const equationLatex = formData.get('equation_latex') as string
 
@@ -95,6 +98,7 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
     question: questionText,
     passage: passage || null,
     image_url: imageUrl || null,
+    image_description: imageDescription || null,
     options: Object.keys(options).length > 0 ? options : null
   }
 

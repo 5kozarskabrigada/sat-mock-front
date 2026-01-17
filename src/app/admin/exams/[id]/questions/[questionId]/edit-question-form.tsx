@@ -12,9 +12,10 @@ import { EditorProvider } from '@/components/ui/editor-context'
 import UnifiedToolbar from '@/components/ui/unified-toolbar'
 
 // Helper component for file upload
-function ImageUploader({ defaultUrl }: { defaultUrl: string }) {
+function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string, defaultDescription?: string }) {
     const [uploading, setUploading] = useState(false)
     const [imageUrl, setImageUrl] = useState(defaultUrl)
+    const [imageDescription, setImageDescription] = useState(defaultDescription || '')
     const [error, setError] = useState<string | null>(null)
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,25 +60,36 @@ function ImageUploader({ defaultUrl }: { defaultUrl: string }) {
         <div className="space-y-2">
             <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image</label>
             
-            {/* Hidden input to store the actual URL submitted */}
+            {/* Hidden inputs to store the actual URL and Description submitted */}
             <input type="hidden" name="imageUrl" value={imageUrl || ''} />
+            <input type="hidden" name="imageDescription" value={imageDescription} />
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-2">
                 <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleUpload}
-                    disabled={uploading}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    type="text"
+                    placeholder="Image Description (optional)"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                    value={imageDescription}
+                    onChange={(e) => setImageDescription(e.target.value)}
                 />
-                {uploading && <span className="text-sm text-gray-500">Uploading...</span>}
+                <div className="flex items-center gap-4">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUpload}
+                        disabled={uploading}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                    {uploading && <span className="text-sm text-gray-500">Uploading...</span>}
+                </div>
             </div>
             
             {error && <p className="text-xs text-red-600">{error}</p>}
 
             {imageUrl && (
                 <div className="mt-2 relative group w-fit">
-                    <img src={imageUrl} alt="Question" className="h-32 w-auto object-contain rounded border border-gray-300" />
+                    {imageDescription && <p className="text-sm text-gray-700 mb-1 font-serif">{imageDescription}</p>}
+                    <img src={imageUrl} alt={imageDescription || "Question Image"} className="h-32 w-auto object-contain rounded border border-gray-300" />
                     <button
                         type="button"
                         onClick={() => setImageUrl('')}
@@ -250,7 +262,10 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
             )}
 
             <div className="sm:col-span-6">
-              <ImageUploader defaultUrl={question.content.image_url} />
+              <ImageUploader 
+                defaultUrl={question.content.image_url} 
+                defaultDescription={question.content.image_description} 
+              />
             </div>
 
             <div className="sm:col-span-6">

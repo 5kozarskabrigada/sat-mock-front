@@ -373,7 +373,16 @@ function QuestionContent({
             <div className="mb-8 font-serif text-[18px] leading-relaxed text-[var(--sat-text)]">
                 {question.content.image_url && (
                     <div className="mb-4">
-                        <img src={question.content.image_url} alt="Question Graphic" className="max-w-full h-auto rounded-lg border border-[var(--sat-border)]" />
+                        {question.content.image_description && (
+                            <p className="text-lg text-[var(--sat-text)] font-serif mb-2">
+                                {question.content.image_description}
+                            </p>
+                        )}
+                        <img 
+                            src={question.content.image_url} 
+                            alt={question.content.image_description || "Question Graphic"} 
+                            className="max-w-full h-auto rounded-lg border border-[var(--sat-border)]" 
+                        />
                     </div>
                 )}
                 <Latex>{question.content.question}</Latex>

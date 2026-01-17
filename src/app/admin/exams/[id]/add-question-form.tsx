@@ -192,29 +192,40 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
 
             <div className="sm:col-span-6">
               <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-              <div className="mt-1 flex space-x-4">
-                  <input 
-                    type="url" 
-                    id="imageUrl" 
-                    name="imageUrl" 
-                    placeholder="https://example.com/image.png"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black flex-1" 
+              <div className="mt-1 flex flex-col gap-2">
+                  <input
+                    type="text"
+                    name="imageDescription"
+                    placeholder="Image Description (optional)"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                    value={imageDescription}
+                    onChange={(e) => setImageDescription(e.target.value)}
                   />
-                  <div className="flex items-center">
-                    <span className="text-gray-500 text-sm mr-2">OR Upload:</span>
+                  <div className="flex space-x-4">
                     <input 
-                        id="imageUpload"
-                        type="file" 
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        type="url" 
+                        id="imageUrl" 
+                        name="imageUrl" 
+                        placeholder="https://example.com/image.png"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black flex-1" 
                     />
+                    <div className="flex items-center">
+                        <span className="text-gray-500 text-sm mr-2">OR Upload:</span>
+                        <input 
+                            id="imageUpload"
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        />
+                    </div>
                   </div>
               </div>
               <p className="mt-1 text-xs text-gray-500">Paste a link OR upload an image (it will be embedded directly).</p>
               {imageBase64 && (
                   <div className="mt-2 relative inline-block group">
                       <p className="text-xs text-green-600 font-semibold">Image selected ready for upload.</p>
+                      {imageDescription && <p className="text-sm text-gray-700 mb-1 font-serif">{imageDescription}</p>}
                       <img src={imageBase64} alt="Preview" className="h-20 w-auto mt-1 border border-gray-200 rounded" />
                       <button 
                           type="button" 

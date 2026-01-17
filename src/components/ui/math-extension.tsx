@@ -36,13 +36,22 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
   // If clicked, enable editing
   // We use a wrapper that handles the click
   return (
-    <NodeViewWrapper className="inline-block mx-1 align-middle">
+    <NodeViewWrapper className={`inline-block mx-1 align-middle ${node.attrs.align === 'center' ? 'w-full text-center my-2' : ''}`}>
       {isEditing ? (
-        <div className="relative z-50 min-w-[100px]">
+        <div className={`relative z-50 min-w-[100px] ${node.attrs.align === 'center' ? 'inline-block' : ''}`}>
+           <div className="absolute -top-8 left-0 flex gap-1 bg-white border shadow-sm rounded p-1 z-50">
+                <button 
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); toggleAlign() }}
+                    className={`px-2 py-0.5 text-xs rounded ${node.attrs.align === 'center' ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-gray-100'}`}
+                >
+                    {node.attrs.align === 'center' ? 'Center' : 'Left'}
+                </button>
+           </div>
            <MathInput 
               value={latex} 
               onChange={handleUpdate}
-              className="border border-indigo-500 shadow-lg !min-h-[40px] !p-1"
+              className={`border border-indigo-500 shadow-lg !min-h-[40px] !p-1 ${node.attrs.align === 'center' ? 'text-center' : ''}`}
               onInit={(mf) => {
                   setTimeout(() => {
                       mf.focus()
