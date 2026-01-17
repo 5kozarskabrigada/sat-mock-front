@@ -147,40 +147,40 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
         <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border-t border-gray-200 text-xs">
            <div className="flex items-center gap-1 mr-2">
              <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Trig</span>
-             <ToolbarButton onClick={() => insertMath('\\sin')} disabled={isDisabled} title="Sine" isMath className="w-auto px-2">sin</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\cos')} disabled={isDisabled} title="Cosine" isMath className="w-auto px-2">cos</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\tan')} disabled={isDisabled} title="Tangent" isMath className="w-auto px-2">tan</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\sin')} disabled={isDisabled} title="Sine" isMath className="w-auto px-2">sin</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\cos')} disabled={isDisabled} title="Cosine" isMath className="w-auto px-2">cos</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\tan')} disabled={isDisabled} title="Tangent" isMath className="w-auto px-2">tan</ToolbarButton>
            </div>
            
            <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
            <div className="flex items-center gap-1 mr-2">
              <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Rel</span>
-             <ToolbarButton onClick={() => insertMath('\\le')} disabled={isDisabled} title="Less than or equal" isMath>≤</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\ge')} disabled={isDisabled} title="Greater than or equal" isMath>≥</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\ne')} disabled={isDisabled} title="Not equal" isMath>≠</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\approx')} disabled={isDisabled} title="Approximately" isMath>≈</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\le')} disabled={isDisabled} title="Less than or equal" isMath>≤</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\ge')} disabled={isDisabled} title="Greater than or equal" isMath>≥</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\ne')} disabled={isDisabled} title="Not equal" isMath>≠</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\approx')} disabled={isDisabled} title="Approximately" isMath>≈</ToolbarButton>
            </div>
 
            <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
            <div className="flex items-center gap-1 mr-2">
              <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Sym</span>
-             <ToolbarButton onClick={() => insertMath('\\pi')} disabled={isDisabled} title="Pi" isMath>π</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\theta')} disabled={isDisabled} title="Theta" isMath>θ</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\infty')} disabled={isDisabled} title="Infinity" isMath>∞</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('^{\\circ}')} disabled={isDisabled} title="Degree" isMath>°</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('^{\\circ}C')} disabled={isDisabled} title="Celsius" isMath>°C</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\pi')} disabled={isDisabled} title="Pi" isMath>π</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\theta')} disabled={isDisabled} title="Theta" isMath>θ</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\infty')} disabled={isDisabled} title="Infinity" isMath>∞</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('^{\\circ}')} disabled={isDisabled} title="Degree" isMath>°</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('^{\\circ}C')} disabled={isDisabled} title="Celsius" isMath>°C</ToolbarButton>
            </div>
 
            <div className="w-px h-4 bg-gray-300 mx-1"></div>
            
            <div className="flex items-center gap-1">
              <span className="text-[10px] uppercase font-bold text-gray-400 select-none">Geo</span>
-             <ToolbarButton onClick={() => insertMath('\\angle')} disabled={isDisabled} title="Angle" isMath>∠</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\triangle')} disabled={isDisabled} title="Triangle" isMath>△</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\parallel')} disabled={isDisabled} title="Parallel" isMath>∥</ToolbarButton>
-             <ToolbarButton onClick={() => insertMath('\\perp')} disabled={isDisabled} title="Perpendicular" isMath>⊥</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\angle')} disabled={isDisabled} title="Angle" isMath>∠</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\triangle')} disabled={isDisabled} title="Triangle" isMath>△</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\parallel')} disabled={isDisabled} title="Parallel" isMath>∥</ToolbarButton>
+             <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\perp')} disabled={isDisabled} title="Perpendicular" isMath>⊥</ToolbarButton>
            </div>
         </div>
       )}

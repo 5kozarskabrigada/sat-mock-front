@@ -53,6 +53,9 @@ export default function MathInput({ value, onChange, onInit, className }: MathIn
           font-size: 1.125rem;
           color: #111827;
         }
+        .mq-editable-field var {
+            font-family: "Times New Roman", serif !important;
+        }
         .mq-root-block {
           padding: 4px;
         }
