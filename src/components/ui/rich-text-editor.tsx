@@ -78,6 +78,7 @@ interface RichTextEditorProps {
     label: string
     placeholder?: string
     enableMath?: boolean
+    onChange?: (html: string) => void
 }
 
 // Extend Superscript to add input rules
