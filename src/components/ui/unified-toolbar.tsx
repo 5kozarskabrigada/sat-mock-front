@@ -34,6 +34,11 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
     }
   }
 
+  // Helper for preventing focus loss on toolbar buttons
+  const preventFocusLoss = (e: React.MouseEvent) => {
+      e.preventDefault()
+  }
+
   const insertMathNode = () => {
     if (activeEditor && !isDisabled) {
       activeEditor.chain().focus().insertContent({
@@ -114,19 +119,22 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
 
             {/* Quick Math Symbols - Basics */}
             <div className="flex items-center gap-0.5">
-               <ToolbarButton onClick={() => insertMath('\\frac{}{}')} disabled={isDisabled} title="Fraction" isMath>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\frac{}{}')} disabled={isDisabled} title="Fraction" isMath>
                   <span className="text-xs">½</span>
                </ToolbarButton>
-               <ToolbarButton onClick={() => insertMath('\\sqrt{}')} disabled={isDisabled} title="Square Root" isMath>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\sqrt{}')} disabled={isDisabled} title="Square Root" isMath>
                   √
                </ToolbarButton>
-               <ToolbarButton onClick={() => insertMath('^{}')} disabled={isDisabled} title="Superscript / Power" isMath>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\sqrt[3]{}')} disabled={isDisabled} title="N-th Root" isMath>
+                  ∛
+               </ToolbarButton>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('^{}')} disabled={isDisabled} title="Superscript / Power" isMath>
                   xʸ
                </ToolbarButton>
-               <ToolbarButton onClick={() => insertMath('_{}')} disabled={isDisabled} title="Subscript" isMath>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('_{}')} disabled={isDisabled} title="Subscript" isMath>
                   x_y
                </ToolbarButton>
-               <ToolbarButton onClick={() => insertMath('|')} disabled={isDisabled} title="Absolute Value" isMath>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('|')} disabled={isDisabled} title="Absolute Value" isMath>
                   |x|
                </ToolbarButton>
             </div>
@@ -182,6 +190,7 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
 
 interface ToolbarButtonProps {
   onClick: () => void
+  onMouseDown?: (e: React.MouseEvent) => void
   isActive?: boolean
   disabled?: boolean
   children: React.ReactNode
@@ -190,11 +199,12 @@ interface ToolbarButtonProps {
   className?: string
 }
 
-function ToolbarButton({ onClick, isActive, disabled, children, title, isMath, className = '' }: ToolbarButtonProps) {
+function ToolbarButton({ onClick, onMouseDown, isActive, disabled, children, title, isMath, className = '' }: ToolbarButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      onMouseDown={onMouseDown}
       disabled={disabled}
       title={title}
       className={`
