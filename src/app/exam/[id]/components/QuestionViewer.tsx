@@ -457,7 +457,7 @@ function QuestionContent({
                                 >
                                     <div 
                                         className={`
-                                            w-7 h-7 rounded-full border flex items-center justify-center mr-4 font-sans font-bold text-sm flex-shrink-0
+                                            w-7 h-7 rounded-full border flex items-center justify-center mr-4 font-sans font-bold text-sm flex-shrink-0 relative
                                             ${isSelected 
                                                 ? 'bg-black text-white border-black' 
                                                 : isCrossed
@@ -466,16 +466,16 @@ function QuestionContent({
                                             }
                                         `}
                                     >
-                                        <div className="relative">
+                                        <div className="relative z-10">
                                             {key}
-                                            {isCrossed && (
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-full h-0.5 bg-red-500 transform rotate-[-45deg]"></div>
-                                                </div>
-                                            )}
                                         </div>
+                                        {isCrossed && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="w-full h-0.5 bg-red-500 transform rotate-[-45deg]"></div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <span className={`font-serif text-[16px] ${isCrossed ? 'text-gray-400 line-through decoration-2' : 'text-black'}`}>
+                                    <span className={`font-serif text-[15px] ${isCrossed ? 'text-gray-400 line-through decoration-2' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", serif' }}>
                                         <Latex>{value as string}</Latex>
                                     </span>
                                     
@@ -487,23 +487,21 @@ function QuestionContent({
 
                                 {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}
                                 {(isAbcMode || isCrossed) && (
-                                    <div className="absolute right-2 flex items-center z-10">
+                                    <div className="absolute -right-10 flex items-center z-10 h-full top-0">
                                          {isCrossed ? (
                                              <button 
                                                 onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
-                                                className="bg-white border border-gray-300 rounded px-2 py-0.5 text-xs font-medium text-gray-700 hover:bg-gray-50 shadow-sm"
+                                                className="text-blue-600 text-xs font-bold hover:underline bg-white px-1"
                                              >
                                                  Undo
                                              </button>
                                          ) : isAbcMode ? (
                                              <button 
                                                 onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
-                                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-500 bg-white"
+                                                className="w-6 h-6 rounded-full border border-black flex items-center justify-center hover:bg-gray-100 text-black bg-white font-bold text-xs"
                                                 title="Eliminate"
                                              >
-                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-12.728 12.728" />
-                                                 </svg>
+                                                 {key}
                                              </button>
                                          ) : null}
                                     </div>

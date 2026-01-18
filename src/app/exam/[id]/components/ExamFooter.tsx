@@ -65,7 +65,7 @@ export default function ExamFooter({
       >
         {/* Left: User Info */}
         <div className="flex items-center space-x-3 w-1/4">
-            <div className="font-bold text-[14px] text-black font-serif">
+            <div className="font-bold text-[14px] text-gray-500 font-serif" style={{ fontFamily: '"Noto Serif", serif' }}>
                 {studentName}
             </div>
         </div>
@@ -74,7 +74,8 @@ export default function ExamFooter({
         <div className="flex-1 flex justify-center relative">
             <button 
                 onClick={() => setIsModalOpen(!isModalOpen)} 
-                className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
+                className="bg-black text-white px-4 py-2 rounded-md text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
+                style={{ fontFamily: '"Noto Serif", serif' }}
             >
                 <span>Question {currentQuestionInModule} of {moduleQuestions.length}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-4 h-4 transition-transform ${isModalOpen ? 'rotate-180' : ''}`}>
