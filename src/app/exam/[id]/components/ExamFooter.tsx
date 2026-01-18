@@ -51,18 +51,15 @@ export default function ExamFooter({
 
   return (
     <>
-      {/* Dashed Line Decoration */}
-      <div 
-        className="h-[2px] w-full"
-        style={{
-            borderBottom: '2px dashed',
-            borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1'
-        }}
-      ></div>
-
       <footer 
-        className="flex items-center justify-between px-6 bg-[#f0f2f5] z-20 relative select-none"
-        style={{ height: '60px' }}
+        className="flex items-center justify-between px-6 z-20 relative select-none"
+        style={{ 
+            height: '57.4769px',
+            backgroundColor: 'rgb(229, 235, 245)',
+            padding: '8px',
+            borderTop: '1.48148px dashed',
+            borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, rgba(0, 0, 0, 0) 3.5%, rgba(0, 0, 0, 0) 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, rgba(0, 0, 0, 0) 7.5%, rgba(0, 0, 0, 0) 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, rgba(0, 0, 0, 0) 11.5%, rgba(0, 0, 0, 0) 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, rgba(0, 0, 0, 0) 15.5%, rgba(0, 0, 0, 0) 16%) 1 / 1 / 0 stretch'
+        }}
       >
         {/* Left: User Info */}
         <div className="flex items-center space-x-3 w-1/4">

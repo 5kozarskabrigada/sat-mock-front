@@ -440,16 +440,26 @@ function QuestionContent({
                                         }
                                     }}
                                     disabled={isCrossed && !isAbcMode}
-                                    className={`flex-1 text-left p-3 rounded-lg border-[2px] transition-all flex items-center relative min-h-[60px]
+                                    className={`flex-1 text-left transition-all flex items-center relative min-h-[50px]
                                         ${isSelected 
-                                            ? 'border-[#0077c8] bg-[#e6f4ff] ring-1 ring-[#0077c8]' 
+                                            ? 'bg-[#e6f4ff] ring-1 ring-[#0077c8] border-[#0077c8]' 
                                             : isCrossed
-                                                ? 'border-gray-200 bg-gray-50' 
-                                                : 'border-black bg-white hover:bg-gray-50'
+                                                ? 'bg-gray-50 border-gray-200' 
+                                                : 'bg-white hover:bg-gray-50 border-black'
                                         }
                                     `}
+                                    style={{
+                                        padding: '12px',
+                                        columnGap: '12px',
+                                        borderStyle: 'solid',
+                                        borderWidth: '1.48148px',
+                                        borderRadius: '10px',
+                                        fontSize: '16px',
+                                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                                        color: 'oklch(0.145 0 0)'
+                                    }}
                                 >
-                                    <div className="mr-4 flex-shrink-0 relative">
+                                    <div className="flex-shrink-0 relative">
                                         <div 
                                             className={`
                                                 flex items-center justify-center w-6 h-6 rounded-full font-bold border text-xs
@@ -465,7 +475,7 @@ function QuestionContent({
                                         </div>
                                     </div>
 
-                                    <span className={`font-serif text-[15px] ${isCrossed ? 'text-gray-400' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", serif' }}>
+                                    <span className={`font-serif ${isCrossed ? 'text-gray-400' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", "Noto Serif Fallback", serif' }}>
                                         <Latex>{value as string}</Latex>
                                     </span>
                                     

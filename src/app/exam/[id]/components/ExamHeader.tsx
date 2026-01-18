@@ -43,16 +43,30 @@ export default function ExamHeader({
       <header 
         className="flex items-center justify-between px-6 bg-white z-20 relative select-none"
         style={{ 
-            height: '60px', 
-            fontFamily: '"Noto Serif", serif',
-            borderBottom: '2px dashed',
-            borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1'
+            height: '69.4676px', 
+            padding: '8px',
+            fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+            borderBottom: '1.48148px dashed',
+            borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, rgba(0, 0, 0, 0) 3.5%, rgba(0, 0, 0, 0) 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, rgba(0, 0, 0, 0) 7.5%, rgba(0, 0, 0, 0) 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, rgba(0, 0, 0, 0) 11.5%, rgba(0, 0, 0, 0) 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, rgba(0, 0, 0, 0) 15.5%, rgba(0, 0, 0, 0) 16%) 1 / 1 / 0 stretch'
         }}
       >
         {/* Left: Logo + Section */}
         <div className="flex flex-col justify-center h-full">
-           <h1 className="font-bold text-[17px] text-black font-serif leading-tight">{title}</h1>
-           <button className="text-blue-600 text-xs hover:underline text-left mt-0.5 font-sans">Directions</button>
+           <h1 className="font-bold block leading-tight" style={{ 
+               fontSize: '18px', 
+               fontWeight: 600, 
+               color: 'oklch(0.278 0.033 256.848)', 
+               lineHeight: '28px',
+               fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+           }}>{title}</h1>
+           <button className="hover:underline text-left mt-0.5" style={{
+               color: 'oklch(0.546 0.245 262.881)',
+               fontSize: '14px',
+               fontWeight: 400,
+               height: '20px',
+               lineHeight: '20px',
+               fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+           }}>Directions</button>
         </div>
 
         {/* Center: Timer */}
@@ -65,8 +79,14 @@ export default function ExamHeader({
               )}
               <button 
                   onClick={() => setIsTimerHidden(!isTimerHidden)}
-                  className="text-black hover:text-gray-700 transition-colors"
+                  className="text-black hover:text-gray-700 transition-colors flex items-center justify-center"
                   title={isTimerHidden ? "Show Timer" : "Hide Timer"}
+                  style={{
+                      width: '23.9815px',
+                      height: '23.9815px',
+                      color: 'oklch(0.446 0.03 256.802)',
+                      padding: '4px'
+                  }}
                   >
                       {isTimerHidden ? (
                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
