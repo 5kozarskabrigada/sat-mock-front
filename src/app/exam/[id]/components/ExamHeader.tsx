@@ -71,7 +71,7 @@ export default function ExamHeader({
 
         {/* Center: Timer */}
         <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-6">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center space-x-2">
               {!isTimerHidden && (
                   <span className={`font-bold text-lg tabular-nums mr-2 ${getTimerColor()}`}>
                       {formatTime(timeLeft)}
@@ -82,8 +82,8 @@ export default function ExamHeader({
                   className="text-black hover:text-gray-700 transition-colors flex items-center justify-center"
                   title={isTimerHidden ? "Show Timer" : "Hide Timer"}
                   style={{
-                      width: '23.9815px',
-                      height: '23.9815px',
+                      width: '24px',
+                      height: '24px',
                       color: 'oklch(0.446 0.03 256.802)',
                       padding: '4px'
                   }}
@@ -108,17 +108,21 @@ export default function ExamHeader({
         <div className="flex items-center gap-4">
           <button 
               onClick={onAnnotateClick}
-              className={`flex flex-col items-center justify-center w-16 h-14 rounded-lg transition-colors
+              className={`flex flex-col items-center justify-center rounded-lg transition-colors
                   ${isAnnotateActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}
               `}
+              style={{
+                  width: '50px',
+                  height: '50px'
+              }}
           >
-              <div className="mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 19.425a1.875 1.875 0 01-2.652 0l-4.897-4.897a1.875 1.875 0 010-2.652l3.248-3.193" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+              <div className="mb-0.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
               </div>
-              <span className="text-xs font-medium">Highlights</span>
+              <span className="text-[10px] font-medium">Highlights</span>
           </button>
 
           <div className="relative">

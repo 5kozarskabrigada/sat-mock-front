@@ -196,14 +196,15 @@ export default function ExamFooter({
           <button 
             onClick={onBack}
             disabled={currentQuestionIndex === 0}
-            className="text-white font-bold hover:bg-[#1f3090] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="text-white hover:bg-[#1f3090] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             style={{
                 width: '66.4167px',
                 height: '40px',
                 backgroundColor: 'rgb(51, 76, 199)',
                 borderRadius: '30px',
                 fontSize: '15px',
-                fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                fontWeight: 400
             }}
           >
             Back
@@ -211,14 +212,15 @@ export default function ExamFooter({
           {currentQuestionIndex === questions.length - 1 ? (
              <button 
                 onClick={onSubmit}
-                className="text-white font-bold hover:bg-[#1f3090] transition-colors"
+                className="text-white hover:bg-[#1f3090] transition-colors"
                 style={{
                     width: '65.4051px',
                     height: '40px',
                     backgroundColor: 'rgb(51, 76, 199)',
                     borderRadius: '30px',
                     fontSize: '15px',
-                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                    fontWeight: 400
                 }}
              >
                  Submit
@@ -226,14 +228,15 @@ export default function ExamFooter({
           ) : (
               <button 
                 onClick={onNext}
-                className="text-white font-bold hover:bg-[#1f3090] transition-colors"
+                className="text-white hover:bg-[#1f3090] transition-colors"
                 style={{
                     width: '65.4051px',
                     height: '40px',
                     backgroundColor: 'rgb(51, 76, 199)',
                     borderRadius: '30px',
                     fontSize: '15px',
-                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                    fontWeight: 400
                 }}
               >
                 Next

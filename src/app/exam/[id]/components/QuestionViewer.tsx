@@ -481,11 +481,12 @@ function QuestionContent({
                                         padding: '12px',
                                         columnGap: '12px',
                                         borderStyle: 'solid',
-                                        borderWidth: '1.48148px',
+                                        borderWidth: '2px',
                                         borderRadius: '10px',
                                         fontSize: '16px',
                                         fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
-                                        color: 'oklch(0.145 0 0)'
+                                        color: 'oklch(0.145 0 0)',
+                                        width: isAbcMode ? 'calc(100% - 40px)' : '100%'
                                     }}
                                 >
                                     <div className="flex-shrink-0 relative">
@@ -519,7 +520,7 @@ function QuestionContent({
 
                                 {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}
                                 {(isAbcMode || isCrossed) && (
-                                    <div className="absolute -right-10 flex items-center z-20 h-full top-0">
+                                    <div className="absolute right-0 flex items-center justify-center h-full top-0" style={{ width: '40px' }}>
                                          {isCrossed ? (
                                              <button 
                                                 onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
@@ -533,7 +534,12 @@ function QuestionContent({
                                                 className="w-6 h-6 rounded-full border border-black flex items-center justify-center hover:bg-gray-100 text-black bg-white font-bold text-xs"
                                                 title="Eliminate"
                                              >
-                                                 {key}
+                                                 <div className="eliminate-icon relative w-full h-full flex items-center justify-center">
+                                                     <span className="">{key}</span>
+                                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="eliminate-dash absolute text-red-600" style={{ width: '20px', height: '20px', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)' }}>
+                                                         <line x1="0" y1="10" x2="24" y2="10"></line>
+                                                     </svg>
+                                                 </div>
                                              </button>
                                          ) : null}
                                     </div>
