@@ -46,14 +46,14 @@ export default function ExamHeader({
             height: '69.4676px', 
             padding: '8px',
             fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
-            borderBottom: '1.48148px dashed',
+            borderBottom: '2px dashed',
             borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, rgba(0, 0, 0, 0) 3.5%, rgba(0, 0, 0, 0) 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, rgba(0, 0, 0, 0) 7.5%, rgba(0, 0, 0, 0) 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, rgba(0, 0, 0, 0) 11.5%, rgba(0, 0, 0, 0) 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, rgba(0, 0, 0, 0) 15.5%, rgba(0, 0, 0, 0) 16%) 1 / 1 / 0 stretch'
         }}
       >
         {/* Left: Logo + Section */}
         <div className="flex flex-col justify-center h-full">
            <h1 className="font-bold block leading-tight" style={{ 
-               fontSize: '18px', 
+               fontSize: '14px', 
                fontWeight: 600, 
                color: 'oklch(0.278 0.033 256.848)', 
                lineHeight: '28px',
@@ -61,7 +61,7 @@ export default function ExamHeader({
            }}>{title}</h1>
            <button className="hover:underline text-left mt-0.5" style={{
                color: 'oklch(0.546 0.245 262.881)',
-               fontSize: '14px',
+               fontSize: '12px',
                fontWeight: 400,
                height: '20px',
                lineHeight: '20px',

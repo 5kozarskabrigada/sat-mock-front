@@ -365,9 +365,30 @@ function QuestionContent({
     return (
         <>
             {/* Header: Question Number + Tools */}
-            <div className="flex items-center justify-between mb-4 bg-[#f0f2f5] rounded p-2 border-b border-gray-200" style={{ borderBottom: '2px dashed', borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1' }}>
+            <div className="flex items-center justify-between" 
+                style={{ 
+                    backgroundColor: 'rgb(240, 240, 240)',
+                    height: '39.9884px',
+                    marginBottom: '8px',
+                    borderBottom: '2px dashed',
+                    borderBottomColor: 'oklch(0.145 0 0)',
+                    borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, rgba(0, 0, 0, 0) 3.5%, rgba(0, 0, 0, 0) 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, rgba(0, 0, 0, 0) 7.5%, rgba(0, 0, 0, 0) 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, rgba(0, 0, 0, 0) 11.5%, rgba(0, 0, 0, 0) 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, rgba(0, 0, 0, 0) 15.5%, rgba(0, 0, 0, 0) 16%) 1 / 1 / 0 stretch'
+                }}
+            >
                 <div className="flex items-center gap-3">
-                    <div className="bg-black text-white w-8 h-8 flex items-center justify-center font-bold rounded-[4px] font-sans text-lg shadow-sm">
+                    <div className="flex items-center justify-center font-bold font-sans shadow-sm"
+                        style={{
+                            backgroundColor: 'rgb(0, 0, 0)',
+                            color: 'rgb(255, 255, 255)',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            height: '38.5069px',
+                            width: '32.8588px',
+                            paddingLeft: '12.5px', 
+                            paddingRight: '12.5px',
+                            fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                        }}
+                    >
                         {questionIndex + 1}
                     </div>
                     <button 
@@ -383,14 +404,22 @@ function QuestionContent({
 
                 <button 
                     onClick={() => setIsAbcMode(!isAbcMode)}
-                    className={`px-3 py-1 rounded text-xs font-bold border transition-colors flex items-center gap-1
-                        ${isAbcMode 
-                            ? 'bg-[#1e2a5e] text-white border-[#1e2a5e]' 
-                            : 'bg-black border-black text-white hover:bg-gray-800'}
-                    `}
+                    className="flex items-center justify-center transition-colors font-serif"
+                    style={{
+                        width: '32px',
+                        height: '32px',
+                        color: 'rgb(255, 255, 255)',
+                        backgroundColor: isAbcMode ? 'rgb(0, 0, 0)' : 'transparent', 
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        border: 'none',
+                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                        textDecoration: isAbcMode ? 'none' : 'line-through',
+                        textDecorationColor: 'white'
+                    }}
                     title="Toggle Elimination Mode"
                 >
-                    <span className={isAbcMode ? '' : 'line-through decoration-white'}>ABC</span>
+                    <span style={{ color: isAbcMode ? 'white' : 'oklch(0.551 0.027 264.364)', textDecoration: isAbcMode ? 'none' : 'line-through', textDecorationColor: 'oklch(0.551 0.027 264.364)' }}>ABC</span>
                 </button>
             </div>
             

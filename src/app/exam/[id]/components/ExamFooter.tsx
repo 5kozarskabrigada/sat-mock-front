@@ -57,7 +57,7 @@ export default function ExamFooter({
             height: '57.4769px',
             backgroundColor: 'rgb(229, 235, 245)',
             padding: '8px',
-            borderTop: '1.48148px dashed',
+            borderTop: '2px dashed',
             borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, rgba(0, 0, 0, 0) 3.5%, rgba(0, 0, 0, 0) 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, rgba(0, 0, 0, 0) 7.5%, rgba(0, 0, 0, 0) 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, rgba(0, 0, 0, 0) 11.5%, rgba(0, 0, 0, 0) 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, rgba(0, 0, 0, 0) 15.5%, rgba(0, 0, 0, 0) 16%) 1 / 1 / 0 stretch'
         }}
       >
@@ -72,8 +72,16 @@ export default function ExamFooter({
         <div className="flex-1 flex justify-center relative">
             <button 
                 onClick={() => setIsModalOpen(!isModalOpen)} 
-                className="bg-black text-white px-4 py-2 rounded-[30px] text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
-                style={{ fontFamily: '"Noto Serif", serif' }}
+                className="text-white flex items-center justify-center space-x-2 hover:bg-gray-800 transition-colors"
+                style={{ 
+                    fontFamily: '"Noto Serif", serif',
+                    backgroundColor: 'rgb(0, 0, 0)',
+                    width: '162.938px',
+                    height: '40px',
+                    borderRadius: '14px',
+                    fontSize: '15px',
+                    columnGap: '8px'
+                }}
             >
                 <span>Question {currentQuestionInModule} of {moduleQuestions.length}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-4 h-4 transition-transform ${isModalOpen ? 'rotate-180' : ''}`}>
@@ -188,21 +196,45 @@ export default function ExamFooter({
           <button 
             onClick={onBack}
             disabled={currentQuestionIndex === 0}
-            className="px-8 py-2 rounded-full bg-[#99a6ea] text-white font-bold text-[15px] hover:bg-[#8896da] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="text-white font-bold hover:bg-[#1f3090] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{
+                width: '66.4167px',
+                height: '40px',
+                backgroundColor: 'rgb(51, 76, 199)',
+                borderRadius: '30px',
+                fontSize: '15px',
+                fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+            }}
           >
             Back
           </button>
           {currentQuestionIndex === questions.length - 1 ? (
              <button 
                 onClick={onSubmit}
-                className="px-8 py-2 rounded-full bg-[#2c42b5] text-white font-bold text-[15px] hover:bg-[#1f3090] transition-colors"
+                className="text-white font-bold hover:bg-[#1f3090] transition-colors"
+                style={{
+                    width: '65.4051px',
+                    height: '40px',
+                    backgroundColor: 'rgb(51, 76, 199)',
+                    borderRadius: '30px',
+                    fontSize: '15px',
+                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                }}
              >
                  Submit
              </button>
           ) : (
               <button 
                 onClick={onNext}
-                className="px-8 py-2 rounded-full bg-[#2c42b5] text-white font-bold text-[15px] hover:bg-[#1f3090] transition-colors"
+                className="text-white font-bold hover:bg-[#1f3090] transition-colors"
+                style={{
+                    width: '65.4051px',
+                    height: '40px',
+                    backgroundColor: 'rgb(51, 76, 199)',
+                    borderRadius: '30px',
+                    fontSize: '15px',
+                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                }}
               >
                 Next
               </button>
