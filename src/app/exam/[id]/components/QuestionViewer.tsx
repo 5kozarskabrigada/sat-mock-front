@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -9,8 +8,6 @@ import parse from 'html-react-parser'
 const Latex = ({ children }: { children: string }) => {
     if (!children) return null;
     
-    // If content contains standard LaTeX delimiters, we try to parse them
-    // Note: This simple parser handles LaTeX mixed with HTML from Tiptap
     const options = {
         replace: (domNode: any) => {
             if (domNode.type === 'text') {
@@ -39,7 +36,6 @@ const Latex = ({ children }: { children: string }) => {
                 }
             }
 
-            // Handle Tiptap math-component tags
             if (domNode.type === 'tag' && domNode.name === 'math-component') {
                 const latex = domNode.attribs?.latex
                 const display = domNode.attribs?.display
@@ -113,7 +109,6 @@ export default function QuestionViewer({
   // Annotation: Handle Text Selection & Click on Highlights
   useEffect(() => {
     const handleSelection = () => {
-        // Only allow selection menu if annotation mode is active
         if (!isAnnotateActive) return
 
         const selection = window.getSelection()
@@ -130,7 +125,6 @@ export default function QuestionViewer({
     }
     
     const handleClick = (e: MouseEvent) => {
-        // Only allow interaction with highlights if annotation mode is active
         if (!isAnnotateActive) return
 
         const target = e.target as HTMLElement
@@ -166,7 +160,7 @@ export default function QuestionViewer({
             el.removeEventListener('click', handleClick)
         }
     }
-  }, [isAnnotateActive]) // Add dependency on isAnnotateActive
+  }, [isAnnotateActive])
 
   // Clear menu on global click or when annotation mode is disabled
   useEffect(() => {
@@ -198,9 +192,9 @@ export default function QuestionViewer({
                el.dataset.color = color
                el.style.backgroundColor = '' 
                el.style.borderBottomColor = ''
-               if (color === 'yellow') el.style.backgroundColor = 'rgba(254, 240, 138, 0.2)'
-               if (color === 'blue') el.style.backgroundColor = 'rgba(186, 230, 253, 0.2)'
-               if (color === 'pink') el.style.backgroundColor = 'rgba(251, 207, 232, 0.2)'
+               if (color === 'yellow') el.style.backgroundColor = 'rgba(254, 240, 138, 0.4)'
+               if (color === 'blue') el.style.backgroundColor = 'rgba(186, 230, 253, 0.4)'
+               if (color === 'pink') el.style.backgroundColor = 'rgba(251, 207, 232, 0.4)'
                el.style.borderBottomWidth = '1px'
                el.style.borderBottomStyle = 'solid'
                if (color === 'yellow') el.style.borderBottomColor = '#eab308'
@@ -218,9 +212,9 @@ export default function QuestionViewer({
       const span = document.createElement('span')
       span.className = `annotation-highlight border-b-2 border-${color}-500 cursor-pointer`
       span.dataset.color = color
-      if (color === 'yellow') span.style.backgroundColor = 'rgba(254, 240, 138, 0.2)'
-      if (color === 'blue') span.style.backgroundColor = 'rgba(186, 230, 253, 0.2)'
-      if (color === 'pink') span.style.backgroundColor = 'rgba(251, 207, 232, 0.2)'
+      if (color === 'yellow') span.style.backgroundColor = 'rgba(254, 240, 138, 0.4)'
+      if (color === 'blue') span.style.backgroundColor = 'rgba(186, 230, 253, 0.4)'
+      if (color === 'pink') span.style.backgroundColor = 'rgba(251, 207, 232, 0.4)'
       span.style.borderBottomWidth = '1px'
       span.style.borderBottomStyle = 'solid'
       if (color === 'yellow') span.style.borderBottomColor = '#eab308'
@@ -273,9 +267,12 @@ export default function QuestionViewer({
             className="fixed z-50 flex items-center bg-white rounded-lg shadow-lg border border-gray-200 p-1.5 space-x-1 annotation-menu transform -translate-x-1/2 -translate-y-full"
             style={{ left: selectionMenu.x, top: selectionMenu.y - 10 }}
           >
-              <button onClick={() => applyHighlight('yellow')} className="w-6 h-6 bg-yellow-100 border border-yellow-300 rounded hover:scale-110 transition-transform" />
-              <button onClick={() => applyHighlight('blue')} className="w-6 h-6 bg-blue-100 border border-blue-300 rounded hover:scale-110 transition-transform" />
-              <button onClick={() => applyHighlight('pink')} className="w-6 h-6 bg-pink-100 border border-pink-300 rounded hover:scale-110 transition-transform" />
+              <button onClick={() => applyHighlight('yellow')} className="w-6 h-6 bg-yellow-200 border border-yellow-400 rounded hover:scale-110 transition-transform" />
+              <button onClick={() => applyHighlight('blue')} className="w-6 h-6 bg-blue-200 border border-blue-400 rounded hover:scale-110 transition-transform" />
+              <button onClick={() => applyHighlight('pink')} className="w-6 h-6 bg-pink-200 border border-pink-400 rounded hover:scale-110 transition-transform" />
+              <button onClick={() => applyHighlight('underline')} className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded hover:scale-110 transition-transform bg-white">
+                 <span className="border-b-2 border-black font-serif">U</span>
+              </button>
               <div className="w-px h-4 bg-gray-300 mx-1" />
               <button onClick={removeHighlight} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-gray-100 rounded" title="Remove Highlight">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -287,24 +284,41 @@ export default function QuestionViewer({
 
       {/* Main Layout */}
       {twoColumnLayout ? (
-          <div className="flex w-full h-full p-4 gap-4 items-start">
-              {/* Left: Passage Panel (48%) */}
+          <div className="flex w-full h-full p-4 gap-0 items-start">
+              {/* Left: Passage Panel */}
               <div 
                 ref={passageRef}
-                className="overflow-y-auto p-4 font-serif text-[15px] leading-[24px] text-black"
-                style={{ width: '48%', fontFamily: '"Noto Serif", serif' }}
+                className="overflow-y-auto content-pane"
+                style={{ 
+                    width: '50%', 
+                    minWidth: '20%',
+                    padding: '16px',
+                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                    fontSize: '15px',
+                    lineHeight: '24px',
+                    color: 'oklch(0.145 0 0)'
+                }}
               >
                  {question.content.passage && (
-                    <p className="whitespace-pre-wrap">{question.content.passage}</p>
+                    <div className="prose max-w-none">
+                        <div className="annotation-tool relative">
+                            <p className="whitespace-pre-wrap">{question.content.passage}</p>
+                        </div>
+                    </div>
                  )}
               </div>
 
-              {/* Right: Question Panel (52%) */}
+              {/* Right: Question Panel */}
               <div 
-                className="overflow-y-auto p-0 flex flex-col"
-                style={{ width: '52%' }}
+                className="overflow-y-auto flex flex-col content-pane"
+                style={{ 
+                    width: 'calc(50% - 5px)', 
+                    minWidth: '20%',
+                    position: 'relative',
+                    left: '5px'
+                }}
               >
-                 <div className="p-4 pt-0">
+                 <div className="mb-4">
                     <QuestionContent 
                         question={question}
                         questionIndex={questionIndex}
@@ -365,89 +379,84 @@ function QuestionContent({
     return (
         <>
             {/* Header: Question Number + Tools */}
-            <div className="flex items-center justify-between" 
-                style={{ 
+            <div className="question-index-container flex items-center justify-between bg-gray-200 rounded mb-2 top-0 z-5" 
+                style={{
                     backgroundColor: 'rgb(240, 240, 240)',
                     height: '39.9884px',
                     marginBottom: '8px',
                     borderBottom: '2px dashed',
                     borderBottomColor: 'oklch(0.145 0 0)',
-                    borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, rgba(0, 0, 0, 0) 3.5%, rgba(0, 0, 0, 0) 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, rgba(0, 0, 0, 0) 7.5%, rgba(0, 0, 0, 0) 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, rgba(0, 0, 0, 0) 11.5%, rgba(0, 0, 0, 0) 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, rgba(0, 0, 0, 0) 15.5%, rgba(0, 0, 0, 0) 16%) 1 / 1 / 0 stretch'
+                    borderImage: 'repeating-linear-gradient(to right, rgb(167, 56, 87) 0%, rgb(167, 56, 87) 3.5%, transparent 3.5%, transparent 4%, rgb(249, 223, 205) 4%, rgb(249, 223, 205) 7.5%, transparent 7.5%, transparent 8%, rgb(28, 17, 103) 8%, rgb(28, 17, 103) 11.5%, transparent 11.5%, transparent 12%, rgb(94, 147, 101) 12%, rgb(94, 147, 101) 15.5%, transparent 15.5%, transparent 16%) 1 / 1 / 0 stretch'
                 }}
             >
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center font-bold font-sans shadow-sm"
+                <div className="flex items-center h-full">
+                    <div className="question-index font-semibold bg-black text-white text-sm h-full flex items-center justify-center"
                         style={{
-                            backgroundColor: 'rgb(0, 0, 0)',
-                            color: 'rgb(255, 255, 255)',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            height: '38.5069px',
                             width: '32.8588px',
-                            paddingLeft: '12.5px', 
+                            paddingLeft: '12.5px',
                             paddingRight: '12.5px',
-                            fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                            fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                            fontSize: '14px'
                         }}
                     >
                         {questionIndex + 1}
                     </div>
                     <button 
                         onClick={onToggleMark}
-                        className="flex items-center gap-2 text-gray-600 hover:text-black font-sans font-medium text-sm"
+                        className="flex items-center text-sm text-gray-600 hover:text-black mr-2 h-full ml-3"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill={isMarked ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 ${isMarked ? 'text-red-600' : ''}`}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                        <svg fill={isMarked ? "currentColor" : "currentColor"} viewBox="0 0 24 24" className={`w-5 h-5 ${isMarked ? 'text-red-600' : 'text-gray-500'}`}>
+                            <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.807-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"></path>
                         </svg>
-                        <span>{isMarked ? 'Unmark' : 'Mark for Review'}</span>
+                        <span className="ml-1" style={{ fontFamily: '"Noto Serif", "Noto Serif Fallback", serif', fontSize: '14px' }}>
+                            {isMarked ? 'Unmark' : 'Mark for Review'}
+                        </span>
                     </button>
                 </div>
 
                 <button 
                     onClick={() => setIsAbcMode(!isAbcMode)}
-                    className="flex items-center justify-center transition-colors font-serif"
-                    style={{
-                        width: '32px',
-                        height: '32px',
-                        color: 'rgb(255, 255, 255)',
-                        backgroundColor: isAbcMode ? 'rgb(0, 0, 0)' : 'transparent', 
-                        fontSize: '14px',
-                        fontWeight: 400,
-                        border: 'none',
-                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
-                        textDecoration: isAbcMode ? 'none' : 'line-through',
-                        textDecorationColor: 'white'
-                    }}
-                    title="Toggle Elimination Mode"
+                    className="flex items-center text-sm text-gray-600 hover:text-black mr-2 h-full"
                 >
-                    <span style={{ color: isAbcMode ? 'white' : 'oklch(0.551 0.027 264.364)', textDecoration: isAbcMode ? 'none' : 'line-through', textDecorationColor: 'oklch(0.551 0.027 264.364)' }}>ABC</span>
+                    <div className={`relative border border-gray-300 rounded-sm w-8 h-8 flex items-center justify-center ${isAbcMode ? 'bg-[#384cc0]' : 'bg-transparent'}`}>
+                        <span className={`text-[12px] font-medium ${isAbcMode ? 'text-white' : 'text-gray-500'} font-serif`}>ABC</span>
+                        {isAbcMode && (
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="absolute w-8 h-8 text-white">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M18 6L6 18"></path>
+                            </svg>
+                        )}
+                        {!isAbcMode && (
+                             <div className="absolute w-full h-px bg-gray-500 transform rotate-[-45deg]"></div>
+                        )}
+                    </div>
                 </button>
             </div>
             
-            {/* Dashed Line Under Header - Removed as it's now part of the header container style */}
-
             {/* Question Text */}
-            <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2" style={{ fontFamily: '"Noto Serif", serif' }}>
-                {question.content.image_url && (
-                    <div className="mb-4">
-                        {question.content.image_description && (
-                                <div className="mb-2">
-                                    <Latex>{question.content.image_description}</Latex>
-                                </div>
-                            )}
-                        <img 
-                            src={question.content.image_url} 
-                            alt={question.content.image_description || "Question Graphic"} 
-                            className="max-w-full h-auto rounded-lg border border-gray-200" 
-                        />
-                    </div>
-                )}
-                <Latex>{question.content.question}</Latex>
-                
-                {question.equation_latex && (
-                    <div className="mt-4 flex justify-center">
-                         <BlockMath math={question.equation_latex} />
-                    </div>
-                )}
+            <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2 prose max-w-none mt-2" style={{ fontFamily: '"Noto Serif", serif' }}>
+                <div className="annotation-tool relative">
+                    {question.content.image_url && (
+                        <div className="mb-4">
+                            {question.content.image_description && (
+                                    <div className="mb-2">
+                                        <Latex>{question.content.image_description}</Latex>
+                                    </div>
+                                )}
+                            <img 
+                                src={question.content.image_url} 
+                                alt={question.content.image_description || "Question Graphic"} 
+                                className="max-w-full h-auto rounded-lg border border-gray-200" 
+                            />
+                        </div>
+                    )}
+                    <Latex>{question.content.question}</Latex>
+                    
+                    {question.equation_latex && (
+                        <div className="mt-4 flex justify-center">
+                             <BlockMath math={question.equation_latex} />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Answer Area */}
@@ -459,7 +468,24 @@ function QuestionContent({
                         const isCrossed = crossedAnswers[key]
                         
                         return (
-                            <div key={key} className="relative group flex items-center">
+                            <div key={key} className="relative flex items-center w-full mb-2 pr-10">
+                                {/* Elimination Icon Button - Only visible in ABC mode or if crossed */}
+                                {(isAbcMode || isCrossed) && (
+                                    <button 
+                                        className="absolute right-0"
+                                        onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
+                                    >
+                                        <div className="eliminate-icon relative" style={{ width: '30px', height: '30px' }}>
+                                            <span className="font-serif font-bold text-gray-700 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">{key}</span>
+                                            {isCrossed && (
+                                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="eliminate-dash text-red-600" style={{ width: '20px', height: '20px', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)' }}>
+                                                    <line x1="0" y1="10" x2="24" y2="10"></line>
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </button>
+                                )}
+
                                 <button
                                     onClick={() => {
                                         if (isAbcMode) {
@@ -469,125 +495,46 @@ function QuestionContent({
                                         }
                                     }}
                                     disabled={isCrossed && !isAbcMode}
-                                    className={`flex-1 text-left transition-all flex items-center relative min-h-[50px]
+                                    className={`w-full p-3 text-left border-2 rounded-lg text-base flex items-center gap-3 cursor-pointer
                                         ${isSelected 
                                             ? 'bg-[#e6f4ff] ring-1 ring-[#0077c8] border-[#0077c8]' 
                                             : isCrossed
                                                 ? 'bg-gray-50 border-gray-200' 
-                                                : 'bg-white hover:bg-gray-50 border-black'
+                                                : 'bg-white hover:bg-gray-200 border-black'
                                         }
                                     `}
                                     style={{
-                                        padding: '12px',
-                                        columnGap: '12px',
-                                        borderStyle: 'solid',
-                                        borderWidth: '2px',
-                                        borderRadius: '10px',
-                                        fontSize: '16px',
-                                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
-                                        color: 'oklch(0.145 0 0)',
-                                        width: isAbcMode ? 'calc(100% - 40px)' : '100%'
+                                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
                                     }}
                                 >
-                                    <div className="flex-shrink-0 relative">
-                                        <div 
-                                            className={`
-                                                flex items-center justify-center w-6 h-6 rounded-full font-bold border text-xs
-                                                ${isSelected 
-                                                    ? 'bg-black text-white border-black' 
-                                                    : isCrossed
-                                                        ? 'bg-transparent border-black text-black'
-                                                        : 'bg-transparent border-black text-black'
-                                                }
-                                            `}
-                                        >
-                                            <span className="">{key}</span>
-                                        </div>
+                                    <div className={`flex items-center justify-center w-6 h-6 rounded-full font-bold border text-xs
+                                        ${isSelected 
+                                            ? 'bg-black text-white border-black' 
+                                            : 'bg-transparent border-black text-black'
+                                        }
+                                    `}>
+                                        <span>{key}</span>
                                     </div>
-
-                                    <span className={`font-serif ${isCrossed ? 'text-gray-400' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", "Noto Serif Fallback", serif' }}>
-                                        <Latex>{value as string}</Latex>
-                                    </span>
+                                    <div className="flex-1">
+                                        <span className={`font-serif ${isCrossed ? 'text-gray-400' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", "Noto Serif Fallback", serif' }}>
+                                            <Latex>{value as string}</Latex>
+                                        </span>
+                                    </div>
                                     
-                                    {/* Cross out overlay for entire container */}
+                                    {/* Cross out overlay for entire button */}
                                     {isCrossed && (
-                                        <div className="absolute inset-0 z-10">
+                                        <div className="absolute inset-0 z-10 pointer-events-none">
                                             <div className="absolute top-1/2 left-0 w-full h-0.5 bg-red-600 transform -translate-y-1/2" style={{ opacity: 0.8 }}></div>
-                                            <div className="absolute inset-0 bg-gray-100 opacity-30 rounded-lg"></div>
                                         </div>
                                     )}
                                 </button>
-
-                                {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}
-                                {(isAbcMode || isCrossed) && (
-                                    <div className="absolute right-0 flex items-center justify-center h-full top-0" style={{ width: '40px' }}>
-                                         {isCrossed ? (
-                                             <button 
-                                                onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
-                                                className="text-blue-600 text-xs font-bold hover:underline bg-white px-1"
-                                             >
-                                                 Undo
-                                             </button>
-                                         ) : isAbcMode ? (
-                                             <button 
-                                                onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
-                                                className="w-6 h-6 rounded-full border border-black flex items-center justify-center hover:bg-gray-100 text-black bg-white font-bold text-xs"
-                                                title="Eliminate"
-                                             >
-                                                 <div className="eliminate-icon relative w-full h-full flex items-center justify-center">
-                                                     <span className="">{key}</span>
-                                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="eliminate-dash absolute text-red-600" style={{ width: '20px', height: '20px', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)' }}>
-                                                         <line x1="0" y1="10" x2="24" y2="10"></line>
-                                                     </svg>
-                                                 </div>
-                                             </button>
-                                         ) : null}
-                                    </div>
-                                )}
                             </div>
                         )
                     })
                 ) : (
                     <div className="flex h-full w-full gap-8">
-                        {/* Directions Side */}
-                        <div className="w-1/2 p-6 border-r border-gray-200 overflow-y-auto">
-                            <h3 className="font-bold mb-4 text-black font-sans">Student-Produced Response Directions</h3>
-                            <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800 mb-6 font-sans">
-                                <li>If you find more than one correct answer, enter only one answer.</li>
-                                <li>You can enter up to 5 characters for a positive answer and up to 6 characters (including the negative sign) for a negative answer.</li>
-                                <li>If your answer is a fraction that doesn’t fit in the provided space, enter the decimal equivalent.</li>
-                                <li>If your answer is a decimal that doesn’t fit in the provided space, enter it by truncating or rounding at the fourth digit.</li>
-                                <li>If your answer is a mixed number (such as 3½), enter it as an improper fraction (7/2) or its decimal equivalent (3.5).</li>
-                                <li>Don’t enter symbols such as a percent sign, comma, or dollar sign.</li>
-                            </ul>
-                            
-                            <h4 className="font-bold mb-3 text-black font-sans">Examples</h4>
-                            <div className="border border-gray-200 text-sm font-sans">
-                                <div className="grid grid-cols-3 border-b border-gray-200 bg-gray-50 font-bold p-2">
-                                    <div>Answer</div>
-                                    <div>Acceptable ways to enter answer</div>
-                                    <div>Unacceptable: will NOT receive credit</div>
-                                </div>
-                                <div className="grid grid-cols-3 border-b border-gray-200 p-2">
-                                    <div>3.5</div>
-                                    <div>3.5, 3.50, 7/2</div>
-                                    <div>3½, 3 1/2</div>
-                                </div>
-                                <div className="grid grid-cols-3 border-b border-gray-200 p-2">
-                                    <div>2/3</div>
-                                    <div>2/3, .6666, .6667, .666, .667</div>
-                                    <div>0.66, .66, 0.67, .67</div>
-                                </div>
-                                <div className="grid grid-cols-3 p-2">
-                                    <div>-1/3</div>
-                                    <div>-1/3, -.3333, -0.333</div>
-                                    <div>-.33, -0.33</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Question Side */}
-                        <div className="w-1/2 p-6 flex flex-col justify-center">
+                        {/* SPR Input Section */}
+                         <div className="w-full p-6 flex flex-col justify-center">
                             <label className="block text-sm font-bold text-black mb-4 font-sans">
                                 Enter your answer
                             </label>
@@ -596,7 +543,6 @@ function QuestionContent({
                                 value={inputValue}
                                 onChange={handleInputChange}
                                 className="w-full p-4 border border-black rounded-lg font-serif text-xl focus:border-[#0077c8] focus:ring-1 focus:ring-[#0077c8] outline-none placeholder-gray-400 text-black text-center"
-                                placeholder=""
                             />
                         </div>
                     </div>
