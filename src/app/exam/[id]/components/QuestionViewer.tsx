@@ -226,6 +226,11 @@ export default function QuestionViewer({
       if (color === 'yellow') span.style.borderBottomColor = '#eab308'
       if (color === 'blue') span.style.borderBottomColor = '#3b82f6'
       if (color === 'pink') span.style.borderBottomColor = '#ec4899'
+      if (color === 'underline') {
+           span.style.backgroundColor = 'transparent'
+           span.style.borderBottomColor = 'black'
+           span.style.borderBottomWidth = '2px'
+      }
 
       try {
         range.surroundContents(span)
@@ -378,19 +383,19 @@ function QuestionContent({
 
                 <button 
                     onClick={() => setIsAbcMode(!isAbcMode)}
-                    className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors flex items-center gap-1
+                    className={`px-3 py-1 rounded text-xs font-bold border transition-colors flex items-center gap-1
                         ${isAbcMode 
-                            ? 'bg-blue-100 border-blue-300 text-blue-700' 
-                            : 'bg-gray-100 border-gray-300 text-gray-500 hover:bg-gray-200'}
+                            ? 'bg-black text-white border-black' 
+                            : 'bg-white border-black text-black hover:bg-gray-100'}
                     `}
                     title="Toggle Elimination Mode"
                 >
-                    <span className={isAbcMode ? '' : 'line-through decoration-gray-400'}>ABC</span>
+                    <span className={isAbcMode ? '' : 'line-through decoration-black'}>ABC</span>
                 </button>
             </div>
 
             {/* Question Text */}
-            <div className="mb-6 font-serif text-[18px] leading-relaxed text-black">
+            <div className="mb-6 font-serif text-[18px] leading-relaxed text-black border-l-4 border-transparent pl-2">
                 {question.content.image_url && (
                     <div className="mb-4">
                         {question.content.image_description && (
@@ -448,16 +453,28 @@ function QuestionContent({
                                             ${isSelected 
                                                 ? 'bg-black text-white border-black' 
                                                 : isCrossed
-                                                    ? 'bg-transparent border-gray-400 text-gray-400'
+                                                    ? 'bg-transparent border-red-500 text-red-500'
                                                     : 'bg-transparent border-black text-black'
                                             }
                                         `}
                                     >
-                                        {key}
+                                        <div className="relative">
+                                            {key}
+                                            {isCrossed && (
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="w-full h-0.5 bg-red-500 transform rotate-[-45deg]"></div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <span className={`font-serif text-[16px] ${isCrossed ? 'text-gray-400 line-through decoration-2' : 'text-black'}`}>
                                         <Latex>{value as string}</Latex>
                                     </span>
+                                    
+                                    {/* Cross out overlay for entire container */}
+                                    {isCrossed && (
+                                        <div className="absolute inset-0 bg-gray-50 opacity-20 pointer-events-none rounded-lg"></div>
+                                    )}
                                 </button>
 
                                 {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}

@@ -152,7 +152,7 @@ export default function RichTextEditor({
         content: defaultValue,
         editorProps: {
             attributes: {
-                class: 'prose prose-sm max-w-none focus:outline-none min-h-[100px] p-3 text-gray-900 [&_table]:border-collapse [&_table]:border [&_table]:border-gray-300 [&_td]:border [&_td]:border-gray-300 [&_td]:p-2 [&_th]:border [&_th]:border-gray-300 [&_th]:p-2 [&_th]:bg-gray-100',
+                class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px] p-3 text-gray-900 [&_table]:border-collapse [&_table]:border [&_table]:border-gray-300 [&_td]:border [&_td]:border-gray-300 [&_td]:p-2 [&_th]:border [&_th]:border-gray-300 [&_th]:p-2 [&_th]:bg-gray-100',
             },
         },
         onFocus: () => setIsFocused(true),

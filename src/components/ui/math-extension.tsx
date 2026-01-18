@@ -57,7 +57,7 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
            <MathInput 
               value={latex} 
               onChange={handleUpdate}
-              className={`border border-indigo-500 shadow-lg !min-h-[40px] !p-1 ${node.attrs.align === 'center' ? 'text-center' : ''}`}
+              className={`border border-indigo-500 shadow-lg !min-h-[40px] !p-1 text-[1.1rem] ${node.attrs.align === 'center' ? 'text-center' : ''}`}
               onInit={(mf) => {
                   setTimeout(() => {
                       mf.focus()
@@ -77,7 +77,7 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
         </div>
       ) : (
         <span 
-            className="cursor-pointer hover:bg-indigo-50 px-1 rounded transition-colors border border-transparent hover:border-indigo-200"
+            className="cursor-pointer hover:bg-indigo-50 px-1 rounded transition-colors border border-transparent hover:border-indigo-200 text-[1.1rem] inline-block align-middle"
             onClick={() => setIsEditing(true)}
             title="Click to edit formula"
         >

@@ -165,7 +165,7 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
                <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\sqrt{}')} disabled={isDisabled} title="Square Root" isMath>
                   √
                </ToolbarButton>
-               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\sqrt[3]{}')} disabled={isDisabled} title="N-th Root" isMath>
+               <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('\\sqrt[]{}')} disabled={isDisabled} title="N-th Root" isMath>
                   ∛
                </ToolbarButton>
                <ToolbarButton onMouseDown={preventFocusLoss} onClick={() => insertMath('^{}')} disabled={isDisabled} title="Superscript / Power" isMath>

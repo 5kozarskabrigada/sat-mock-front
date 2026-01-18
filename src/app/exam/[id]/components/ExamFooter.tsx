@@ -41,19 +41,20 @@ export default function ExamFooter({
   const currentQuestionId = questions[currentQuestionIndex]?.id
   const isCurrentMarked = markedQuestions[currentQuestionId]
 
+  // Calculate Module Progress
+  const currentModule = questions[currentQuestionIndex]?.module || 1
+  const moduleQuestions = questions.filter(q => (q.module || 1) == currentModule)
+  const currentQuestionInModule = moduleQuestions.findIndex(q => q.id === currentQuestionId) + 1
+
   return (
     <>
       {/* Dashed Line Decoration */}
-      <div className="h-[3px] w-full flex">
-          {Array.from({ length: 60 }).map((_, i) => (
-              <div key={i} className="flex-1 h-full flex">
-                  <div className="h-full w-1/4 bg-[#0077c8]"></div>
-                  <div className="h-full w-1/4 bg-[#00a651]"></div>
-                  <div className="h-full w-1/4 bg-[#ed1c24]"></div>
-                  <div className="h-full w-1/4 bg-[#662d91]"></div>
-              </div>
-          ))}
-      </div>
+      <div 
+        className="h-[4px] w-full"
+        style={{
+            backgroundImage: 'repeating-linear-gradient(90deg, #0077c8, #0077c8 8px, transparent 8px, transparent 10px, #00a651 10px, #00a651 18px, transparent 18px, transparent 20px, #ed1c24 20px, #ed1c24 28px, transparent 28px, transparent 30px, #662d91 30px, #662d91 38px, transparent 38px, transparent 40px)'
+        }}
+      ></div>
 
       <footer 
         className="flex items-center justify-between px-6 bg-[#f0f2f5] z-20 relative select-none"
@@ -72,7 +73,7 @@ export default function ExamFooter({
                 onClick={() => {}} // Could trigger dropdown
                 className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
             >
-                <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+                <span>Question {currentQuestionInModule} of {moduleQuestions.length}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                 </svg>
