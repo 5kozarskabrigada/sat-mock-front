@@ -43,7 +43,7 @@ export default function ExamHeader({
       <header 
         className="flex items-center justify-between px-6 bg-white z-20 relative select-none"
         style={{ 
-            height: '72px', 
+            height: '60px', 
             fontFamily: '"Noto Serif", serif',
             borderBottom: '2px dashed',
             borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1'
@@ -59,7 +59,7 @@ export default function ExamHeader({
         <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-6">
           <div className="flex items-center space-x-2">
               {!isTimerHidden && (
-                  <span className="font-bold text-lg tabular-nums text-black mr-2">
+                  <span className={`font-bold text-lg tabular-nums mr-2 ${getTimerColor()}`}>
                       {formatTime(timeLeft)}
                   </span>
               )}

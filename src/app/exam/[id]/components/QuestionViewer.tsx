@@ -444,44 +444,43 @@ function QuestionContent({
                                         ${isSelected 
                                             ? 'border-[#0077c8] bg-[#e6f4ff] ring-1 ring-[#0077c8]' 
                                             : isCrossed
-                                                ? 'border-gray-200 bg-gray-50 opacity-60' 
+                                                ? 'border-gray-200 bg-gray-50' 
                                                 : 'border-black bg-white hover:bg-gray-50'
                                         }
                                     `}
                                 >
-                                    <div 
-                                        className={`
-                                            w-6 h-6 rounded-full border flex items-center justify-center mr-4 font-sans font-bold text-xs flex-shrink-0 relative
-                                            ${isSelected 
-                                                ? 'bg-black text-white border-black' 
-                                                : isCrossed
-                                                    ? 'bg-transparent border-red-500 text-red-500'
-                                                    : 'bg-transparent border-black text-black'
-                                            }
-                                        `}
-                                    >
-                                        <div className="relative z-10">
-                                            {key}
+                                    <div className="mr-4 flex-shrink-0 relative">
+                                        <div 
+                                            className={`
+                                                flex items-center justify-center w-6 h-6 rounded-full font-bold border text-xs
+                                                ${isSelected 
+                                                    ? 'bg-black text-white border-black' 
+                                                    : isCrossed
+                                                        ? 'bg-transparent border-black text-black'
+                                                        : 'bg-transparent border-black text-black'
+                                                }
+                                            `}
+                                        >
+                                            <span className="">{key}</span>
                                         </div>
-                                        {isCrossed && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="w-full h-0.5 bg-red-500 transform rotate-[-45deg]"></div>
-                                            </div>
-                                        )}
                                     </div>
-                                    <span className={`font-serif text-[15px] ${isCrossed ? 'text-gray-400 line-through decoration-2' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", serif' }}>
+
+                                    <span className={`font-serif text-[15px] ${isCrossed ? 'text-gray-400' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", serif' }}>
                                         <Latex>{value as string}</Latex>
                                     </span>
                                     
                                     {/* Cross out overlay for entire container */}
                                     {isCrossed && (
-                                        <div className="absolute inset-0 bg-gray-50 opacity-20 pointer-events-none rounded-lg"></div>
+                                        <div className="absolute inset-0 z-10">
+                                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-red-600 transform -translate-y-1/2" style={{ opacity: 0.8 }}></div>
+                                            <div className="absolute inset-0 bg-gray-100 opacity-30 rounded-lg"></div>
+                                        </div>
                                     )}
                                 </button>
 
                                 {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}
                                 {(isAbcMode || isCrossed) && (
-                                    <div className="absolute -right-10 flex items-center z-10 h-full top-0">
+                                    <div className="absolute -right-10 flex items-center z-20 h-full top-0">
                                          {isCrossed ? (
                                              <button 
                                                 onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}

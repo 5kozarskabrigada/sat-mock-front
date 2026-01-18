@@ -7,11 +7,16 @@ import { InlineMath } from 'react-katex'
 import 'katex/dist/katex.min.css'
 import { useEditorContext } from './editor-context'
 
+import MathToolbar from './math-toolbar'
+
 // Component to render the Math Node
 const MathComponent = ({ node, updateAttributes, getPos }: any) => {
   const [isEditing, setIsEditing] = useState(false)
   const [latex, setLatex] = useState(node.attrs.latex || '')
   
+  // Ref for MathQuill instance
+  const mathFieldRef = useRef<any>(null)
+
   // Try to get context, but don't crash if used outside provider (e.g. tests)
   let setActiveMathField: ((field: any) => void) | undefined
   try {
@@ -24,6 +29,13 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
   const handleUpdate = (newLatex: string) => {
     setLatex(newLatex)
     updateAttributes({ latex: newLatex })
+  }
+
+  const handleToolbarInsert = (symbol: string) => {
+    if (mathFieldRef.current) {
+        mathFieldRef.current.cmd(symbol)
+        mathFieldRef.current.focus()
+    }
   }
 
   // Handle alignment and display mode
@@ -44,8 +56,8 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
   return (
     <NodeViewWrapper className={`inline-block mx-1 align-middle ${node.attrs.align === 'center' ? 'w-full text-center my-2' : ''}`}>
       {isEditing ? (
-        <div className={`relative z-50 min-w-[100px] ${node.attrs.align === 'center' ? 'inline-block' : ''}`}>
-           <div className="absolute -top-8 left-0 flex gap-1 bg-white border shadow-sm rounded p-1 z-50">
+        <div className={`relative z-50 min-w-[300px] ${node.attrs.align === 'center' ? 'inline-block' : ''}`}>
+           <div className="absolute -top-12 left-0 flex gap-1 bg-white border shadow-sm rounded p-1 z-50">
                 <button 
                     type="button"
                     onClick={(e) => { e.stopPropagation(); toggleAlign() }}
@@ -54,11 +66,18 @@ const MathComponent = ({ node, updateAttributes, getPos }: any) => {
                     {node.attrs.align === 'center' ? 'Center' : 'Left'}
                 </button>
            </div>
+           
+           {/* Math Toolbar attached to the editor */}
+           <div className="absolute top-full left-0 mt-2 z-50 shadow-xl w-full min-w-[300px]">
+                <MathToolbar onInsert={handleToolbarInsert} />
+           </div>
+
            <MathInput 
               value={latex} 
               onChange={handleUpdate}
               className={`border border-indigo-500 shadow-lg !min-h-[40px] !p-1 text-[1.1rem] ${node.attrs.align === 'center' ? 'text-center' : ''}`}
               onInit={(mf) => {
+                  mathFieldRef.current = mf
                   setTimeout(() => {
                       mf.focus()
                       if (setActiveMathField) setActiveMathField(mf)

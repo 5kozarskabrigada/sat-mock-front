@@ -62,7 +62,7 @@ export default function ExamFooter({
 
       <footer 
         className="flex items-center justify-between px-6 bg-[#f0f2f5] z-20 relative select-none"
-        style={{ height: '72px' }}
+        style={{ height: '60px' }}
       >
         {/* Left: User Info */}
         <div className="flex items-center space-x-3 w-1/4">
@@ -75,7 +75,7 @@ export default function ExamFooter({
         <div className="flex-1 flex justify-center relative">
             <button 
                 onClick={() => setIsModalOpen(!isModalOpen)} 
-                className="bg-black text-white px-4 py-2 rounded-md text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
+                className="bg-black text-white px-4 py-2 rounded-[30px] text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
                 style={{ fontFamily: '"Noto Serif", serif' }}
             >
                 <span>Question {currentQuestionInModule} of {moduleQuestions.length}</span>
