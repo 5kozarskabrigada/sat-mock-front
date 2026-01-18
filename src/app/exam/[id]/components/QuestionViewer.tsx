@@ -296,22 +296,26 @@ export default function QuestionViewer({
 
               {/* Right: Question Panel (52%) */}
               <div 
-                className="bg-[var(--sat-panel)] rounded-[12px] shadow-[var(--sat-shadow)] overflow-y-auto p-8 border border-[var(--sat-border)] flex flex-col"
+                className="bg-white rounded-[8px] shadow-sm overflow-y-auto p-0 border border-gray-200 flex flex-col"
                 style={{ width: '52%' }}
               >
-                 <QuestionContent 
-                    question={question}
-                    questionIndex={questionIndex}
-                    isMultipleChoice={isMultipleChoice}
-                    selectedAnswer={selectedAnswer}
-                    crossedAnswers={crossedAnswers}
-                    isAbcMode={isAbcMode}
-                    setIsAbcMode={setIsAbcMode}
-                    onAnswerChange={onAnswerChange}
-                    toggleCrossOutDirect={toggleCrossOutDirect}
-                    inputValue={inputValue}
-                    handleInputChange={handleInputChange}
-                 />
+                 <div className="p-8">
+                    <QuestionContent 
+                        question={question}
+                        questionIndex={questionIndex}
+                        isMultipleChoice={isMultipleChoice}
+                        selectedAnswer={selectedAnswer}
+                        crossedAnswers={crossedAnswers}
+                        isAbcMode={isAbcMode}
+                        setIsAbcMode={setIsAbcMode}
+                        onAnswerChange={onAnswerChange}
+                        toggleCrossOutDirect={toggleCrossOutDirect}
+                        inputValue={inputValue}
+                        handleInputChange={handleInputChange}
+                        isMarked={isMarked}
+                        onToggleMark={onToggleMark}
+                    />
+                 </div>
               </div>
           </div>
       ) : (
@@ -349,28 +353,44 @@ function QuestionContent({
     onAnswerChange,
     toggleCrossOutDirect,
     inputValue,
-    handleInputChange
+    handleInputChange,
+    isMarked,
+    onToggleMark
 }: any) {
     return (
         <>
             {/* Header: Question Number + Tools */}
-            <div className="flex items-center justify-between mb-6 border-b border-[var(--sat-border)] pb-4">
-                <div className="bg-[var(--sat-text)] text-white px-3 py-1 text-sm font-bold rounded shadow-sm font-sans">
-                    Question {questionIndex + 1}
+            <div className="flex items-center justify-between mb-4 bg-gray-100 rounded-t-lg p-2 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                    <div className="bg-black text-white w-8 h-8 flex items-center justify-center font-bold rounded-[4px] font-sans text-lg shadow-sm">
+                        {questionIndex + 1}
+                    </div>
+                    <button 
+                        onClick={onToggleMark}
+                        className="flex items-center gap-2 text-gray-600 hover:text-black font-sans font-medium text-sm"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill={isMarked ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 ${isMarked ? 'text-red-600' : ''}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                        </svg>
+                        <span>{isMarked ? 'Unmark' : 'Mark for Review'}</span>
+                    </button>
                 </div>
+
                 <button 
                     onClick={() => setIsAbcMode(!isAbcMode)}
-                    className={`rounded px-2 py-1 text-xs font-bold shadow-sm transition-colors
-                        ${isAbcMode ? 'bg-[var(--sat-primary)] text-white' : 'bg-white text-[var(--sat-muted)] border border-[var(--sat-border)]'}
+                    className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors flex items-center gap-1
+                        ${isAbcMode 
+                            ? 'bg-blue-100 border-blue-300 text-blue-700' 
+                            : 'bg-gray-100 border-gray-300 text-gray-500 hover:bg-gray-200'}
                     `}
-                    title="Toggle Strikethrough Mode"
+                    title="Toggle Elimination Mode"
                 >
-                    ABC
+                    <span className={isAbcMode ? '' : 'line-through decoration-gray-400'}>ABC</span>
                 </button>
             </div>
 
             {/* Question Text */}
-            <div className="mb-8 font-serif text-[18px] leading-relaxed text-[var(--sat-text)]">
+            <div className="mb-6 font-serif text-[18px] leading-relaxed text-black">
                 {question.content.image_url && (
                     <div className="mb-4">
                         {question.content.image_description && (
@@ -381,7 +401,7 @@ function QuestionContent({
                         <img 
                             src={question.content.image_url} 
                             alt={question.content.image_description || "Question Graphic"} 
-                            className="max-w-full h-auto rounded-lg border border-[var(--sat-border)]" 
+                            className="max-w-full h-auto rounded-lg border border-gray-200" 
                         />
                     </div>
                 )}
@@ -405,49 +425,63 @@ function QuestionContent({
                         return (
                             <div key={key} className="relative group flex items-center">
                                 <button
-                                    onClick={() => !isCrossed && onAnswerChange(key)}
-                                    disabled={isCrossed}
-                                    className={`flex-1 text-left p-3 rounded-[10px] border transition-all flex items-center relative
+                                    onClick={() => {
+                                        if (isAbcMode) {
+                                            toggleCrossOutDirect(key)
+                                        } else {
+                                            !isCrossed && onAnswerChange(key)
+                                        }
+                                    }}
+                                    disabled={isCrossed && !isAbcMode}
+                                    className={`flex-1 text-left p-3 rounded-lg border-[2px] transition-all flex items-center relative min-h-[60px]
                                         ${isSelected 
-                                            ? 'border-[var(--sat-primary)] bg-white shadow-md ring-1 ring-[var(--sat-primary)]' 
+                                            ? 'border-[#0077c8] bg-[#e6f4ff] ring-1 ring-[#0077c8]' 
                                             : isCrossed
-                                                ? 'border-[var(--sat-border)] bg-[var(--sat-bg)] opacity-60' 
-                                                : 'border-[var(--sat-text)] bg-white hover:bg-[var(--sat-bg)]'
+                                                ? 'border-gray-200 bg-gray-50 opacity-60' 
+                                                : 'border-black bg-white hover:bg-gray-50'
                                         }
                                     `}
                                 >
                                     <div 
                                         className={`
-                                            w-6 h-6 rounded-full flex items-center justify-center mr-3 font-sans font-bold text-xs flex-shrink-0
+                                            w-7 h-7 rounded-full border flex items-center justify-center mr-4 font-sans font-bold text-sm flex-shrink-0
                                             ${isSelected 
-                                                ? 'bg-[var(--sat-primary)] text-white' 
+                                                ? 'bg-black text-white border-black' 
                                                 : isCrossed
-                                                    ? 'bg-transparent border border-[var(--sat-muted)] text-[var(--sat-muted)]'
-                                                    : 'bg-white border border-[var(--sat-text)] text-[var(--sat-text)]'
+                                                    ? 'bg-transparent border-gray-400 text-gray-400'
+                                                    : 'bg-transparent border-black text-black'
                                             }
                                         `}
                                     >
                                         {key}
                                     </div>
-                                    <span className={`font-serif text-[16px] ${isCrossed ? 'text-[var(--sat-muted)] line-through' : 'text-[var(--sat-text)]'}`}>
-                                        {value as string}
+                                    <span className={`font-serif text-[16px] ${isCrossed ? 'text-gray-400 line-through decoration-2' : 'text-black'}`}>
+                                        <Latex>{value as string}</Latex>
                                     </span>
                                 </button>
 
-                                {/* Strikethrough Toggle (Only visible in ABC mode) */}
-                                {isAbcMode && (
-                                    <button 
-                                        onClick={() => toggleCrossOutDirect(key)}
-                                        className={`absolute right-[-40px] w-8 h-8 rounded-full border flex items-center justify-center transition-colors
-                                            ${isCrossed 
-                                                ? 'border-transparent text-[var(--sat-primary)] hover:underline text-xs font-bold'
-                                                : 'border-[var(--sat-border)] text-[var(--sat-text)] hover:bg-[var(--sat-bg)] bg-white'
-                                            }
-                                        `}
-                                        title={isCrossed ? "Undo" : "Cross out"}
-                                    >
-                                        {isCrossed ? "Undo" : "X"}
-                                    </button>
+                                {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}
+                                {(isAbcMode || isCrossed) && (
+                                    <div className="absolute right-[-40px] flex items-center">
+                                         {isCrossed ? (
+                                             <button 
+                                                onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
+                                                className="text-[#0077c8] text-xs font-bold hover:underline"
+                                             >
+                                                 Undo
+                                             </button>
+                                         ) : isAbcMode ? (
+                                             <button 
+                                                onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
+                                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-500"
+                                                title="Eliminate"
+                                             >
+                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-12.728 12.728" />
+                                                 </svg>
+                                             </button>
+                                         ) : null}
+                                    </div>
                                 )}
                             </div>
                         )
@@ -455,9 +489,9 @@ function QuestionContent({
                 ) : (
                     <div className="flex h-full w-full gap-8">
                         {/* Directions Side */}
-                        <div className="w-1/2 p-6 border-r border-[var(--sat-border)] overflow-y-auto">
-                            <h3 className="font-bold mb-4 text-[var(--sat-text)]">Student-Produced Response Directions</h3>
-                            <ul className="list-disc pl-5 space-y-2 text-sm text-[var(--sat-text)] mb-6">
+                        <div className="w-1/2 p-6 border-r border-gray-200 overflow-y-auto">
+                            <h3 className="font-bold mb-4 text-black font-sans">Student-Produced Response Directions</h3>
+                            <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800 mb-6 font-sans">
                                 <li>If you find more than one correct answer, enter only one answer.</li>
                                 <li>You can enter up to 5 characters for a positive answer and up to 6 characters (including the negative sign) for a negative answer.</li>
                                 <li>If your answer is a fraction that doesn’t fit in the provided space, enter the decimal equivalent.</li>
@@ -466,19 +500,19 @@ function QuestionContent({
                                 <li>Don’t enter symbols such as a percent sign, comma, or dollar sign.</li>
                             </ul>
                             
-                            <h4 className="font-bold mb-3 text-[var(--sat-text)]">Examples</h4>
-                            <div className="border border-[var(--sat-border)] text-sm">
-                                <div className="grid grid-cols-3 border-b border-[var(--sat-border)] bg-[var(--sat-bg)] font-bold p-2">
+                            <h4 className="font-bold mb-3 text-black font-sans">Examples</h4>
+                            <div className="border border-gray-200 text-sm font-sans">
+                                <div className="grid grid-cols-3 border-b border-gray-200 bg-gray-50 font-bold p-2">
                                     <div>Answer</div>
                                     <div>Acceptable ways to enter answer</div>
                                     <div>Unacceptable: will NOT receive credit</div>
                                 </div>
-                                <div className="grid grid-cols-3 border-b border-[var(--sat-border)] p-2">
+                                <div className="grid grid-cols-3 border-b border-gray-200 p-2">
                                     <div>3.5</div>
                                     <div>3.5, 3.50, 7/2</div>
                                     <div>3½, 3 1/2</div>
                                 </div>
-                                <div className="grid grid-cols-3 border-b border-[var(--sat-border)] p-2">
+                                <div className="grid grid-cols-3 border-b border-gray-200 p-2">
                                     <div>2/3</div>
                                     <div>2/3, .6666, .6667, .666, .667</div>
                                     <div>0.66, .66, 0.67, .67</div>
@@ -493,15 +527,15 @@ function QuestionContent({
 
                         {/* Question Side */}
                         <div className="w-1/2 p-6 flex flex-col justify-center">
-                            <label className="block text-sm font-medium text-[var(--sat-text)] mb-4 font-sans">
+                            <label className="block text-sm font-bold text-black mb-4 font-sans">
                                 Enter your answer
                             </label>
                             <input
                                 type="text"
                                 value={inputValue}
                                 onChange={handleInputChange}
-                                className="w-full p-4 border border-[var(--sat-border)] rounded-lg font-serif text-xl focus:border-[var(--sat-primary)] focus:ring-1 focus:ring-[var(--sat-primary)] outline-none placeholder-[var(--sat-muted)] text-[var(--sat-text)] text-center"
-                                placeholder="Enter your answer (e.g., 5.566, -5.566, 2/3, -2/3)"
+                                className="w-full p-4 border border-black rounded-lg font-serif text-xl focus:border-[#0077c8] focus:ring-1 focus:ring-[#0077c8] outline-none placeholder-gray-400 text-black text-center"
+                                placeholder=""
                             />
                         </div>
                     </div>

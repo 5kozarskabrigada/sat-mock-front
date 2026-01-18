@@ -44,24 +44,24 @@ export default function ExamFooter({
   return (
     <>
       {/* Dashed Line Decoration */}
-      <div className="h-[2px] w-full flex">
-          {Array.from({ length: 40 }).map((_, i) => (
+      <div className="h-[3px] w-full flex">
+          {Array.from({ length: 60 }).map((_, i) => (
               <div key={i} className="flex-1 h-full flex">
-                  <div className="h-full w-1/4 bg-green-500"></div>
-                  <div className="h-full w-1/4 bg-red-500"></div>
-                  <div className="h-full w-1/4 bg-blue-500"></div>
-                  <div className="h-full w-1/4 bg-purple-500"></div>
+                  <div className="h-full w-1/4 bg-[#0077c8]"></div>
+                  <div className="h-full w-1/4 bg-[#00a651]"></div>
+                  <div className="h-full w-1/4 bg-[#ed1c24]"></div>
+                  <div className="h-full w-1/4 bg-[#662d91]"></div>
               </div>
           ))}
       </div>
 
       <footer 
-        className="flex items-center justify-between px-6 bg-[var(--sat-panel)] z-20 relative select-none"
+        className="flex items-center justify-between px-6 bg-[#f0f2f5] z-20 relative select-none"
         style={{ height: '72px' }}
       >
         {/* Left: User Info */}
         <div className="flex items-center space-x-3 w-1/4">
-            <div className="font-bold text-[14px] text-[var(--sat-text)]">
+            <div className="font-bold text-[14px] text-black font-serif">
                 {studentName}
             </div>
         </div>
@@ -70,7 +70,7 @@ export default function ExamFooter({
         <div className="flex-1 flex justify-center">
             <button 
                 onClick={() => {}} // Could trigger dropdown
-                className="bg-black text-white px-4 py-1.5 rounded-full text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
+                className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-bold flex items-center space-x-2 hover:bg-gray-800 transition-colors"
             >
                 <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -84,21 +84,21 @@ export default function ExamFooter({
           <button 
             onClick={onBack}
             disabled={currentQuestionIndex === 0}
-            className="px-6 py-1.5 rounded-[4px] bg-[var(--sat-primary)] text-white font-bold text-[14px] hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+            className="px-8 py-2 rounded-full bg-[#99a6ea] text-white font-bold text-[15px] hover:bg-[#8896da] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Back
           </button>
           {currentQuestionIndex === questions.length - 1 ? (
              <button 
                 onClick={onSubmit}
-                className="px-6 py-1.5 rounded-[4px] bg-[var(--sat-primary)] text-white font-bold text-[14px] hover:bg-blue-700 transition-colors min-w-[80px]"
+                className="px-8 py-2 rounded-full bg-[#2c42b5] text-white font-bold text-[15px] hover:bg-[#1f3090] transition-colors"
              >
                  Submit
              </button>
           ) : (
               <button 
                 onClick={onNext}
-                className="px-6 py-1.5 rounded-[4px] bg-[var(--sat-primary)] text-white font-bold text-[14px] hover:bg-blue-700 transition-colors min-w-[80px]"
+                className="px-8 py-2 rounded-full bg-[#2c42b5] text-white font-bold text-[15px] hover:bg-[#1f3090] transition-colors"
               >
                 Next
               </button>

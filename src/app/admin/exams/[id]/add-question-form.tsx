@@ -194,13 +194,14 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
             <div className="sm:col-span-6">
               <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
               <div className="mt-1 flex flex-col gap-2">
-                  <input
-                    type="text"
+                  <RichTextEditor
+                    id="imageDescription"
                     name="imageDescription"
-                    placeholder="Image Description (optional)"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
-                    value={imageDescription}
-                    onChange={(e) => setImageDescription(e.target.value)}
+                    label="Image Description (Optional)"
+                    defaultValue={imageDescription}
+                    onChange={setImageDescription}
+                    rows={2}
+                    enableMath={true}
                   />
                   <div className="flex space-x-4">
                     <input 
