@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState } from 'react'
@@ -43,7 +42,7 @@ export default function ExamHeader({
       <header 
         className="flex items-center justify-between px-6 bg-white z-20 relative select-none"
         style={{ 
-            height: '69.4676px', 
+            height: '70px', 
             padding: '8px',
             fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
             borderBottom: '2px dashed',
@@ -51,17 +50,17 @@ export default function ExamHeader({
         }}
       >
         {/* Left: Logo + Section */}
-        <div className="flex flex-col justify-center h-full">
+        <div className="flex flex-col justify-center h-full" style={{ paddingLeft: '16px', height: '52px' }}>
            <h1 className="font-bold block leading-tight" style={{ 
-               fontSize: '14px', 
+               fontSize: '18px', 
                fontWeight: 600, 
                color: 'oklch(0.278 0.033 256.848)', 
                lineHeight: '28px',
                fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
            }}>{title}</h1>
-           <button className="hover:underline text-left mt-0.5" style={{
+           <button className="hover:underline text-left" style={{
                color: 'oklch(0.546 0.245 262.881)',
-               fontSize: '12px',
+               fontSize: '14px',
                fontWeight: 400,
                height: '20px',
                lineHeight: '20px',
@@ -70,16 +69,20 @@ export default function ExamHeader({
         </div>
 
         {/* Center: Timer */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-6">
-          <div className="flex items-center justify-center space-x-2">
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-6" style={{ top: '50%', transform: 'translate(-50%, -50%)' }}>
+          <div className="flex items-center justify-center space-x-2" style={{
+              width: '83.2917px',
+              height: '28px',
+              gap: '8px'
+          }}>
               {!isTimerHidden && (
-                  <span className={`font-bold text-lg tabular-nums mr-2 ${getTimerColor()}`}>
+                  <span className={`font-bold tabular-nums ${getTimerColor()}`} style={{ fontSize: '15px' }}>
                       {formatTime(timeLeft)}
                   </span>
               )}
               <button 
                   onClick={() => setIsTimerHidden(!isTimerHidden)}
-                  className="text-black hover:text-gray-700 transition-colors flex items-center justify-center"
+                  className="hover:text-blue-600 transition-colors flex items-center justify-center"
                   title={isTimerHidden ? "Show Timer" : "Hide Timer"}
                   style={{
                       width: '24px',
@@ -89,53 +92,46 @@ export default function ExamHeader({
                   }}
                   >
                       {isTimerHidden ? (
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                             <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                             <path fillRule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clipRule="evenodd" />
-                           </svg>
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                       ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                            <path d="M3.53 2.47a.75.75 0 00-1.06 1.06l18 18a.75.75 0 101.06-1.06l-18-18zM22.676 12.553a11.249 11.249 0 01-2.631 4.31l-3.099-3.099a5.25 5.25 0 00-6.71-6.71L7.759 4.577a11.217 11.217 0 014.242-.827c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113z" />
-                            <path d="M15.75 12c0 .18-.013.357-.037.53l-4.244-4.243A3.75 3.75 0 0115.75 12zM12.53 15.713l-4.243-4.244a3.75 3.75 0 004.243 4.243z" />
-                            <path d="M6.75 12c0-.619.107-1.215.304-1.772L5.23 8.408a11.27 11.27 0 00-2.65 3.149 1.762 1.762 0 000 1.113c1.487 4.471 5.705 7.697 10.677 7.697 1.49 0 2.918-.286 4.245-.815l-1.826-1.825a5.253 5.253 0 01-2.926.39v-.006a3.752 3.752 0 01-5.996-5.111z" />
-                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                       )}
                   </button>
-              </div>
-            </div>
+          </div>
+        </div>
 
         {/* Right: Tools */}
         <div className="flex items-center gap-4">
           <button 
               onClick={onAnnotateClick}
               className={`flex flex-col items-center justify-center rounded-lg transition-colors
-                  ${isAnnotateActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}
+                  ${isAnnotateActive ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'}
               `}
               style={{
-                  width: '50px',
-                  height: '50px'
+                  width: '121.99px',
+                  height: '48px',
+                  color: 'oklch(0.373 0.034 259.733)'
               }}
           >
-              <div className="mb-0.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
+              <div className="mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               </div>
-              <span className="text-[10px] font-medium">Highlights</span>
+              <span className="text-[12px] font-medium">Highlights</span>
           </button>
 
           <div className="relative">
                <button 
                   onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)} 
-                  className="flex flex-col items-center justify-center w-12 h-14 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  className="flex flex-col items-center justify-center hover:bg-gray-100 rounded-lg"
+                  style={{
+                      height: '40px',
+                      color: 'oklch(0.373 0.034 259.733)'
+                  }}
                >
                   <div className="mb-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                   </div>
-                  <span className="text-xs font-medium">More</span>
+                  <span className="text-[12px] font-medium">More</span>
               </button>
               {isMoreMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 py-1 z-50">
@@ -153,8 +149,6 @@ export default function ExamHeader({
           </div>
         </div>
       </header>
-      
-
     </>
   )
 }
