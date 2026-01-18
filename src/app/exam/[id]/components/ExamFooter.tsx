@@ -55,7 +55,8 @@ export default function ExamFooter({
       <div 
         className="h-[2px] w-full"
         style={{
-            backgroundImage: 'repeating-linear-gradient(90deg, #dc2626 0px, #dc2626 30px, transparent 30px, transparent 32px, #fcd34d 32px, #fcd34d 62px, transparent 62px, transparent 64px, #1e3a8a 64px, #1e3a8a 94px, transparent 94px, transparent 96px, #16a34a 96px, #16a34a 126px, transparent 126px, transparent 128px)'
+            borderBottom: '2px dashed',
+            borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1'
         }}
       ></div>
 

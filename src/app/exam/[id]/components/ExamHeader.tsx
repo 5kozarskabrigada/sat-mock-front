@@ -42,7 +42,12 @@ export default function ExamHeader({
     <>
       <header 
         className="flex items-center justify-between px-6 bg-white z-20 relative select-none"
-        style={{ height: '72px', fontFamily: '"Noto Serif", serif' }}
+        style={{ 
+            height: '72px', 
+            fontFamily: '"Noto Serif", serif',
+            borderBottom: '2px dashed',
+            borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1'
+        }}
       >
         {/* Left: Logo + Section */}
         <div className="flex flex-col justify-center h-full">
@@ -125,14 +130,7 @@ export default function ExamHeader({
         </div>
       </header>
       
-      {/* Dashed Line Decoration */}
-      <div 
-        className="h-[2px] w-full"
-        style={{
-            borderBottom: '2px dashed',
-            borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1'
-        }}
-      ></div>
+
     </>
   )
 }

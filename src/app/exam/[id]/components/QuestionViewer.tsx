@@ -365,7 +365,7 @@ function QuestionContent({
     return (
         <>
             {/* Header: Question Number + Tools */}
-            <div className="flex items-center justify-between mb-4 bg-[#f0f2f5] rounded p-2 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-4 bg-[#f0f2f5] rounded p-2 border-b border-gray-200" style={{ borderBottom: '2px dashed', borderImage: 'repeating-linear-gradient(to right, #a73857 0%, #a73857 3.5%, transparent 3.5%, transparent 4%, #f9dfcd 4%, #f9dfcd 7.5%, transparent 7.5%, transparent 8%, #1c1167 8%, #1c1167 11.5%, transparent 11.5%, transparent 12%, #5e9365 12%, #5e9365 15.5%, transparent 15.5%, transparent 16%) 1' }}>
                 <div className="flex items-center gap-3">
                     <div className="bg-black text-white w-8 h-8 flex items-center justify-center font-bold rounded-[4px] font-sans text-lg shadow-sm">
                         {questionIndex + 1}
@@ -394,13 +394,7 @@ function QuestionContent({
                 </button>
             </div>
             
-            {/* Dashed Line Under Header */}
-            <div 
-                className="h-[2px] w-full mb-6"
-                style={{
-                    backgroundImage: 'repeating-linear-gradient(90deg, #dc2626 0px, #dc2626 10px, transparent 10px, transparent 12px, #fcd34d 12px, #fcd34d 22px, transparent 22px, transparent 24px, #1e3a8a 24px, #1e3a8a 34px, transparent 34px, transparent 36px, #16a34a 36px, #16a34a 46px, transparent 46px, transparent 48px)'
-                }}
-            ></div>
+            {/* Dashed Line Under Header - Removed as it's now part of the header container style */}
 
             {/* Question Text */}
             <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2" style={{ fontFamily: '"Noto Serif", serif' }}>
@@ -457,7 +451,7 @@ function QuestionContent({
                                 >
                                     <div 
                                         className={`
-                                            w-7 h-7 rounded-full border flex items-center justify-center mr-4 font-sans font-bold text-sm flex-shrink-0 relative
+                                            w-6 h-6 rounded-full border flex items-center justify-center mr-4 font-sans font-bold text-xs flex-shrink-0 relative
                                             ${isSelected 
                                                 ? 'bg-black text-white border-black' 
                                                 : isCrossed
