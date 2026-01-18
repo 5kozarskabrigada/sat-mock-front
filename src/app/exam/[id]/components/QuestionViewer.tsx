@@ -473,13 +473,28 @@ function QuestionContent({
                                 {(isAbcMode || isCrossed) && (
                                     <button 
                                         className="absolute right-0"
+                                        style={{ width: '28px', height: '28px', cursor: 'default' }}
                                         onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
                                     >
-                                        <div className="eliminate-icon relative" style={{ width: '30px', height: '30px' }}>
-                                            <span className="font-serif font-bold text-gray-700 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">{key}</span>
+                                        <div className="eliminate-icon relative w-full h-full flex items-center justify-center">
+                                            <span style={{
+                                                fontSize: '15px',
+                                                fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                                                fontWeight: 400,
+                                                color: 'oklch(0.145 0 0)'
+                                            }}>{key}</span>
                                             {isCrossed && (
-                                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="eliminate-dash text-red-600" style={{ width: '20px', height: '20px', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)' }}>
-                                                    <line x1="0" y1="10" x2="24" y2="10"></line>
+                                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" className="eliminate-dash" 
+                                                    style={{ 
+                                                        width: '20px', 
+                                                        height: '20px', 
+                                                        position: 'absolute', 
+                                                        top: '50%', 
+                                                        left: '50%', 
+                                                        transform: 'translate(-50%, -50%) rotate(45deg)',
+                                                        color: 'rgb(156, 163, 175)'
+                                                    }}>
+                                                    <line x1="0" y1="10" x2="20" y2="10"></line>
                                                 </svg>
                                             )}
                                         </div>
@@ -499,32 +514,46 @@ function QuestionContent({
                                         ${isSelected 
                                             ? 'bg-[#e6f4ff] ring-1 ring-[#0077c8] border-[#0077c8]' 
                                             : isCrossed
-                                                ? 'bg-gray-50 border-gray-200' 
+                                                ? 'bg-transparent border-gray-200' 
                                                 : 'bg-white hover:bg-gray-200 border-black'
                                         }
                                     `}
                                     style={{
-                                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif'
+                                        fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                                        ...(isCrossed ? {
+                                            color: 'rgb(156, 163, 175)',
+                                            borderColor: 'rgb(156, 163, 175)'
+                                        } : {})
                                     }}
                                 >
                                     <div className={`flex items-center justify-center w-6 h-6 rounded-full font-bold border text-xs
                                         ${isSelected 
                                             ? 'bg-black text-white border-black' 
-                                            : 'bg-transparent border-black text-black'
+                                            : isCrossed 
+                                                ? 'bg-transparent border-[rgb(156,163,175)] text-[rgb(156,163,175)]'
+                                                : 'bg-transparent border-black text-black'
                                         }
                                     `}>
                                         <span>{key}</span>
                                     </div>
                                     <div className="flex-1">
-                                        <span className={`font-serif ${isCrossed ? 'text-gray-400' : 'text-black'}`} style={{ fontFamily: '"Noto Serif", "Noto Serif Fallback", serif' }}>
+                                        <span className={`font-serif`} style={{ 
+                                            fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                                            color: isCrossed ? 'rgb(156, 163, 175)' : 'inherit'
+                                        }}>
                                             <Latex>{value as string}</Latex>
                                         </span>
                                     </div>
                                     
-                                    {/* Cross out overlay for entire button */}
+                                    {/* Cross out overlay - The gray line */}
                                     {isCrossed && (
                                         <div className="absolute inset-0 z-10 pointer-events-none">
-                                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-red-600 transform -translate-y-1/2" style={{ opacity: 0.8 }}></div>
+                                            <div className="absolute left-[-3px] h-[2px] w-full" 
+                                                style={{ 
+                                                    top: '24px', 
+                                                    backgroundColor: 'rgb(107, 114, 128)',
+                                                    width: 'calc(100% + 3px)'
+                                                }}></div>
                                         </div>
                                     )}
                                 </button>
