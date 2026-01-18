@@ -105,7 +105,7 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
         {/* Tables */}
         <div className="flex items-center gap-0.5 border-r border-gray-200 pr-2 mr-1">
           <ToolbarButton
-            onClick={() => activeEditor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            onClick={() => (activeEditor?.chain().focus() as any).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
             disabled={isDisabled}
             title="Insert Table (3x3)"
           >
@@ -114,28 +114,28 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
           
           {activeEditor?.isActive('table') && (
             <>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().addColumnBefore().run()} disabled={isDisabled} title="Add Column Before">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).addColumnBefore().run()} disabled={isDisabled} title="Add Column Before">
                     <span className="text-[10px] font-bold">+Col←</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().addColumnAfter().run()} disabled={isDisabled} title="Add Column After">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).addColumnAfter().run()} disabled={isDisabled} title="Add Column After">
                     <span className="text-[10px] font-bold">+Col→</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().deleteColumn().run()} disabled={isDisabled} title="Delete Column">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).deleteColumn().run()} disabled={isDisabled} title="Delete Column">
                     <span className="text-[10px] font-bold text-red-600">xCol</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().addRowBefore().run()} disabled={isDisabled} title="Add Row Before">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).addRowBefore().run()} disabled={isDisabled} title="Add Row Before">
                     <span className="text-[10px] font-bold">+Row↑</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().addRowAfter().run()} disabled={isDisabled} title="Add Row After">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).addRowAfter().run()} disabled={isDisabled} title="Add Row After">
                     <span className="text-[10px] font-bold">+Row↓</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().deleteRow().run()} disabled={isDisabled} title="Delete Row">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).deleteRow().run()} disabled={isDisabled} title="Delete Row">
                     <span className="text-[10px] font-bold text-red-600">xRow</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().mergeCells().run()} disabled={isDisabled} title="Merge Cells">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).mergeCells().run()} disabled={isDisabled} title="Merge Cells">
                     <span className="text-[10px] font-bold">Mrg</span>
                 </ToolbarButton>
-                <ToolbarButton onClick={() => activeEditor?.chain().focus().deleteTable().run()} disabled={isDisabled} title="Delete Table">
+                <ToolbarButton onClick={() => (activeEditor?.chain().focus() as any).deleteTable().run()} disabled={isDisabled} title="Delete Table">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                 </ToolbarButton>
             </>
