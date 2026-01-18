@@ -479,18 +479,18 @@ function QuestionContent({
 
                                 {/* Strikethrough/Undo Actions (Visible in ABC mode or if crossed) */}
                                 {(isAbcMode || isCrossed) && (
-                                    <div className="absolute right-[-40px] flex items-center">
+                                    <div className="absolute right-2 flex items-center z-10">
                                          {isCrossed ? (
                                              <button 
                                                 onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
-                                                className="text-[#0077c8] text-xs font-bold hover:underline"
+                                                className="bg-white border border-gray-300 rounded px-2 py-0.5 text-xs font-medium text-gray-700 hover:bg-gray-50 shadow-sm"
                                              >
                                                  Undo
                                              </button>
                                          ) : isAbcMode ? (
                                              <button 
                                                 onClick={(e) => { e.stopPropagation(); toggleCrossOutDirect(key); }}
-                                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-500"
+                                                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-500 bg-white"
                                                 title="Eliminate"
                                              >
                                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">

@@ -54,23 +54,25 @@ export default function ExamHeader({
         <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center top-6">
           <div className="flex items-center space-x-2">
               {!isTimerHidden && (
-                  <span className="font-bold text-lg tabular-nums text-black">
+                  <span className="font-bold text-lg tabular-nums text-black mr-2">
                       {formatTime(timeLeft)}
                   </span>
               )}
               <button 
                   onClick={() => setIsTimerHidden(!isTimerHidden)}
-                  className="text-gray-500 hover:text-black transition-colors ml-1"
+                  className="text-black hover:text-gray-700 transition-colors"
                   title={isTimerHidden ? "Show Timer" : "Hide Timer"}
                   >
                       {isTimerHidden ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-black">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                          </svg>
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                             <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                             <path fillRule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clipRule="evenodd" />
+                           </svg>
                       ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-black">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                            <path d="M3.53 2.47a.75.75 0 00-1.06 1.06l18 18a.75.75 0 101.06-1.06l-18-18zM22.676 12.553a11.249 11.249 0 01-2.631 4.31l-3.099-3.099a5.25 5.25 0 00-6.71-6.71L7.759 4.577a11.217 11.217 0 014.242-.827c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113z" />
+                            <path d="M15.75 12c0 .18-.013.357-.037.53l-4.244-4.243A3.75 3.75 0 0115.75 12zM12.53 15.713l-4.243-4.244a3.75 3.75 0 004.243 4.243z" />
+                            <path d="M6.75 12c0-.619.107-1.215.304-1.772L5.23 8.408a11.27 11.27 0 00-2.65 3.149 1.762 1.762 0 000 1.113c1.487 4.471 5.705 7.697 10.677 7.697 1.49 0 2.918-.286 4.245-.815l-1.826-1.825a5.253 5.253 0 01-2.926.39v-.006a3.752 3.752 0 01-5.996-5.111z" />
                           </svg>
                       )}
                   </button>
