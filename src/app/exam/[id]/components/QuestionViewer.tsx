@@ -287,12 +287,12 @@ export default function QuestionViewer({
 
       {/* Main Layout */}
       {twoColumnLayout ? (
-          <div className="flex w-full h-full p-4 gap-4">
+          <div className="flex w-full h-full p-4 gap-4 items-start">
               {/* Left: Passage Panel (48%) */}
               <div 
                 ref={passageRef}
-                className="bg-[var(--sat-panel)] rounded-[12px] shadow-[var(--sat-shadow)] overflow-y-auto p-8 font-serif text-[16px] leading-[1.6] text-[var(--sat-text)] border border-[var(--sat-border)]"
-                style={{ width: '48%' }}
+                className="overflow-y-auto p-4 font-serif text-[15px] leading-[24px] text-black"
+                style={{ width: '48%', fontFamily: '"Noto Serif", serif' }}
               >
                  {question.content.passage && (
                     <p className="whitespace-pre-wrap">{question.content.passage}</p>
@@ -301,10 +301,10 @@ export default function QuestionViewer({
 
               {/* Right: Question Panel (52%) */}
               <div 
-                className="bg-white rounded-[8px] shadow-sm overflow-y-auto p-0 border border-gray-200 flex flex-col"
+                className="overflow-y-auto p-0 flex flex-col"
                 style={{ width: '52%' }}
               >
-                 <div className="p-8">
+                 <div className="p-4 pt-0">
                     <QuestionContent 
                         question={question}
                         questionIndex={questionIndex}
@@ -326,7 +326,7 @@ export default function QuestionViewer({
       ) : (
           <div className="flex w-full h-full p-4 justify-center">
               {/* Full Width Question Panel */}
-              <div className="bg-[var(--sat-panel)] rounded-[12px] shadow-[var(--sat-shadow)] overflow-y-auto p-8 border border-[var(--sat-border)] flex flex-col w-full max-w-[1100px]">
+              <div className="overflow-y-auto p-4 flex flex-col w-full max-w-[1100px]">
                  <QuestionContent 
                     question={question}
                     questionIndex={questionIndex}
@@ -365,7 +365,7 @@ function QuestionContent({
     return (
         <>
             {/* Header: Question Number + Tools */}
-            <div className="flex items-center justify-between mb-4 bg-gray-100 rounded-t-lg p-2 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-4 bg-[#f0f2f5] rounded p-2 border-b border-gray-200">
                 <div className="flex items-center gap-3">
                     <div className="bg-black text-white w-8 h-8 flex items-center justify-center font-bold rounded-[4px] font-sans text-lg shadow-sm">
                         {questionIndex + 1}
@@ -385,17 +385,25 @@ function QuestionContent({
                     onClick={() => setIsAbcMode(!isAbcMode)}
                     className={`px-3 py-1 rounded text-xs font-bold border transition-colors flex items-center gap-1
                         ${isAbcMode 
-                            ? 'bg-black text-white border-black' 
-                            : 'bg-white border-black text-black hover:bg-gray-100'}
+                            ? 'bg-[#1e2a5e] text-white border-[#1e2a5e]' 
+                            : 'bg-black border-black text-white hover:bg-gray-800'}
                     `}
                     title="Toggle Elimination Mode"
                 >
-                    <span className={isAbcMode ? '' : 'line-through decoration-black'}>ABC</span>
+                    <span className={isAbcMode ? '' : 'line-through decoration-white'}>ABC</span>
                 </button>
             </div>
+            
+            {/* Dashed Line Under Header */}
+            <div 
+                className="h-[2px] w-full mb-6"
+                style={{
+                    backgroundImage: 'repeating-linear-gradient(90deg, #dc2626 0px, #dc2626 10px, transparent 10px, transparent 12px, #fcd34d 12px, #fcd34d 22px, transparent 22px, transparent 24px, #1e3a8a 24px, #1e3a8a 34px, transparent 34px, transparent 36px, #16a34a 36px, #16a34a 46px, transparent 46px, transparent 48px)'
+                }}
+            ></div>
 
             {/* Question Text */}
-            <div className="mb-6 font-serif text-[18px] leading-relaxed text-black border-l-4 border-transparent pl-2">
+            <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2" style={{ fontFamily: '"Noto Serif", serif' }}>
                 {question.content.image_url && (
                     <div className="mb-4">
                         {question.content.image_description && (

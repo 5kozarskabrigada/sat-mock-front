@@ -127,9 +127,9 @@ export default function ExamHeader({
       
       {/* Dashed Line Decoration */}
       <div 
-        className="h-[4px] w-full"
+        className="h-[2px] w-full"
         style={{
-            backgroundImage: 'repeating-linear-gradient(90deg, #0077c8, #0077c8 8px, transparent 8px, transparent 10px, #00a651 10px, #00a651 18px, transparent 18px, transparent 20px, #ed1c24 20px, #ed1c24 28px, transparent 28px, transparent 30px, #662d91 30px, #662d91 38px, transparent 38px, transparent 40px)'
+            backgroundImage: 'repeating-linear-gradient(90deg, #dc2626 0px, #dc2626 30px, transparent 30px, transparent 32px, #fcd34d 32px, #fcd34d 62px, transparent 62px, transparent 64px, #1e3a8a 64px, #1e3a8a 94px, transparent 94px, transparent 96px, #16a34a 96px, #16a34a 126px, transparent 126px, transparent 128px)'
         }}
       ></div>
     </>

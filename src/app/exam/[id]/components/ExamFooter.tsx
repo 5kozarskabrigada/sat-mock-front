@@ -53,9 +53,9 @@ export default function ExamFooter({
     <>
       {/* Dashed Line Decoration */}
       <div 
-        className="h-[4px] w-full"
+        className="h-[2px] w-full"
         style={{
-            backgroundImage: 'repeating-linear-gradient(90deg, #0077c8, #0077c8 45px, transparent 45px, transparent 55px, #00a651 55px, #00a651 100px, transparent 100px, transparent 110px, #ed1c24 110px, #ed1c24 155px, transparent 155px, transparent 165px, #662d91 165px, #662d91 210px, transparent 210px, transparent 220px)'
+            backgroundImage: 'repeating-linear-gradient(90deg, #dc2626 0px, #dc2626 30px, transparent 30px, transparent 32px, #fcd34d 32px, #fcd34d 62px, transparent 62px, transparent 64px, #1e3a8a 64px, #1e3a8a 94px, transparent 94px, transparent 96px, #16a34a 96px, #16a34a 126px, transparent 126px, transparent 128px)'
         }}
       ></div>
 
@@ -144,7 +144,7 @@ export default function ExamFooter({
                                 >
                                     {/* Pin for Current */}
                                     {isCurrent && (
-                                        <div className="absolute -top-1.5 -left-1.5 bg-white rounded-full">
+                                        <div className="absolute -top-1.5 -left-1.5 bg-white rounded-full z-10">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-black">
                                                 <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                                             </svg>
@@ -153,14 +153,16 @@ export default function ExamFooter({
                                     
                                     {/* Flag for Review */}
                                     {isMarked && (
-                                        <div className="absolute -top-1.5 -right-1.5 bg-white rounded-full">
+                                        <div className="absolute -top-1.5 -right-1.5 bg-white rounded-full z-10">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-red-600">
                                                 <path fillRule="evenodd" d="M3 2.25a.75.75 0 01.75.75v.54l1.838-.46a9.75 9.75 0 016.725.738l.108.054a8.25 8.25 0 005.58.652l3.109-.732a.75.75 0 01.917.81 47.784 47.784 0 00.005 10.337.75.75 0 01-.574.812l-3.114.733a9.75 9.75 0 01-6.594-.158l-.108-.054a8.25 8.25 0 00-5.69-.625l-2.202.55V21a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75z" clipRule="evenodd" />
                                             </svg>
                                         </div>
                                     )}
 
-                                    {idx + 1}
+                                    <span className={isCurrent ? 'text-blue-600' : 'text-black'}>
+                                        {idx + 1}
+                                    </span>
                                 </button>
                             )
                         })}
