@@ -274,7 +274,10 @@ export default function QuestionViewer({
   }
 
   const hasPassage = !!question.content.passage && !isMathSection
-  const twoColumnLayout = hasPassage
+  // Check for SPR (Student-Produced Response) in Math section (no multiple choice options)
+  const isSPR = isMathSection && !isMultipleChoice
+  // Use two column layout if there is a passage OR if it's an SPR question (for directions)
+  const twoColumnLayout = hasPassage || isSPR
 
   return (
     <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
@@ -302,7 +305,7 @@ export default function QuestionViewer({
       {/* Main Layout */}
       {twoColumnLayout ? (
           <div className="flex w-full h-full p-4 gap-0 items-start">
-              {/* Left: Passage Panel */}
+              {/* Left: Passage Panel OR SPR Directions */}
               <div 
                 ref={passageRef}
                 className="overflow-y-auto content-pane"
@@ -313,15 +316,58 @@ export default function QuestionViewer({
                     fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
                     fontSize: '15px',
                     lineHeight: '24px',
-                    color: 'oklch(0.145 0 0)'
+                    color: 'oklch(0.145 0 0)',
+                    borderRight: '1px solid #e5e7eb', // Optional visual separator
+                    height: '100%'
                 }}
               >
-                 {question.content.passage && (
-                    <div className="prose max-w-none">
-                        <div className="annotation-tool relative">
-                            <p className="whitespace-pre-wrap">{question.content.passage}</p>
+                 {isSPR ? (
+                     <div className="prose max-w-none">
+                        <h2 className="text-lg font-semibold mb-4">Student-Produced Response Directions</h2>
+                        <ul className="list-disc pl-5 mb-4">
+                            <li>If you find more than one correct answer, enter only one answer.</li>
+                            <li>You can enter up to 5 characters for a positive answer and up to 6 characters (including the negative sign) for a negative answer.</li>
+                            <li>If your answer is a fraction that doesn’t fit in the provided space, enter the decimal equivalent.</li>
+                            <li>If your answer is a decimal that doesn’t fit in the provided space, enter it by truncating or rounding at the fourth digit.</li>
+                            <li>If your answer is a mixed number (such as 3½), enter it as an improper fraction (7/2) or its decimal equivalent (3.5).</li>
+                            <li>Don’t enter symbols such as a percent sign, comma, or dollar sign.</li>
+                        </ul>
+                        <h3 className="text-md font-semibold mb-2">Examples</h3>
+                        <table className="w-full border-collapse border border-gray-300 text-sm">
+                            <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 p-2 text-left">Answer</th>
+                                    <th className="border border-gray-300 p-2 text-left">Acceptable ways to enter answer</th>
+                                    <th className="border border-gray-300 p-2 text-left">Unacceptable: will NOT receive credit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td className="border border-gray-300 p-2">3.5</td>
+                                    <td className="border border-gray-300 p-2">3.5<br/>3.50<br/>7/2</td>
+                                    <td className="border border-gray-300 p-2">31/2<br/>3 1/2</td>
+                                </tr>
+                                <tr>
+                                    <td className="border border-gray-300 p-2">2/3</td>
+                                    <td className="border border-gray-300 p-2">2/3<br/>.6666<br/>.6667<br/>0.666<br/>0.667</td>
+                                    <td className="border border-gray-300 p-2">0.66<br/>.66<br/>0.67<br/>.67</td>
+                                </tr>
+                                <tr>
+                                    <td className="border border-gray-300 p-2">-1/3</td>
+                                    <td className="border border-gray-300 p-2">-1/3<br/>-.3333<br/>-0.333</td>
+                                    <td className="border border-gray-300 p-2">-.33<br/>-0.33</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                     </div>
+                 ) : (
+                     question.content.passage && (
+                        <div className="prose max-w-none">
+                            <div className="annotation-tool relative">
+                                <p className="whitespace-pre-wrap">{question.content.passage}</p>
+                            </div>
                         </div>
-                    </div>
+                     )
                  )}
               </div>
 
@@ -332,7 +378,8 @@ export default function QuestionViewer({
                     width: 'calc(50% - 5px)', 
                     minWidth: '20%',
                     position: 'relative',
-                    left: '5px'
+                    left: '5px',
+                    height: '100%'
                 }}
               >
                  <div className="mb-4">
@@ -370,6 +417,8 @@ export default function QuestionViewer({
                     toggleCrossOutDirect={toggleCrossOutDirect}
                     inputValue={inputValue}
                     handleInputChange={handleInputChange}
+                    isMarked={isMarked}
+                    onToggleMark={onToggleMark}
                  />
               </div>
           </div>
@@ -431,22 +480,25 @@ function QuestionContent({
                     </button>
                 </div>
 
-                <button 
-                    onClick={() => setIsAbcMode(!isAbcMode)}
-                    className="flex items-center text-sm text-gray-600 hover:text-black mr-2 h-full"
-                >
-                    <div className={`relative border border-gray-300 rounded-sm w-8 h-8 flex items-center justify-center ${isAbcMode ? 'bg-[#384cc0]' : 'bg-transparent'}`}>
-                        <span className={`text-[12px] font-medium ${isAbcMode ? 'text-white' : 'text-gray-500'} font-serif`}>ABC</span>
-                        {isAbcMode && (
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="absolute w-8 h-8 text-white">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M18 6L6 18"></path>
-                            </svg>
-                        )}
-                        {!isAbcMode && (
-                             <div className="absolute w-full h-px bg-gray-500 transform rotate-[-45deg]"></div>
-                        )}
-                    </div>
-                </button>
+                {/* Only show ABC button for multiple choice questions */}
+                {isMultipleChoice && (
+                    <button 
+                        onClick={() => setIsAbcMode(!isAbcMode)}
+                        className="flex items-center text-sm text-gray-600 hover:text-black mr-2 h-full"
+                    >
+                        <div className={`relative border border-gray-300 rounded-sm w-8 h-8 flex items-center justify-center ${isAbcMode ? 'bg-[#384cc0]' : 'bg-transparent'}`}>
+                            <span className={`text-[12px] font-medium ${isAbcMode ? 'text-white' : 'text-gray-500'} font-serif`}>ABC</span>
+                            {isAbcMode && (
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="absolute w-8 h-8 text-white">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M18 6L6 18"></path>
+                                </svg>
+                            )}
+                            {!isAbcMode && (
+                                 <div className="absolute w-full h-px bg-gray-500 transform rotate-[-45deg]"></div>
+                            )}
+                        </div>
+                    </button>
+                )}
             </div>
             
             {/* Question Text */}
@@ -580,15 +632,48 @@ function QuestionContent({
                 ) : (
                     <div className="flex h-full w-full gap-8">
                         {/* SPR Input Section */}
-                         <div className="w-full p-6 flex flex-col justify-center">
+                         <div className="w-full pt-4 flex flex-col">
                             <label className="block text-sm font-bold text-black mb-4 font-sans">
                                 Enter your answer
                             </label>
                             <input
+                                data-slot="input"
                                 type="text"
+                                placeholder="Enter your answer (e.g., 5.566, -5.566, 2/3, -2/3)"
                                 value={inputValue}
                                 onChange={handleInputChange}
-                                className="w-full p-4 border border-black rounded-lg font-serif text-xl focus:border-[#0077c8] focus:ring-1 focus:ring-[#0077c8] outline-none placeholder-gray-400 text-black text-center"
+                                className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 min-w-0 bg-transparent shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive w-full p-3 text-base border-2 border-black rounded-lg"
+                                style={{
+                                    appearance: 'auto',
+                                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                                    borderBottomColor: 'rgb(0, 0, 0)',
+                                    borderBottomLeftRadius: '10px',
+                                    borderBottomRightRadius: '10px',
+                                    borderBottomStyle: 'solid',
+                                    borderBottomWidth: '2px',
+                                    borderLeftColor: 'rgb(0, 0, 0)',
+                                    borderLeftStyle: 'solid',
+                                    borderLeftWidth: '2px',
+                                    borderRightColor: 'rgb(0, 0, 0)',
+                                    borderRightStyle: 'solid',
+                                    borderRightWidth: '2px',
+                                    borderTopColor: 'rgb(0, 0, 0)',
+                                    borderTopLeftRadius: '10px',
+                                    borderTopRightRadius: '10px',
+                                    borderTopStyle: 'solid',
+                                    borderTopWidth: '2px',
+                                    boxShadow: 'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px',
+                                    boxSizing: 'border-box',
+                                    color: 'oklch(0.145 0 0)',
+                                    cursor: 'text',
+                                    display: 'flex',
+                                    fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                                    fontSize: '14px',
+                                    height: '36px',
+                                    lineHeight: '20px',
+                                    opacity: 1,
+                                    outlineColor: 'oklab(0.708 0 0 / 0.5)'
+                                }}
                             />
                         </div>
                     </div>

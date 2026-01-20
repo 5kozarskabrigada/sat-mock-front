@@ -185,6 +185,7 @@ export default function ExamFooter({
                         onClick={() => {
                             // Logic to go to review page - for now just close
                             setIsModalOpen(false)
+                            if (onReviewClick) onReviewClick()
                         }}
                     >
                         Go to Review Page

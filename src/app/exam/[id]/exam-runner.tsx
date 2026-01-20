@@ -236,6 +236,7 @@ export default function ExamRunner({
               onNavigate={handleNavigate}
               answers={answers}
               markedQuestions={markedQuestions}
+              onReviewClick={() => setView('review')}
           />
       )}
 
