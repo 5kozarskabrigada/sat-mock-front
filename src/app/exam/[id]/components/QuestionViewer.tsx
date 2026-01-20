@@ -276,8 +276,10 @@ export default function QuestionViewer({
   const hasPassage = !!question.content.passage && !isMathSection
   // Check for SPR (Student-Produced Response) in Math section (no multiple choice options)
   const isSPR = isMathSection && !isMultipleChoice
-  // Use two column layout if there is a passage OR if it's an SPR question (for directions)
-  const twoColumnLayout = hasPassage || isSPR
+  // Check if there is an image in the question content
+  const hasImage = !!question.content.image_url
+  // Use two column layout if there is a passage OR if it's an SPR question (for directions) OR if it's a Math question with an image
+  const twoColumnLayout = hasPassage || isSPR || (isMathSection && hasImage)
 
   return (
     <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
@@ -504,7 +506,8 @@ function QuestionContent({
             {/* Question Text */}
             <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2 prose max-w-none mt-2" style={{ fontFamily: '"Noto Serif", serif' }}>
                 <div className="annotation-tool relative">
-                    {question.content.image_url && (
+                    {/* Image is now handled in the left column for Math sections, but keep here for Reading if needed or fallback */}
+                    {question.content.image_url && !question.section?.includes('math') && !question.domain?.toLowerCase().includes('math') && (
                         <div className="mb-4">
                             {question.content.image_description && (
                                     <div className="mb-2">
