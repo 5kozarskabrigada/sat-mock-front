@@ -42,6 +42,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     .from('questions')
     .select('*')
     .eq('exam_id', id)
+    .is('deleted_at', null)
     .order('created_at', { ascending: true })
 
   // 4. Fetch student name

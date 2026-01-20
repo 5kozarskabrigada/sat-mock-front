@@ -5,9 +5,26 @@ import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
 import parse from 'html-react-parser'
 
+const decodeHtml = (html: string) => {
+    if (typeof window === 'undefined') return html;
+    try {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    } catch (e) {
+        return html;
+    }
+}
+
 const Latex = ({ children }: { children: string }) => {
     if (!children) return null;
     
+    // Attempt to decode if it looks like escaped HTML
+    let content = children;
+    if (content.includes('&lt;') || content.includes('&gt;')) {
+        content = decodeHtml(content);
+    }
+
     const options = {
         replace: (domNode: any) => {
             if (domNode.type === 'text') {
@@ -51,7 +68,7 @@ const Latex = ({ children }: { children: string }) => {
 
     return (
         <span className="prose prose-lg max-w-none text-[var(--sat-text)]">
-            {parse(children, options)}
+            {parse(content, options)}
         </span>
     );
 };
