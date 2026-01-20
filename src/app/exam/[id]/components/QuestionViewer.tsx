@@ -445,7 +445,7 @@ function QuestionContent({
                             <img 
                                 src={question.content.image_url} 
                                 alt={question.content.image_description || "Question Graphic"} 
-                                className="max-w-full h-auto rounded-lg border border-gray-200" 
+                                className="max-w-full h-auto rounded-lg border border-gray-200 mx-auto" 
                             />
                         </div>
                     )}
