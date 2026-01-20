@@ -12,7 +12,8 @@ export default function ExamFooter({
   onSubmit,
   onNavigate,
   answers,
-  markedQuestions
+  markedQuestions,
+  onReviewClick
 }: { 
   studentName: string
   currentQuestionIndex: number
@@ -24,6 +25,7 @@ export default function ExamFooter({
   onNavigate: (index: number) => void
   answers: Record<string, any>
   markedQuestions: Record<string, boolean>
+  onReviewClick?: () => void
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
