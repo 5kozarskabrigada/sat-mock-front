@@ -1,4 +1,3 @@
-
 'use client'
 
 export default function ReviewScreen({ 
@@ -8,7 +7,8 @@ export default function ReviewScreen({
   onNavigate,
   markedQuestions,
   onSubmit,
-  onBackToQuestion
+  onBackToQuestion,
+  actionLabel
 }: { 
   questions: any[]
   answers: Record<string, any>
@@ -17,6 +17,7 @@ export default function ReviewScreen({
   markedQuestions: Record<string, boolean>
   onSubmit: () => void
   onBackToQuestion: () => void
+  actionLabel?: string
 }) {
   return (
     <div className="flex flex-col h-full bg-white font-sans">
