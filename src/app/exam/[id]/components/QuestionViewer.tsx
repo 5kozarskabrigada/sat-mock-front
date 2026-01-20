@@ -281,6 +281,10 @@ export default function QuestionViewer({
   // Use two column layout if there is a passage OR if it's an SPR question (for directions) OR if it's a Math question with an image
   const twoColumnLayout = hasPassage || isSPR || (isMathSection && hasImage)
 
+  // Determine if image should be shown in the question content (right side/main area)
+  // We show it here UNLESS it's being shown in the left column (Math MCQ with Image)
+  const showImageInContent = hasImage && (!isMathSection || isSPR || hasPassage)
+
   return (
     <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
       {/* Floating Annotation Menu */}
@@ -307,7 +311,7 @@ export default function QuestionViewer({
       {/* Main Layout */}
       {twoColumnLayout ? (
           <div className="flex w-full h-full p-4 gap-0 items-start">
-              {/* Left: Passage Panel OR SPR Directions */}
+              {/* Left: Passage Panel OR SPR Directions OR Math Image */}
               <div 
                 ref={passageRef}
                 className="overflow-y-auto content-pane"
@@ -362,15 +366,33 @@ export default function QuestionViewer({
                             </tbody>
                         </table>
                      </div>
-                 ) : (
-                     question.content.passage && (
-                        <div className="prose max-w-none">
-                            <div className="annotation-tool relative">
-                                <p className="whitespace-pre-wrap">{question.content.passage}</p>
-                            </div>
+                 ) : question.content.passage ? (
+                    <div className="prose max-w-none">
+                        <div className="annotation-tool relative">
+                            <p className="whitespace-pre-wrap">{question.content.passage}</p>
                         </div>
-                     )
-                 )}
+                    </div>
+                 ) : (isMathSection && hasImage) ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                         {question.content.image_description && (
+                            <div className="mb-2 w-full text-center">
+                                <Latex>{question.content.image_description}</Latex>
+                            </div>
+                        )}
+                        <img 
+                            src={question.content.image_url} 
+                            alt={question.content.image_description || "Question Graphic"} 
+                            style={{
+                                width: '400px',
+                                maxWidth: '100%',
+                                height: 'auto',
+                                marginBottom: '20px',
+                                marginTop: '16px',
+                                display: 'block'
+                            }}
+                        />
+                    </div>
+                 ) : null}
               </div>
 
               {/* Right: Question Panel */}
@@ -399,6 +421,7 @@ export default function QuestionViewer({
                         handleInputChange={handleInputChange}
                         isMarked={isMarked}
                         onToggleMark={onToggleMark}
+                        showImage={showImageInContent}
                     />
                  </div>
               </div>
@@ -421,6 +444,7 @@ export default function QuestionViewer({
                     handleInputChange={handleInputChange}
                     isMarked={isMarked}
                     onToggleMark={onToggleMark}
+                    showImage={showImageInContent}
                  />
               </div>
           </div>
@@ -442,7 +466,8 @@ function QuestionContent({
     inputValue,
     handleInputChange,
     isMarked,
-    onToggleMark
+    onToggleMark,
+    showImage
 }: any) {
     return (
         <>
@@ -506,8 +531,8 @@ function QuestionContent({
             {/* Question Text */}
             <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2 prose max-w-none mt-2" style={{ fontFamily: '"Noto Serif", serif' }}>
                 <div className="annotation-tool relative">
-                    {/* Image is now handled in the left column for Math sections, but keep here for Reading if needed or fallback */}
-                    {question.content.image_url && !question.section?.includes('math') && !question.domain?.toLowerCase().includes('math') && (
+                    {/* Image rendering controlled by showImage prop */}
+                    {showImage && question.content.image_url && (
                         <div className="mb-4">
                             {question.content.image_description && (
                                     <div className="mb-2">
@@ -518,6 +543,11 @@ function QuestionContent({
                                 src={question.content.image_url} 
                                 alt={question.content.image_description || "Question Graphic"} 
                                 className="max-w-full h-auto rounded-lg border border-gray-200 mx-auto" 
+                                style={{
+                                    display: 'block',
+                                    marginBottom: '20px',
+                                    marginTop: '16px'
+                                }}
                             />
                         </div>
                     )}
