@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import LatexRenderer from '@/components/ui/latex-renderer'
+
 interface Question {
     id: string
     section: string

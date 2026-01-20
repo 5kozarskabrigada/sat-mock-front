@@ -1,7 +1,6 @@
-
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { submitExam } from './actions'
 import { useRouter } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
@@ -17,9 +16,18 @@ const isMath = (q: any) => {
   return q.section === 'math' || (q.domain && q.domain.toLowerCase().includes('math'))
 }
 
+// Module Configuration
+const MODULE_CONFIG = [
+    { id: 'rw1', title: 'Section 1, Module 1: Reading and Writing', type: 'rw', duration: 32 * 60 },
+    { id: 'rw2', title: 'Section 1, Module 2: Reading and Writing', type: 'rw', duration: 32 * 60 },
+    { id: 'break', title: 'Break', type: 'break', duration: 10 * 60 },
+    { id: 'm1', title: 'Section 2, Module 1: Math', type: 'math', duration: 35 * 60 },
+    { id: 'm2', title: 'Section 2, Module 2: Math', type: 'math', duration: 35 * 60 },
+]
+
 export default function ExamRunner({ 
   exam, 
-  questions, 
+  questions: allQuestions, 
   studentExamId,
   studentName 
 }: { 
@@ -29,60 +37,119 @@ export default function ExamRunner({
   studentName: string
 }) {
   const router = useRouter()
+  
+  // -- State --
+  const [currentModuleIndex, setCurrentModuleIndex] = useState(0)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
-  const [timeLeft, setTimeLeft] = useState(isMath(questions[0]) ? 35 * 60 : 32 * 60) // Default 32 mins for R&W, 35 for Math
   
+  // Timer State
+  const [timeLeft, setTimeLeft] = useState(MODULE_CONFIG[0].duration)
+  const [isTimerRunning, setIsTimerRunning] = useState(true)
+
   // View State
   const [view, setView] = useState<'question' | 'review'>('question')
 
   // Modal States
-  const [isBreakOpen, setIsBreakOpen] = useState(false)
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false)
   const [isReferenceOpen, setIsReferenceOpen] = useState(false)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [isAnnotateActive, setIsAnnotateActive] = useState(false)
 
-  // Timer
+  // -- Derived Data --
+  const modules = useMemo(() => {
+      // Filter questions for each module
+      // We assume questions have 'section' and 'module' properties
+      // If not, we might need to distribute them if the DB doesn't have it (fallback)
+      
+      const rw1 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 1)
+      const rw2 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 2)
+      const m1 = allQuestions.filter(q => q.section === 'math' && q.module === 1)
+      const m2 = allQuestions.filter(q => q.section === 'math' && q.module === 2)
+
+      // Fallback: If no explicit module tagging, just split equally? 
+      // For now, assuming data is correct as per user instruction "Model 1 and 2 each should have 27 questions"
+      
+      return [
+          { ...MODULE_CONFIG[0], questions: rw1 },
+          { ...MODULE_CONFIG[1], questions: rw2 },
+          { ...MODULE_CONFIG[2], questions: [] }, // Break
+          { ...MODULE_CONFIG[3], questions: m1 },
+          { ...MODULE_CONFIG[4], questions: m2 },
+      ]
+  }, [allQuestions])
+
+  const currentModule = modules[currentModuleIndex]
+  const currentModuleQuestions = currentModule.questions
+
+  // -- Timer Logic --
   useEffect(() => {
-    if (isBreakOpen) return // Pause timer during break (if desired, or keep running)
+    if (!isTimerRunning) return
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {
           clearInterval(timer)
-          handleSubmit() // Auto-submit
+          handleModuleTimeUp() // Auto-advance
           return 0
         }
         return prev - 1
       })
     }, 1000)
     return () => clearInterval(timer)
-  }, [isBreakOpen])
+  }, [isTimerRunning, currentModuleIndex])
+
+  // -- Handlers --
+
+  const handleModuleTimeUp = () => {
+      // Time is up for the current module. Submit it and move to next.
+      handleFinishModule()
+  }
+
+  const handleFinishModule = async () => {
+      if (currentModuleIndex >= modules.length - 1) {
+          // Final Submit
+          await submitExam(studentExamId, answers)
+          router.push('/student/completed')
+      } else {
+          // Move to next module
+          const nextIndex = currentModuleIndex + 1
+          setCurrentModuleIndex(nextIndex)
+          setCurrentQuestionIndex(0)
+          setTimeLeft(modules[nextIndex].duration)
+          setView('question')
+          setShowSubmitConfirm(false)
+          
+          // If next is Break, ensure timer runs (or maybe user wants to start break manually? Standard is auto)
+      }
+  }
+
+  const handleResumeFromBreak = () => {
+      handleFinishModule() // Move from Break to next section
+  }
 
   const handleAnswerChange = (value: any) => {
+    const qId = currentModuleQuestions[currentQuestionIndex].id
     setAnswers(prev => ({
       ...prev,
-      [questions[currentQuestionIndex].id]: value
+      [qId]: value
     }))
   }
 
   const handleToggleMark = () => {
-    const questionId = questions[currentQuestionIndex].id
+    const qId = currentModuleQuestions[currentQuestionIndex].id
     setMarkedQuestions(prev => ({
       ...prev,
-      [questionId]: !prev[questionId]
+      [qId]: !prev[qId]
     }))
   }
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < currentModuleQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
     } else {
-        // If last question, maybe go to review? 
-        // User said: "Back/Next navigate through questions."
-        // Usually Next on last question does nothing or goes to Review.
+        // Last question -> go to Review
         setView('review')
     }
   }
@@ -92,7 +159,6 @@ export default function ExamRunner({
         setView('question')
         return
     }
-
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1)
     }
@@ -103,32 +169,27 @@ export default function ExamRunner({
       setView('question')
   }
 
-  const handleSubmit = async () => {
-    await submitExam(studentExamId, answers)
-    router.push('/student/completed')
-  }
+  // -- Render --
 
-  if (questions.length === 0) {
+  if (allQuestions.length === 0) {
     return <div className="p-10 text-center">No questions in this exam.</div>
   }
 
-  const currentQuestion = questions[currentQuestionIndex]
-  const isMathSection = isMath(currentQuestion)
-  // Derive section title dynamically
-  const sectionTitle = isMathSection 
-    ? 'Section 2, Module 1: Math' 
-    : 'Section 1, Module 1: Reading and Writing'
-
-  if (isBreakOpen) {
-    return <BreakScreen timeLeft={600} onResume={() => setIsBreakOpen(false)} />
+  // 1. Break Screen
+  if (currentModule.type === 'break') {
+      return <BreakScreen timeLeft={timeLeft} onResume={handleResumeFromBreak} />
   }
+
+  // 2. Exam Screen
+  const currentQuestion = currentModuleQuestions[currentQuestionIndex]
+  const isMathSection = currentModule.type === 'math'
 
   return (
     <div className="flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)]">
       <ExamHeader 
-          title={sectionTitle} 
+          title={currentModule.title} 
           timeLeft={timeLeft}
-          onReviewClick={() => setView('review')} // Header review button
+          onReviewClick={() => setView('review')}
           showMathTools={isMathSection}
           onCalculatorClick={() => setIsCalculatorOpen(true)}
           onReferenceClick={() => setIsReferenceOpen(true)}
@@ -137,11 +198,11 @@ export default function ExamRunner({
       />
 
       <main className="flex-1 overflow-hidden relative">
-          {view === 'question' ? (
+          {view === 'question' && currentQuestion ? (
               <QuestionViewer 
                   question={currentQuestion}
                   questionIndex={currentQuestionIndex}
-                  totalQuestions={questions.length}
+                  totalQuestions={currentModuleQuestions.length}
                   selectedAnswer={answers[currentQuestion.id]}
                   onAnswerChange={handleAnswerChange}
                   isMathSection={isMathSection}
@@ -151,13 +212,14 @@ export default function ExamRunner({
               />
           ) : (
               <ReviewScreen 
-                  questions={questions}
+                  questions={currentModuleQuestions}
                   answers={answers}
                   currentQuestionIndex={currentQuestionIndex}
                   onNavigate={handleNavigate}
                   markedQuestions={markedQuestions}
-                  onSubmit={handleSubmit}
+                  onSubmit={() => setShowSubmitConfirm(true)}
                   onBackToQuestion={() => setView('question')}
+                  actionLabel={currentModuleIndex >= modules.length - 1 ? "Submit Exam" : "Next Section"}
               />
           )}
       </main>
@@ -166,7 +228,7 @@ export default function ExamRunner({
           <ExamFooter 
               studentName={studentName}
               currentQuestionIndex={currentQuestionIndex}
-              questions={questions} // Passing full questions array
+              questions={currentModuleQuestions} 
               onNext={handleNext}
               onBack={handleBack}
               onToggleMark={handleToggleMark}
@@ -177,13 +239,18 @@ export default function ExamRunner({
           />
       )}
 
-      {/* Submit Confirmation Modal */}
+      {/* Submit/Finish Section Confirmation Modal */}
       {showSubmitConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-200">
-                  <h3 className="text-xl font-bold mb-4 text-gray-900">Finish This Section?</h3>
+                  <h3 className="text-xl font-bold mb-4 text-gray-900">
+                      {currentModuleIndex >= modules.length - 1 ? "Finish Exam?" : "Finish This Section?"}
+                  </h3>
                   <p className="text-gray-600 mb-6">
-                      You are about to finish this section. You will be able to review your answers on the next screen before final submission.
+                      {currentModuleIndex >= modules.length - 1 
+                        ? "You are about to submit your exam. You will not be able to change your answers after this."
+                        : "You are about to finish this module. You will NOT be able to return to these questions once you move to the next section."
+                      }
                   </p>
                   <div className="flex justify-end space-x-3">
                       <button 
@@ -193,13 +260,10 @@ export default function ExamRunner({
                           Cancel
                       </button>
                       <button 
-                          onClick={() => {
-                              setShowSubmitConfirm(false)
-                              setView('review')
-                          }}
+                          onClick={handleFinishModule}
                           className="px-4 py-2 rounded-lg bg-[var(--sat-primary)] text-white hover:bg-blue-700 font-medium"
                       >
-                          Yes, Go to Review
+                          {currentModuleIndex >= modules.length - 1 ? "Submit Exam" : "Move to Next Section"}
                       </button>
                   </div>
               </div>

@@ -106,7 +106,7 @@ export default function ReviewScreen({
               onClick={onSubmit}
               className="px-12 py-4 bg-indigo-600 text-white rounded-full font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg hover:scale-105"
           >
-              Submit Exam
+              {actionLabel || 'Finish Section'}
           </button>
       </div>
     </div>
