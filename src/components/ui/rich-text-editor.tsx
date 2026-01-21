@@ -220,7 +220,7 @@ export default function RichTextEditor({
             </div>
 
             <div 
-                className={`border rounded-md shadow-sm overflow-hidden bg-white transition-all duration-200 
+                className={`border rounded-md shadow-sm bg-white transition-all duration-200 
                     ${isFocused 
                         ? 'border-indigo-500 ring-1 ring-indigo-500' 
                         : 'border-gray-300 hover:border-gray-400'
