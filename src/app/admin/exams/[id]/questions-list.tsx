@@ -78,8 +78,8 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
                                                 )}
                                             </div>
                                             
-                                            <div className="mt-2 text-sm text-gray-900 line-clamp-2 font-serif leading-relaxed">
-                                                {q.content.question}
+                                            <div className="mt-2 text-sm text-gray-900 line-clamp-3 font-serif leading-relaxed">
+                                                <LatexRenderer>{q.content.question}</LatexRenderer>
                                             </div>
 
                                             <div className="mt-2 flex items-center text-xs text-gray-500 gap-4">

@@ -5,12 +5,20 @@ import { InlineMath, BlockMath } from 'react-katex'
 import parse from 'html-react-parser'
 
 const decodeHtml = (html: string) => {
-    return html
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, '&');
+    let decoded = html;
+    // Handle multiple levels of escaping (e.g., &amp;lt;p&amp;gt; -> &lt;p&gt; -> <p>)
+    let previous;
+    do {
+        previous = decoded;
+        decoded = decoded
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&amp;/g, '&');
+    } while (decoded !== previous && (decoded.includes('&lt;') || decoded.includes('&gt;') || decoded.includes('&amp;')));
+    
+    return decoded;
 }
 
 export default function LatexRenderer({ children, className = '' }: { children: string, className?: string }) {

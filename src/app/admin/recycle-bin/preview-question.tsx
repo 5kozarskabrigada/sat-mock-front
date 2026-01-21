@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import LatexRenderer from '@/components/ui/latex-renderer'
 
 export default function PreviewQuestion({ question }: { question: any }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -20,7 +21,9 @@ export default function PreviewQuestion({ question }: { question: any }) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
                       <p className="font-medium text-gray-700 mb-1">Question:</p>
-                      <p className="mb-2 text-gray-800 whitespace-pre-wrap">{question.content.question}</p>
+                      <div className="mb-2 text-gray-800 whitespace-pre-wrap">
+                        <LatexRenderer>{question.content.question}</LatexRenderer>
+                      </div>
                       
                       {question.content.image_url && (
                           <div className="mb-2">

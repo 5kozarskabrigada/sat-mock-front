@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { RestoreExamButton, RestoreQuestionButton, PermanentDeleteExamButton, PermanentDeleteQuestionButton } from './buttons'
 import PreviewQuestion from './preview-question'
 import PreviewExam from './preview-exam'
+import LatexRenderer from '@/components/ui/latex-renderer'
 
 export default async function RecycleBinPage() {
   const supabase = await createClient()
@@ -72,7 +73,9 @@ export default async function RecycleBinPage() {
                         <li key={q.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50 flex justify-between items-center">
                             <div className="max-w-xl">
                                 <div className="flex items-center">
-                                    <p className="text-sm font-medium text-gray-900 truncate max-w-md">{q.content.question}</p>
+                                    <div className="text-sm font-medium text-gray-900 truncate max-w-md">
+                                        <LatexRenderer>{q.content.question}</LatexRenderer>
+                                    </div>
                                     <PreviewQuestion question={q} />
                                 </div>
                                 <p className="text-xs text-gray-500">
