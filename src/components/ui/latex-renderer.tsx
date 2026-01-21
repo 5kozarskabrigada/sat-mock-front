@@ -34,7 +34,8 @@ export default function LatexRenderer({ children, className = '' }: { children: 
         replace: (domNode: any) => {
             if (domNode.type === 'text') {
                 const text = domNode.data
-                const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g
+                // Removed single $ delimiter to avoid conflict with currency symbols
+                const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g
                 const parts = text.split(regex)
                 
                 if (parts.length > 1) {
@@ -45,8 +46,6 @@ export default function LatexRenderer({ children, className = '' }: { children: 
                                     return <BlockMath key={index} math={part.slice(2, -2)} />
                                 } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
                                     return <BlockMath key={index} math={part.slice(2, -2)} />
-                                } else if (part.startsWith('$') && part.endsWith('$')) {
-                                    return <InlineMath key={index} math={part.slice(1, -1)} />
                                 } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
                                     return <InlineMath key={index} math={part.slice(2, -2)} />
                                 } else {
