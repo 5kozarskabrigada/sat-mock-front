@@ -24,6 +24,15 @@
   --font-sans-family: "Myriad Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* Ensure KaTeX formulas match surrounding text size */
+.latex-content .katex {
+  font-size: 1em !important;
+}
+
+.latex-content .katex-display {
+  margin: 1em 0 !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

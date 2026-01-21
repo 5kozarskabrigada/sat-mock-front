@@ -16,7 +16,7 @@ const decodeHtml = (html: string) => {
     }
 }
 
-const Latex = ({ children }: { children: string }) => {
+const Latex = ({ children, className }: { children: string, className?: string }) => {
     if (!children) return null;
     
     // Attempt to decode if it looks like escaped HTML
@@ -67,7 +67,7 @@ const Latex = ({ children }: { children: string }) => {
     }
 
     return (
-        <span className="prose prose-lg max-w-none text-[var(--sat-text)]">
+        <span className={`latex-content ${className || ''}`}>
             {parse(content, options)}
         </span>
     );
