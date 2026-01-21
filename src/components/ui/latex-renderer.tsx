@@ -5,14 +5,12 @@ import { InlineMath, BlockMath } from 'react-katex'
 import parse from 'html-react-parser'
 
 const decodeHtml = (html: string) => {
-    if (typeof window === 'undefined') return html;
-    try {
-        const txt = document.createElement("textarea");
-        txt.innerHTML = html;
-        return txt.value;
-    } catch (e) {
-        return html;
-    }
+    return html
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&');
 }
 
 export default function LatexRenderer({ children, className = '' }: { children: string, className?: string }) {

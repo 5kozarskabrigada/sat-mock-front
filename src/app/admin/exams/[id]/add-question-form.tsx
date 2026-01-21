@@ -6,6 +6,7 @@ import { addQuestion } from './actions'
 import RichTextEditor from '@/components/ui/rich-text-editor'
 import { EditorProvider } from '@/components/ui/editor-context'
 import UnifiedToolbar from '@/components/ui/unified-toolbar'
+import LatexRenderer from '@/components/ui/latex-renderer'
 
 const DOMAINS = {
   math: [

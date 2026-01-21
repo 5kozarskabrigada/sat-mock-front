@@ -13,61 +13,9 @@ import TextAlign from '@tiptap/extension-text-align'
 import parse from 'html-react-parser'
 import UnifiedToolbar from './unified-toolbar'
 import { MathExtension } from './math-extension'
+import LatexRenderer from './latex-renderer'
 
-// LaTeX Preview Component
-const LatexPreview = ({ content }: { content: string }) => {
-    if (!content) return null
-
-    // If content contains standard LaTeX delimiters, we try to parse them
-    // Note: This simple parser handles LaTeX mixed with HTML from Tiptap
-    const options = {
-        replace: (domNode: any) => {
-            // Handle Tiptap math-component tags
-            if (domNode.type === 'tag' && domNode.name === 'math-component') {
-                const latex = domNode.attribs?.latex
-                const display = domNode.attribs?.display
-                if (latex) {
-                    if (display === 'block') {
-                        return <BlockMath math={latex} />
-                    }
-                    return <InlineMath math={latex} />
-                }
-            }
-
-            if (domNode.type === 'text') {
-                const text = domNode.data
-                const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g
-                const parts = text.split(regex)
-                
-                if (parts.length > 1) {
-                    return (
-                        <>
-                            {parts.map((part: string, index: number) => {
-                                if (part.startsWith('$$') && part.endsWith('$$')) {
-                                    return <BlockMath key={index} math={part.slice(2, -2)} />
-                                } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
-                                    return <BlockMath key={index} math={part.slice(2, -2)} />
-                                } else if (part.startsWith('$') && part.endsWith('$')) {
-                                    return <InlineMath key={index} math={part.slice(1, -1)} />
-                                } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
-                                    return <InlineMath key={index} math={part.slice(2, -2)} />
-                                } else {
-                                    return <span key={index}>{part}</span>
-                                }
-                            })}
-                        </>
-                    )
-                }
-            }
-        }
-    }
-
-    return (
-        <div className="p-4 bg-gray-50 rounded-md border border-gray-200 mt-2 font-serif text-sm min-h-[60px] prose prose-sm max-w-none text-gray-900">
-            {parse(content, options)}
-        </div>
-    )
-}
+// LatexPreview removed - using LatexRenderer
 
 interface RichTextEditorProps {
     id: string
@@ -236,7 +184,9 @@ export default function RichTextEditor({
             {showPreview && (
                 <div className="mt-2">
                     <p className="text-xs text-gray-500 mb-1 uppercase font-semibold">Preview (Student View)</p>
-                    <LatexPreview content={value} />
+                    <div className="p-4 bg-gray-50 rounded-md border border-gray-200 mt-2 font-serif text-sm min-h-[60px] prose prose-sm max-w-none text-gray-900">
+                        <LatexRenderer>{value}</LatexRenderer>
+                    </div>
                 </div>
             )}
         </div>
