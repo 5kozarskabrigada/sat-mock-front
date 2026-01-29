@@ -612,7 +612,7 @@ function QuestionContent({
                                         }
                                     }}
                                     disabled={isCrossed && !isAbcMode}
-                                    className={`w-full p-3 text-left border-2 rounded-lg text-base flex items-center gap-3 cursor-pointer
+                                    className={`w-full p-3 text-left border-2 rounded-lg text-[15px] flex items-center gap-3 cursor-pointer
                                         ${isSelected 
                                             ? 'bg-[#e6f4ff] ring-1 ring-[#0077c8] border-[#0077c8]' 
                                             : isCrossed
@@ -622,6 +622,7 @@ function QuestionContent({
                                     `}
                                     style={{
                                         fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
+                                        lineHeight: '24px',
                                         ...(isCrossed ? {
                                             color: 'rgb(156, 163, 175)',
                                             borderColor: 'rgb(156, 163, 175)'
@@ -701,9 +702,9 @@ function QuestionContent({
                                     cursor: 'text',
                                     display: 'flex',
                                     fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
-                                    fontSize: '14px',
+                                    fontSize: '15px',
                                     height: '36px',
-                                    lineHeight: '20px',
+                                    lineHeight: '24px',
                                     opacity: 1,
                                     outlineColor: 'oklab(0.708 0 0 / 0.5)'
                                 }}

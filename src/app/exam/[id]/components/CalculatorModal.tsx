@@ -113,7 +113,11 @@ export default function CalculatorModal({ isOpen, onClose }: { isOpen: boolean; 
         </div>
         
         {/* Desmos Container */}
-        <div ref={containerRef} className="flex-1 w-full h-full relative bg-white"></div>
+        <div 
+          ref={containerRef} 
+          className="flex-1 w-full h-full relative bg-white"
+          style={{ minHeight: '400px' }}
+        ></div>
       </div>
     </div>
   )
