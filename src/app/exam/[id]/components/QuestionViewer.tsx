@@ -106,16 +106,15 @@ export default function QuestionViewer({
   
   // Restore highlights from parent state
   useEffect(() => {
-    if (passageRef.current && highlights && highlights.length > 0) {
-        // If we have saved HTML, we can restore it. 
-        // For simplicity, let's assume highlights is an array of strings (serialized HTML or ranges)
-        // But the current implementation just manipulates DOM. 
-        // Let's change the strategy: onHighlightsChange will pass the entire innerHTML of the passage.
-        if (typeof highlights[0] === 'string' && highlights[0].startsWith('<')) {
+    if (passageRef.current) {
+        if (highlights && highlights.length > 0 && typeof highlights[0] === 'string' && highlights[0].startsWith('<')) {
             passageRef.current.innerHTML = highlights[0]
+        } else if (question.content.passage) {
+            // Initial load of clean passage
+            passageRef.current.innerHTML = `<p class="whitespace-pre-wrap">${question.content.passage}</p>`
         }
     }
-  }, [question.id]) // Only on question change
+  }, [question.id, highlights]) // Update when question OR highlights change
 
   // Reset local state when question changes
   useEffect(() => {
@@ -131,6 +130,9 @@ export default function QuestionViewer({
   }
 
   const toggleCrossOutDirect = (key: string) => {
+    // Cannot cross out if it's the selected answer
+    if (selectedAnswer === key) return
+
     setCrossedAnswers(prev => ({
         ...prev,
         [key]: !prev[key]
@@ -450,9 +452,10 @@ export default function QuestionViewer({
                      </div>
                  ) : question.content.passage ? (
                     <div className="prose max-w-none">
-                        <div className="annotation-tool relative">
-                            <p className="whitespace-pre-wrap">{question.content.passage}</p>
-                        </div>
+                        <div 
+                            className="annotation-tool relative"
+                            dangerouslySetInnerHTML={{ __html: '' }} // Let the useEffect handle initial and updated content
+                        />
                     </div>
                  ) : null}
               </div>
