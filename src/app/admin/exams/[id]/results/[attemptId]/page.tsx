@@ -96,6 +96,11 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                 <div className="text-right">
                     <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Date</p>
                     <p className="text-lg font-bold">{new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    {attempt.lockdown_violations > 0 && (
+                        <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                            {attempt.lockdown_violations} Security Violations
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

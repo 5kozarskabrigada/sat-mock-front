@@ -15,7 +15,7 @@ export default async function ExamResultsPage({ params }: { params: { id: string
 
   if (!exam) notFound()
 
-  // Fetch completed exams
+  // Fetch all exam attempts for this exam
   const { data: results } = await supabase
     .from('student_exams')
     .select(`
@@ -24,6 +24,7 @@ export default async function ExamResultsPage({ params }: { params: { id: string
       completed_at,
       status,
       score,
+      lockdown_violations,
       users (
         first_name,
         last_name,
@@ -31,8 +32,7 @@ export default async function ExamResultsPage({ params }: { params: { id: string
       )
     `)
     .eq('exam_id', id)
-    .eq('status', 'completed')
-    .order('completed_at', { ascending: false })
+    .order('started_at', { ascending: false })
 
   return (
     <div className="space-y-6">
@@ -69,13 +69,21 @@ export default async function ExamResultsPage({ params }: { params: { id: string
                                     </div>
                                     <div className="flex items-center space-x-6">
                                         <div className="text-right">
+                                            {result.lockdown_violations > 0 && (
+                                                <div className="text-xs font-bold text-red-600 mb-1">
+                                                    {result.lockdown_violations} Security Violations
+                                                </div>
+                                            )}
                                             <div className="text-sm text-gray-900 font-medium">
-                                                {/* Calculate simple score if jsonb is empty or specific format */}
-                                                {/* For now, just show "View Report" */}
-                                                View Report
+                                                {result.status === 'completed' ? 'View Report' : (
+                                                    <span className="text-indigo-600">In Progress</span>
+                                                )}
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                Completed {new Date(result.completed_at).toLocaleDateString()}
+                                                {result.status === 'completed' 
+                                                  ? `Completed ${new Date(result.completed_at).toLocaleDateString()}`
+                                                  : `Started ${new Date(result.started_at).toLocaleDateString()}`
+                                                }
                                             </div>
                                         </div>
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">

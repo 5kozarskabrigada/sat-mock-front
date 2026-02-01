@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { submitExam } from './actions'
+import { submitExam, logLockdownViolation } from './actions'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
 import ExamFooter from './components/ExamFooter'
@@ -91,9 +91,20 @@ export default function ExamRunner({
   useEffect(() => {
     if (isAdminPreview) return // No lockdown for admins
 
-    const handleBlur = () => {
+    const handleViolation = async () => {
         setLockdownViolations(prev => prev + 1)
         setShowLockdownWarning(true)
+        await logLockdownViolation(studentExamId)
+    }
+
+    const handleBlur = () => {
+        handleViolation()
+    }
+
+    const handleFullscreenChange = () => {
+        if (!document.fullscreenElement && !showLockdownWarning) {
+            handleViolation()
+        }
     }
 
     const handleContextMenu = (e: MouseEvent) => {
@@ -101,7 +112,6 @@ export default function ExamRunner({
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        // Block Alt+Tab (can't fully block but can detect blur)
         // Block F12 (DevTools)
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
             e.preventDefault()
@@ -116,8 +126,9 @@ export default function ExamRunner({
     window.addEventListener('blur', handleBlur)
     window.addEventListener('contextmenu', handleContextMenu)
     window.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
 
-    // Request Fullscreen
+    // Request Fullscreen on first click
     const enterFullscreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(e => {
@@ -132,9 +143,18 @@ export default function ExamRunner({
         window.removeEventListener('blur', handleBlur)
         window.removeEventListener('contextmenu', handleContextMenu)
         window.removeEventListener('keydown', handleKeyDown)
+        document.removeEventListener('fullscreenchange', handleFullscreenChange)
         document.removeEventListener('click', enterFullscreen)
     }
-  }, [isAdminPreview])
+  }, [isAdminPreview, studentExamId, showLockdownWarning])
+
+  const requestFullscreen = () => {
+      if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(e => {
+              console.warn("Fullscreen request failed", e)
+          })
+      }
+  }
 
   // -- Derived Data --
   const modules = useMemo(() => {
@@ -391,7 +411,10 @@ export default function ExamRunner({
                       <span className="block mt-4 font-bold text-red-600">Violation Count: {lockdownViolations}</span>
                   </p>
                   <button 
-                      onClick={() => setShowLockdownWarning(false)}
+                      onClick={() => {
+                          setShowLockdownWarning(false);
+                          requestFullscreen();
+                      }}
                       className="w-full py-4 rounded-xl bg-red-600 text-white hover:bg-red-700 font-bold text-lg shadow-lg transition-transform active:scale-95"
                   >
                       I Understand, Resume Exam

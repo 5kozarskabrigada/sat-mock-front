@@ -84,3 +84,29 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   revalidatePath('/student')
   return { success: true }
 }
+
+export async function logLockdownViolation(studentExamId: string) {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase.rpc('increment_lockdown_violations', {
+    exam_id: studentExamId
+  })
+
+  if (error) {
+    // Fallback if RPC doesn't exist yet
+    const { data: current } = await supabase
+      .from('student_exams')
+      .select('lockdown_violations')
+      .eq('id', studentExamId)
+      .single()
+
+    await supabase
+      .from('student_exams')
+      .update({ 
+        lockdown_violations: (current?.lockdown_violations || 0) + 1 
+      })
+      .eq('id', studentExamId)
+  }
+
+  return { success: true }
+}
