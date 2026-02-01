@@ -459,7 +459,7 @@ export default function QuestionViewer({
 
               {/* Movable Divider */}
               <div 
-                className={`w-1.5 h-full cursor-col-resize hover:bg-indigo-400 transition-colors z-30 ${isResizing ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                className={`w-1.5 h-full cursor-col-resize hover:bg-indigo-400 transition-colors z-10 ${isResizing ? 'bg-indigo-600' : 'bg-gray-200'}`}
                 onMouseDown={handleDividerMouseDown}
               />
 

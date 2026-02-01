@@ -226,6 +226,18 @@ export async function toggleExamStatus(examId: string, currentStatus: string, cl
   return { success: true }
 }
 
+export async function updateLockdownPolicy(examId: string, policy: 'log' | 'disqualify') {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('exams')
+    .update({ lockdown_policy: policy })
+    .eq('id', examId)
+
+  if (error) return { error: error.message }
+  revalidatePath(`/admin/exams/${examId}`)
+  return { success: true }
+}
+
 export async function simpleToggleExamStatus(examId: string, currentStatus: string) {
   const supabase = await createClient()
   

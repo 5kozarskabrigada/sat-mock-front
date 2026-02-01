@@ -2,7 +2,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
-import { toggleExamStatus } from './actions'
+import { toggleExamStatus, updateLockdownPolicy } from './actions'
 import { useState, useEffect } from 'react'
 import ActivationErrorModal from '@/components/activation-error-modal'
 
@@ -18,15 +18,26 @@ function SubmitButton({ status }: { status: string }) {
     <button 
       type="submit" 
       disabled={pending}
-      className={`text-sm font-medium px-3 py-1 rounded-md text-white ${isLive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} disabled:opacity-50`}
+      className={`text-sm font-medium px-4 py-2 rounded-lg text-white shadow-sm transition-all ${isLive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} disabled:opacity-50`}
     >
       {pending ? 'Updating...' : label}
     </button>
   )
 }
 
-export default function ExamStatusToggle({ examId, status, classrooms }: { examId: string, status: string, classrooms: any[] }) {
+export default function ExamStatusToggle({ 
+  examId, 
+  status, 
+  classrooms,
+  lockdownPolicy = 'log'
+}: { 
+  examId: string, 
+  status: string, 
+  classrooms: any[],
+  lockdownPolicy?: string
+}) {
   const [selectedClassroom, setSelectedClassroom] = useState<string>('')
+  const [policy, setPolicy] = useState(lockdownPolicy)
 
   // Bind the arguments to the action
   const toggleAction = toggleExamStatus.bind(null, examId, status, selectedClassroom || null)
@@ -39,16 +50,21 @@ export default function ExamStatusToggle({ examId, status, classrooms }: { examI
     }
   }, [state])
 
+  const handlePolicyChange = async (newPolicy: string) => {
+    setPolicy(newPolicy)
+    await updateLockdownPolicy(examId, newPolicy as 'log' | 'disqualify')
+  }
+
   const isLive = status === 'active'
 
   return (
     <>
-    <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-inner">
         {!isLive && (
-            <div className="flex flex-col items-end">
-                <label className="text-xs text-gray-500 mb-1">Assign to:</label>
+            <div className="flex flex-col items-start">
+                <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Assign Classroom</label>
                 <select 
-                    className="text-sm border-gray-300 rounded-md shadow-sm p-1.5 text-black min-w-[150px] bg-white focus:ring-indigo-500 focus:border-indigo-500"
+                    className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-[180px] bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                     value={selectedClassroom}
                     onChange={(e) => setSelectedClassroom(e.target.value)}
                 >
@@ -59,12 +75,27 @@ export default function ExamStatusToggle({ examId, status, classrooms }: { examI
                 </select>
             </div>
         )}
-        <form action={formAction} className="inline-block">
-        <SubmitButton status={status} />
-        {state?.error && (
-            <p className="mt-1 text-xs text-red-600">{state.error}</p>
-        )}
-        </form>
+
+        <div className="flex flex-col items-start">
+            <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Security Policy</label>
+            <select 
+                className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-[180px] bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                value={policy}
+                onChange={(e) => handlePolicyChange(e.target.value)}
+            >
+                <option value="log">Log Violations (Standard)</option>
+                <option value="disqualify">Immediate Disqualify (Strict)</option>
+            </select>
+        </div>
+
+        <div className="flex flex-col items-end pt-5">
+            <form action={formAction} className="inline-block">
+                <SubmitButton status={status} />
+                {state?.error && (
+                    <p className="mt-1 text-xs text-red-600">{state.error}</p>
+                )}
+            </form>
+        </div>
     </div>
 
     <ActivationErrorModal

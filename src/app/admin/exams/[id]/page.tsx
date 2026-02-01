@@ -34,6 +34,24 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
     .select('*')
     .order('name')
 
+  // Fetch participation stats
+  const { data: participation } = await supabase
+    .from('student_exams')
+    .select('student_id')
+    .eq('exam_id', id)
+
+  const studentsStartedCount = participation?.length || 0
+  
+  // Fetch total students in the exam's classroom
+  let totalStudentsInClassroom = 0
+  if (exam.classroom_id) {
+    const { count } = await supabase
+      .from('student_classrooms')
+      .select('*', { count: 'exact', head: true })
+      .eq('classroom_id', exam.classroom_id)
+    totalStudentsInClassroom = count || 0
+  }
+
   // Helper for status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -68,13 +86,18 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
                 </svg>
                 Results
             </Link>
-             <ExamStatusToggle examId={exam.id} status={exam.status} classrooms={classrooms || []} />
+             <ExamStatusToggle 
+                examId={exam.id} 
+                status={exam.status} 
+                classrooms={classrooms || []} 
+                lockdownPolicy={exam.lockdown_policy}
+             />
              <DeleteExamButton examId={exam.id} />
         </div>
       </div>
 
       {/* Stats / Info Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <dt className="text-sm font-medium text-gray-500 truncate">Status</dt>
             <dd className="mt-2">
@@ -84,12 +107,23 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
             </dd>
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
+            <dt className="text-sm font-medium text-gray-500 truncate">Participation</dt>
+            <dd className="mt-2 text-lg font-semibold text-gray-900 tracking-tight">
+                {studentsStartedCount}{totalStudentsInClassroom > 0 ? ` / ${totalStudentsInClassroom}` : ''} 
+                <span className="ml-2 text-xs font-normal text-gray-500">Students Joined</span>
+            </dd>
+         </div>
+         <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <dt className="text-sm font-medium text-gray-500 truncate">Exam Code</dt>
             <dd className="mt-2 text-lg font-mono font-semibold text-gray-900 tracking-tight">{exam.code}</dd>
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Type</dt>
-            <dd className="mt-2 text-lg font-medium text-gray-900 capitalize">{exam.type}</dd>
+            <dt className="text-sm font-medium text-gray-500 truncate">Lockdown Policy</dt>
+            <dd className="mt-2">
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${exam.lockdown_policy === 'disqualify' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {exam.lockdown_policy === 'disqualify' ? 'Strict (Disqualify)' : 'Standard (Log Only)'}
+                </span>
+            </dd>
          </div>
       </div>
 

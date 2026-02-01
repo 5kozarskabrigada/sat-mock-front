@@ -10,12 +10,12 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   // We need to fetch the questions that correspond to these answers to check correctness.
   // Ideally, we should fetch all questions for the exam this attempt belongs to.
   
-  // Get exam_id from student_exam
+  // Get exam_id and student_id from student_exam
   const { data: studentExam } = await supabase
-      .from('student_exams')
-      .select('exam_id')
-      .eq('id', studentExamId)
-      .single()
+    .from('student_exams')
+    .select('exam_id, student_id')
+    .eq('id', studentExamId)
+    .single()
       
   if (!studentExam) {
       return { error: 'Student exam not found' }
@@ -81,13 +81,40 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     return { error: 'Failed to submit exam' }
   }
 
+  // 3. Log completion
+  await supabase.from('activity_logs').insert({
+    user_id: studentExam.student_id,
+    student_exam_id: studentExamId,
+    exam_id: studentExam.exam_id,
+    type: 'exam_completed',
+    details: 'Student submitted the exam'
+  })
+
   revalidatePath('/student')
   return { success: true }
 }
 
-export async function logLockdownViolation(studentExamId: string) {
+export async function logLockdownViolation(studentExamId: string, details?: string) {
   const supabase = await createClient()
   
+  // 1. Log the activity
+  const { data: studentExam } = await supabase
+    .from('student_exams')
+    .select('exam_id, student_id')
+    .eq('id', studentExamId)
+    .single()
+
+  if (studentExam) {
+    await supabase.from('activity_logs').insert({
+      user_id: studentExam.student_id,
+      student_exam_id: studentExamId,
+      exam_id: studentExam.exam_id,
+      type: 'lockdown_violation',
+      details: details || 'Student attempted to leave the exam environment'
+    })
+  }
+
+  // 2. Increment violation count
   const { data, error } = await supabase.rpc('increment_lockdown_violations', {
     exam_id: studentExamId
   })
@@ -108,5 +135,25 @@ export async function logLockdownViolation(studentExamId: string) {
       .eq('id', studentExamId)
   }
 
+  return { success: true }
+}
+
+export async function logExamStarted(studentExamId: string) {
+  const supabase = await createClient()
+  const { data: studentExam } = await supabase
+    .from('student_exams')
+    .select('exam_id, student_id')
+    .eq('id', studentExamId)
+    .single()
+
+  if (studentExam) {
+    await supabase.from('activity_logs').insert({
+      user_id: studentExam.student_id,
+      student_exam_id: studentExamId,
+      exam_id: studentExam.exam_id,
+      type: 'exam_started',
+      details: 'Student started the mock exam'
+    })
+  }
   return { success: true }
 }

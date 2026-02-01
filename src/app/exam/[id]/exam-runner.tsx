@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { submitExam, logLockdownViolation } from './actions'
+import { submitExam, logLockdownViolation, logExamStarted } from './actions'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
 import ExamFooter from './components/ExamFooter'
@@ -62,6 +62,7 @@ export default function ExamRunner({
   const [showHighlightsSummary, setShowHighlightsSummary] = useState(false)
   const [showLockdownWarning, setShowLockdownWarning] = useState(false)
   const [lockdownViolations, setLockdownViolations] = useState(0)
+  const [isDisqualified, setIsDisqualified] = useState(false)
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -72,6 +73,15 @@ export default function ExamRunner({
     if (savedAnswers) setAnswers(JSON.parse(savedAnswers))
     if (savedMarked) setMarkedQuestions(JSON.parse(savedMarked))
     if (savedHighlights) setAllHighlights(JSON.parse(savedHighlights))
+
+    // Log exam start (only if not already logged in this session)
+    if (!isAdminPreview) {
+      const hasLoggedStart = sessionStorage.getItem(`exam_started_logged_${studentExamId}`)
+      if (!hasLoggedStart) {
+        logExamStarted(studentExamId)
+        sessionStorage.setItem(`exam_started_logged_${studentExamId}`, 'true')
+      }
+    }
   }, [studentExamId])
 
   // Save state to localStorage when it changes
@@ -92,9 +102,20 @@ export default function ExamRunner({
     if (isAdminPreview) return // No lockdown for admins
 
     const handleViolation = async () => {
+        if (isDisqualified) return
+
         setLockdownViolations(prev => prev + 1)
-        setShowLockdownWarning(true)
-        await logLockdownViolation(studentExamId)
+        
+        if (exam.lockdown_policy === 'disqualify') {
+            setIsDisqualified(true)
+            setShowLockdownWarning(true)
+            await logLockdownViolation(studentExamId, 'Student disqualified for lockdown violation')
+            // Auto submit
+            await submitExam(studentExamId, answers)
+        } else {
+            setShowLockdownWarning(true)
+            await logLockdownViolation(studentExamId)
+        }
     }
 
     const handleBlur = () => {
@@ -397,7 +418,7 @@ export default function ExamRunner({
       {/* Lockdown Warning Modal */}
       {showLockdownWarning && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md">
-              <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 border-4 border-red-600 animate-bounce-short">
+              <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 border-4 border-red-600">
                   <div className="flex items-center justify-center mb-6">
                       <div className="bg-red-100 p-3 rounded-full">
                           <svg className="w-12 h-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -405,20 +426,35 @@ export default function ExamRunner({
                           </svg>
                       </div>
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900 text-center uppercase tracking-tight">Security Alert!</h3>
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900 text-center uppercase tracking-tight">
+                    {isDisqualified ? "Disqualified!" : "Security Alert!"}
+                  </h3>
                   <p className="text-gray-700 mb-6 text-center leading-relaxed">
-                      You have attempted to leave the exam environment. This incident has been logged. 
+                      {isDisqualified 
+                        ? "You have been disqualified for leaving the exam environment. Your exam has been submitted and this incident has been logged."
+                        : "You have attempted to leave the exam environment. This incident has been logged."
+                      }
                       <span className="block mt-4 font-bold text-red-600">Violation Count: {lockdownViolations}</span>
                   </p>
-                  <button 
-                      onClick={() => {
-                          setShowLockdownWarning(false);
-                          requestFullscreen();
-                      }}
-                      className="w-full py-4 rounded-xl bg-red-600 text-white hover:bg-red-700 font-bold text-lg shadow-lg transition-transform active:scale-95"
-                  >
-                      I Understand, Resume Exam
-                  </button>
+                  
+                  {isDisqualified ? (
+                    <button 
+                        onClick={() => router.push('/student/completed')}
+                        className="w-full py-4 rounded-xl bg-gray-900 text-white hover:bg-black font-bold text-lg shadow-lg transition-transform active:scale-95"
+                    >
+                        Exit Exam
+                    </button>
+                  ) : (
+                    <button 
+                        onClick={() => {
+                            setShowLockdownWarning(false);
+                            requestFullscreen();
+                        }}
+                        className="w-full py-4 rounded-xl bg-red-600 text-white hover:bg-red-700 font-bold text-lg shadow-lg transition-transform active:scale-95"
+                    >
+                        I Understand, Resume Exam
+                    </button>
+                  )}
               </div>
           </div>
       )}
