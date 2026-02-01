@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { submitExam } from './actions'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
 import ExamFooter from './components/ExamFooter'
 import QuestionViewer from './components/QuestionViewer'
@@ -37,6 +37,8 @@ export default function ExamRunner({
   studentName: string
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isAdminPreview = searchParams.get('preview') === 'true'
   
   // -- State --
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0)
@@ -57,6 +59,9 @@ export default function ExamRunner({
   const [isReferenceOpen, setIsReferenceOpen] = useState(false)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [isAnnotateActive, setIsAnnotateActive] = useState(false)
+  const [showHighlightsSummary, setShowHighlightsSummary] = useState(false)
+  const [showLockdownWarning, setShowLockdownWarning] = useState(false)
+  const [lockdownViolations, setLockdownViolations] = useState(0)
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -81,6 +86,55 @@ export default function ExamRunner({
   useEffect(() => {
     localStorage.setItem(`exam_highlights_${studentExamId}`, JSON.stringify(allHighlights))
   }, [studentExamId, allHighlights])
+
+  // -- Lockdown Browser Logic --
+  useEffect(() => {
+    if (isAdminPreview) return // No lockdown for admins
+
+    const handleBlur = () => {
+        setLockdownViolations(prev => prev + 1)
+        setShowLockdownWarning(true)
+    }
+
+    const handleContextMenu = (e: MouseEvent) => {
+        e.preventDefault()
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        // Block Alt+Tab (can't fully block but can detect blur)
+        // Block F12 (DevTools)
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+            e.preventDefault()
+        }
+        // Block PrintScreen
+        if (e.key === 'PrintScreen') {
+            navigator.clipboard.writeText('') // Clear clipboard
+            alert("Screenshots are disabled.")
+        }
+    }
+
+    window.addEventListener('blur', handleBlur)
+    window.addEventListener('contextmenu', handleContextMenu)
+    window.addEventListener('keydown', handleKeyDown)
+
+    // Request Fullscreen
+    const enterFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => {
+                console.warn("Fullscreen request failed", e)
+            })
+        }
+    }
+
+    document.addEventListener('click', enterFullscreen, { once: true })
+
+    return () => {
+        window.removeEventListener('blur', handleBlur)
+        window.removeEventListener('contextmenu', handleContextMenu)
+        window.removeEventListener('keydown', handleKeyDown)
+        document.removeEventListener('click', enterFullscreen)
+    }
+  }, [isAdminPreview])
 
   // -- Derived Data --
   const modules = useMemo(() => {
@@ -141,8 +195,13 @@ export default function ExamRunner({
   const handleFinishModule = async () => {
       if (currentModuleIndex >= modules.length - 1) {
           // Final Submit
-          await submitExam(studentExamId, answers)
-          router.push('/student/completed')
+          if (!isAdminPreview) {
+              await submitExam(studentExamId, answers)
+              router.push('/student/completed')
+          } else {
+              alert("Admin Preview: Submission disabled.")
+              router.push('/admin/exams/' + exam.id)
+          }
       } else {
           // Move to next module
           const nextIndex = currentModuleIndex + 1
@@ -226,6 +285,7 @@ export default function ExamRunner({
           onReferenceClick={() => setIsReferenceOpen(true)}
           isAnnotateActive={isAnnotateActive}
           onAnnotateClick={() => setIsAnnotateActive(!isAnnotateActive)}
+          onShowHighlightsSummary={() => setShowHighlightsSummary(!showHighlightsSummary)}
       />
 
       <main className="flex-1 overflow-hidden relative">
@@ -313,6 +373,91 @@ export default function ExamRunner({
         isOpen={isReferenceOpen} 
         onClose={() => setIsReferenceOpen(false)} 
       />
+
+      {/* Lockdown Warning Modal */}
+      {showLockdownWarning && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md">
+              <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 border-4 border-red-600 animate-bounce-short">
+                  <div className="flex items-center justify-center mb-6">
+                      <div className="bg-red-100 p-3 rounded-full">
+                          <svg className="w-12 h-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                      </div>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900 text-center uppercase tracking-tight">Security Alert!</h3>
+                  <p className="text-gray-700 mb-6 text-center leading-relaxed">
+                      You have attempted to leave the exam environment. This incident has been logged. 
+                      <span className="block mt-4 font-bold text-red-600">Violation Count: {lockdownViolations}</span>
+                  </p>
+                  <button 
+                      onClick={() => setShowLockdownWarning(false)}
+                      className="w-full py-4 rounded-xl bg-red-600 text-white hover:bg-red-700 font-bold text-lg shadow-lg transition-transform active:scale-95"
+                  >
+                      I Understand, Resume Exam
+                  </button>
+              </div>
+          </div>
+      )}
+
+      {/* Highlights Summary Panel */}
+      {showHighlightsSummary && (
+          <div className="fixed right-4 top-24 bottom-24 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-40 flex flex-col overflow-hidden animate-in slide-in-from-right duration-300">
+              <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                  <h3 className="font-bold text-gray-900 font-serif">Highlights Summary</h3>
+                  <button onClick={() => setShowHighlightsSummary(false)} className="text-gray-400 hover:text-gray-600 p-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                  </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {Object.entries(allHighlights).some(([_, h]) => h.length > 0) ? (
+                      Object.entries(allHighlights).map(([qId, highlights]) => {
+                          if (highlights.length === 0) return null
+                          const question = allQuestions.find(q => q.id === qId)
+                          const qIdx = currentModuleQuestions.findIndex(q => q.id === qId)
+                          
+                          return (
+                              <div key={qId} className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                      <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Question {qIdx + 1}</span>
+                                      {qIdx !== -1 && (
+                                          <button 
+                                              onClick={() => { handleNavigate(qIdx); setShowHighlightsSummary(false); }}
+                                              className="text-xs text-blue-600 hover:underline"
+                                          >
+                                              Go to Question
+                                          </button>
+                                      )}
+                                  </div>
+                                  <div className="space-y-2">
+                                      {highlights.map((h, i) => {
+                                          // Extract text from innerHTML if possible, or just show a snippet
+                                          // Since we store innerHTML, we can parse it
+                                          return (
+                                              <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm italic text-gray-700 leading-relaxed line-clamp-3">
+                                                  {/* Extract text from HTML string */}
+                                                  {typeof h === 'string' ? h.replace(/<[^>]*>/g, '') : 'Highlight ' + (i + 1)}
+                                              </div>
+                                          )
+                                      })}
+                                  </div>
+                              </div>
+                          )
+                      })
+                  ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-center space-y-3 opacity-50">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                          </svg>
+                          <p className="text-sm font-medium">No highlights yet.</p>
+                          <p className="text-xs">Use the tool to mark important text.</p>
+                      </div>
+                  )}
+              </div>
+          </div>
+      )}
     </div>
   )
 }

@@ -109,6 +109,11 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
 export default function QuestionsList({ questions, examId }: { questions: any[], examId: string }) {
     const router = useRouter()
 
+    const handleViewAsStudent = () => {
+        // Open exam runner in a new tab with preview mode
+        window.open(`/exam/${examId}?preview=true`, '_blank')
+    }
+
     if (questions.length === 0) {
         return (
             <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden px-6 py-12 text-center text-gray-500 bg-gray-50">
@@ -125,7 +130,19 @@ export default function QuestionsList({ questions, examId }: { questions: any[],
     const mathM2 = questions.filter(q => q.section === 'math' && q.module === 2)
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-4">
+            <div className="flex justify-end">
+                <button 
+                    onClick={handleViewAsStudent}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                    <svg className="-ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View as Student
+                </button>
+            </div>
             <SectionGroup 
                 title="Reading & Writing - Module 1" 
                 questions={rwM1} 

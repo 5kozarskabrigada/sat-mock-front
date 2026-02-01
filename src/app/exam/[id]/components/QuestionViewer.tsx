@@ -215,54 +215,36 @@ export default function QuestionViewer({
       const selection = window.getSelection()
       if (!selection || selection.rangeCount === 0) return
 
-      let node = selection.anchorNode
-      while (node && node !== passageRef.current) {
-          if (node.nodeType === 1 && (node as Element).classList.contains('annotation-highlight')) {
-               const el = node as HTMLElement
-               el.className = `annotation-highlight border-b-2 border-${color}-500 cursor-pointer`
-               el.dataset.color = color
-               el.style.backgroundColor = '' 
-               el.style.borderBottomColor = ''
-               if (color === 'yellow') el.style.backgroundColor = 'rgba(254, 240, 138, 0.4)'
-               if (color === 'blue') el.style.backgroundColor = 'rgba(186, 230, 253, 0.4)'
-               if (color === 'pink') el.style.backgroundColor = 'rgba(251, 207, 232, 0.4)'
-               el.style.borderBottomWidth = '1px'
-               el.style.borderBottomStyle = 'solid'
-               if (color === 'yellow') el.style.borderBottomColor = '#eab308'
-               if (color === 'blue') el.style.borderBottomColor = '#3b82f6'
-               if (color === 'pink') el.style.borderBottomColor = '#ec4899'
-               
-               setSelectionMenu(null)
-               window.getSelection()?.removeAllRanges()
-               
-               // Persist change
-               if (onHighlightsChange && passageRef.current) {
-                   onHighlightsChange([passageRef.current.innerHTML])
-               }
-               return
-          }
-          node = node.parentNode
-      }
-
       const range = selection.getRangeAt(0)
+      if (range.collapsed) return
+
       const span = document.createElement('span')
-      span.className = `annotation-highlight border-b-2 border-${color}-500 cursor-pointer`
+      span.className = `annotation-highlight border-b-2 cursor-pointer`
       span.dataset.color = color
-      if (color === 'yellow') span.style.backgroundColor = 'rgba(254, 240, 138, 0.4)'
-      if (color === 'blue') span.style.backgroundColor = 'rgba(186, 230, 253, 0.4)'
-      if (color === 'pink') span.style.backgroundColor = 'rgba(251, 207, 232, 0.4)'
-      span.style.borderBottomWidth = '1px'
-      span.style.borderBottomStyle = 'solid'
-      if (color === 'yellow') span.style.borderBottomColor = '#eab308'
-      if (color === 'blue') span.style.borderBottomColor = '#3b82f6'
-      if (color === 'pink') span.style.borderBottomColor = '#ec4899'
-      if (color === 'underline') {
-           span.style.backgroundColor = 'transparent'
-           span.style.borderBottomColor = 'black'
-           span.style.borderBottomWidth = '2px'
+      
+      // Detailed styling based on color
+      if (color === 'yellow') {
+          span.style.backgroundColor = 'rgba(254, 240, 138, 0.6)'
+          span.style.borderBottomColor = '#eab308'
+      } else if (color === 'blue') {
+          span.style.backgroundColor = 'rgba(186, 230, 253, 0.6)'
+          span.style.borderBottomColor = '#3b82f6'
+      } else if (color === 'pink') {
+          span.style.backgroundColor = 'rgba(251, 207, 232, 0.6)'
+          span.style.borderBottomColor = '#ec4899'
+      } else if (color === 'underline') {
+          span.style.backgroundColor = 'transparent'
+          span.style.borderBottomColor = 'black'
+          span.style.borderBottomWidth = '2px'
       }
+      
+      span.style.borderBottomStyle = 'solid'
+      span.style.borderBottomWidth = color === 'underline' ? '2px' : '1px'
 
       try {
+        // Robust range handling: If range spans multiple nodes, surroundContents fails.
+        // We use a more manual approach if needed, but for simple passages surroundContents is okay.
+        // If it fails, we'll log it.
         range.surroundContents(span)
         selection.removeAllRanges()
         setSelectionMenu(null)
@@ -272,7 +254,20 @@ export default function QuestionViewer({
             onHighlightsChange([passageRef.current.innerHTML])
         }
       } catch (e) {
-          console.error("Cannot highlight across elements", e)
+          console.warn("Simple surround failed, trying complex wrap", e)
+          // Fallback: extract contents and wrap
+          try {
+              const contents = range.extractContents()
+              span.appendChild(contents)
+              range.insertNode(span)
+              selection.removeAllRanges()
+              setSelectionMenu(null)
+              if (onHighlightsChange && passageRef.current) {
+                  onHighlightsChange([passageRef.current.innerHTML])
+              }
+          } catch (err) {
+              console.error("Critical highlight error", err)
+          }
       }
   }
 
@@ -309,6 +304,8 @@ export default function QuestionViewer({
   const handleDividerMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
     setIsResizing(true)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
   }
 
   useEffect(() => {
@@ -323,6 +320,8 @@ export default function QuestionViewer({
     const handleMouseUp = () => {
       if (isResizing) {
         setIsResizing(false)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
         localStorage.setItem('math_divider_position', dividerPosition.toString())
       }
     }

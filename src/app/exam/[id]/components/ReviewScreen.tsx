@@ -67,12 +67,12 @@ export default function ReviewScreen({
                   onBackToQuestion()
                 }}
                 className={`
-                  relative h-14 w-14 flex items-center justify-center rounded-lg text-lg font-bold transition-all shadow-sm border-[3px]
+                  relative h-14 w-14 flex items-center justify-center rounded-lg text-lg font-bold transition-all shadow-sm
                   ${isCurrent 
-                      ? 'bg-white border-dashed border-black text-blue-600 ring-2 ring-blue-100' 
+                      ? 'bg-white border-[3px] border-dashed border-black text-blue-600 ring-2 ring-blue-100' 
                       : isAnswered 
-                          ? 'bg-white border-green-600 text-blue-600'
-                          : 'bg-white border-gray-400 text-blue-600'
+                          ? 'bg-white border-[3px] border-solid border-green-600 text-blue-600'
+                          : 'bg-white border-[3px] border-dotted border-gray-400 text-blue-600'
                   }
                   hover:shadow-md
                 `}
