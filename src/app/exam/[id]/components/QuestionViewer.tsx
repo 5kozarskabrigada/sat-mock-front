@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
 import parse from 'html-react-parser'
@@ -104,22 +104,14 @@ export default function QuestionViewer({
   const passageRef = useRef<HTMLDivElement>(null)
   const [selectionMenu, setSelectionMenu] = useState<{ x: number, y: number, show: boolean, highlightId?: string } | null>(null)
   
-  // Restore highlights from parent state
-  useEffect(() => {
-    if (passageRef.current) {
-        const currentHTML = passageRef.current.innerHTML
-        const targetHTML = (highlights && highlights.length > 0 && typeof highlights[0] === 'string' && highlights[0].startsWith('<'))
-            ? highlights[0]
-            : question.content.passage 
-                ? `<p class="whitespace-pre-wrap">${question.content.passage}</p>`
-                : ''
-
-        // Only update if content is actually different to avoid flickering
-        if (currentHTML !== targetHTML) {
-            passageRef.current.innerHTML = targetHTML
-        }
-    }
-  }, [question.id, highlights]) // Update when question OR highlights change
+  // Memoize passage content to show it instantly
+  const passageHTML = useMemo(() => {
+    return (highlights && highlights.length > 0 && typeof highlights[0] === 'string' && highlights[0].startsWith('<'))
+        ? highlights[0]
+        : question.content.passage 
+            ? `<p class="whitespace-pre-wrap">${question.content.passage}</p>`
+            : ''
+  }, [question.id, highlights])
 
   // Reset local state when question changes
   useEffect(() => {
@@ -459,7 +451,7 @@ export default function QuestionViewer({
                         <div 
                             ref={passageRef}
                             className="annotation-tool relative"
-                            dangerouslySetInnerHTML={{ __html: '' }} // Let the useEffect handle initial and updated content
+                            dangerouslySetInnerHTML={{ __html: passageHTML }}
                         />
                     </div>
                  ) : null}
