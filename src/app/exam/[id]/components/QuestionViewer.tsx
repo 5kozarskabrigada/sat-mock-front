@@ -342,12 +342,11 @@ export default function QuestionViewer({
   const isSPR = isMathSection && !isMultipleChoice
   // Check if there is an image in the question content
   const hasImage = !!question.content.image_url
-  // Use two column layout if there is a passage OR if it's an SPR question (for directions) OR if it's a Math question with an image
-  const twoColumnLayout = hasPassage || isSPR || (isMathSection && hasImage)
+  // Use two column layout ONLY if there is a passage OR if it's an SPR question (for directions)
+  const twoColumnLayout = hasPassage || isSPR
 
-  // Determine if image should be shown in the question content (right side/main area)
-  // We show it here UNLESS it's being shown in the left column (Math MCQ with Image)
-  const showImageInContent = hasImage && (!isMathSection || isSPR || hasPassage)
+  // ALWAYS show image in the question content (right side/main area)
+  const showImageInContent = hasImage
 
   return (
     <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
@@ -454,26 +453,6 @@ export default function QuestionViewer({
                         <div className="annotation-tool relative">
                             <p className="whitespace-pre-wrap">{question.content.passage}</p>
                         </div>
-                    </div>
-                 ) : (isMathSection && hasImage) ? (
-                    <div className="flex flex-col items-center justify-center h-full">
-                         {question.content.image_description && (
-                            <div className="mb-2 w-full text-center">
-                                <Latex>{question.content.image_description}</Latex>
-                            </div>
-                        )}
-                        <img 
-                            src={question.content.image_url} 
-                            alt={question.content.image_description || "Question Graphic"} 
-                            style={{
-                                width: '400px',
-                                maxWidth: '100%',
-                                height: 'auto',
-                                marginBottom: '20px',
-                                marginTop: '16px',
-                                display: 'block'
-                            }}
-                        />
                     </div>
                  ) : null}
               </div>
@@ -620,13 +599,13 @@ function QuestionContent({
             </div>
             
             {/* Question Text */}
-            <div className="mb-6 font-serif text-[15px] leading-[24px] text-black pl-2 prose max-w-none mt-2" style={{ fontFamily: '"Noto Serif", serif' }}>
+            <div className="mb-6 font-serif text-[18px] leading-[28px] text-black pl-2 prose max-w-none mt-2" style={{ fontFamily: '"Noto Serif", serif' }}>
                 <div className="annotation-tool relative">
                     {/* Image rendering controlled by showImage prop */}
                     {showImage && question.content.image_url && (
                         <div className="mb-4">
                             {question.content.image_description && (
-                                    <div className="mb-2">
+                                    <div className="mb-2 text-left text-[18px]">
                                         <Latex>{question.content.image_description}</Latex>
                                     </div>
                                 )}
@@ -703,7 +682,7 @@ function QuestionContent({
                                         }
                                     }}
                                     disabled={isCrossed && !isAbcMode}
-                                    className={`w-full p-3 text-left border-2 rounded-lg text-[15px] flex items-center gap-3 cursor-pointer
+                                    className={`w-full p-3 text-left border-2 rounded-lg text-[18px] flex items-center gap-3 cursor-pointer
                                         ${isSelected 
                                             ? 'bg-[#e6f4ff] ring-1 ring-[#0077c8] border-[#0077c8]' 
                                             : isCrossed
@@ -793,8 +772,8 @@ function QuestionContent({
                                     cursor: 'text',
                                     display: 'flex',
                                     fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
-                                    fontSize: '15px',
-                                    height: '36px',
+                                    fontSize: '18px',
+                                    height: '42px',
                                     lineHeight: '24px',
                                     opacity: 1,
                                     outlineColor: 'oklab(0.708 0 0 / 0.5)'

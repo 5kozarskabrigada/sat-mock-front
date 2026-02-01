@@ -50,7 +50,7 @@ export default function CalculatorModal({ isOpen, onClose }: { isOpen: boolean; 
         
         if (!script) {
           script = document.createElement('script')
-          script.src = 'https://www.desmos.com/api/v1.10/calculator.js?apiKey=63cf5a450e7b4fd09f61ca76b7024fef'
+          script.src = 'https://www.desmos.com/api/v1.10/calculator.js?apiKey=0cd6be6425714919808aaf178f37fdcb'
           script.async = true
           document.body.appendChild(script)
         }

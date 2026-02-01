@@ -77,29 +77,19 @@ export default function ExamHeader({
 
       {/* Right: Tools */}
       <div className="flex items-center gap-4 pr-4">
-          <button 
-              onClick={onAnnotateClick}
-              className={`flex flex-col items-center justify-center text-xs focus:outline-none rounded-md px-2 py-1 transition-colors duration-200 ${isAnnotateActive ? 'text-blue-600 bg-blue-50 ring-1 ring-blue-200' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100'}`} 
-              aria-label="Annotate"
-          >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className="h-5 w-5 mb-1">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-              </svg>
-              Annotate
-          </button>
-
           {!showMathTools && (
               <button 
-                  onClick={onShowHighlightsSummary}
-                  className="flex flex-col items-center justify-center text-xs focus:outline-none rounded-md px-2 py-1 transition-colors duration-200 text-gray-700 hover:text-blue-600 hover:bg-gray-100" 
-                  aria-label="View Highlights"
+                  onClick={onAnnotateClick}
+                  className={`flex flex-col items-center justify-center text-xs focus:outline-none rounded-md px-2 py-1 transition-colors duration-200 ${isAnnotateActive ? 'text-blue-600 bg-blue-50 ring-1 ring-blue-200' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100'}`} 
+                  aria-label="Annotate"
               >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className="h-5 w-5 mb-1">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
-                  Summary
+                  Annotate
               </button>
           )}
+
           {showMathTools && (
               <>
                 <button 
@@ -141,10 +131,14 @@ export default function ExamHeader({
               </button>
               {isMoreMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 py-1 z-50">
-                      <button onClick={onAnnotateClick} className={`block w-full text-left px-4 py-2 text-sm ${isAnnotateActive ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}>
-                          {isAnnotateActive ? 'Stop Highlighting' : 'Start Highlighting'}
-                      </button>
-                      <div className="border-t border-gray-100 my-1"></div>
+                      {!showMathTools && (
+                          <>
+                            <button onClick={onAnnotateClick} className={`block w-full text-left px-4 py-2 text-sm ${isAnnotateActive ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}>
+                                {isAnnotateActive ? 'Stop Highlighting' : 'Start Highlighting'}
+                            </button>
+                            <div className="border-t border-gray-100 my-1"></div>
+                          </>
+                      )}
                       <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Help</button>
                       <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Shortcuts</button>
                   </div>
