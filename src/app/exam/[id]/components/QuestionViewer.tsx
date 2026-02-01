@@ -16,7 +16,7 @@ const decodeHtml = (html: string) => {
     }
 }
 
-const Latex = ({ children, className }: { children: string, className?: string }) => {
+const Latex = ({ children, className, forceInline }: { children: string, className?: string, forceInline?: boolean }) => {
     if (!children) return null;
     
     // Attempt to decode if it looks like escaped HTML
@@ -38,7 +38,7 @@ const Latex = ({ children, className }: { children: string, className?: string }
                         <>
                             {parts.map((part: string, index: number) => {
                                 if (part.startsWith('\\[') && part.endsWith('\\]')) {
-                                    return <BlockMath key={index} math={part.slice(2, -2)} />
+                                    return forceInline ? <InlineMath key={index} math={part.slice(2, -2)} /> : <BlockMath key={index} math={part.slice(2, -2)} />
                                 } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
                                     return <InlineMath key={index} math={part.slice(2, -2)} />
                                 } else {
@@ -54,7 +54,7 @@ const Latex = ({ children, className }: { children: string, className?: string }
                 const latex = domNode.attribs?.latex
                 const display = domNode.attribs?.display
                 if (latex) {
-                    if (display === 'block') {
+                    if (display === 'block' && !forceInline) {
                         return <BlockMath math={latex} />
                     }
                     return <InlineMath math={latex} />
@@ -107,11 +107,16 @@ export default function QuestionViewer({
   // Restore highlights from parent state
   useEffect(() => {
     if (passageRef.current) {
-        if (highlights && highlights.length > 0 && typeof highlights[0] === 'string' && highlights[0].startsWith('<')) {
-            passageRef.current.innerHTML = highlights[0]
-        } else if (question.content.passage) {
-            // Initial load of clean passage
-            passageRef.current.innerHTML = `<p class="whitespace-pre-wrap">${question.content.passage}</p>`
+        const currentHTML = passageRef.current.innerHTML
+        const targetHTML = (highlights && highlights.length > 0 && typeof highlights[0] === 'string' && highlights[0].startsWith('<'))
+            ? highlights[0]
+            : question.content.passage 
+                ? `<p class="whitespace-pre-wrap">${question.content.passage}</p>`
+                : ''
+
+        // Only update if content is actually different to avoid flickering
+        if (currentHTML !== targetHTML) {
+            passageRef.current.innerHTML = targetHTML
         }
     }
   }, [question.id, highlights]) // Update when question OR highlights change
@@ -717,7 +722,7 @@ function QuestionContent({
                                             fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
                                             color: isCrossed ? 'rgb(156, 163, 175)' : 'inherit'
                                         }}>
-                                            <Latex>{value as string}</Latex>
+                                            <Latex forceInline>{value as string}</Latex>
                                         </span>
                                     </div>
                                     
