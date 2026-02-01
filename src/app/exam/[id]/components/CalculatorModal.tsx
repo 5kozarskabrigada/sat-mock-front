@@ -97,10 +97,11 @@ export default function CalculatorModal({ isOpen, onClose }: { isOpen: boolean; 
       defaultWidth={600}
       defaultHeight={500}
     >
-        <div 
-          ref={containerRef} 
-          className="w-full h-full relative bg-white"
-        >
+        <div className="w-full h-full relative bg-white">
+            <div 
+              ref={containerRef} 
+              className="w-full h-full"
+            />
             {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>

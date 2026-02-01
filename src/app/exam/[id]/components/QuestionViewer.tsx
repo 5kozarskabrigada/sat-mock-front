@@ -398,7 +398,6 @@ export default function QuestionViewer({
           <div className="flex w-full h-full p-4 gap-0 items-start relative">
               {/* Left Column */}
               <div 
-                ref={passageRef}
                 className="overflow-y-auto content-pane min-w-0"
                 style={{ 
                     width: `${dividerPosition}%`, 
@@ -453,6 +452,7 @@ export default function QuestionViewer({
                  ) : question.content.passage ? (
                     <div className="prose max-w-none">
                         <div 
+                            ref={passageRef}
                             className="annotation-tool relative"
                             dangerouslySetInnerHTML={{ __html: '' }} // Let the useEffect handle initial and updated content
                         />
