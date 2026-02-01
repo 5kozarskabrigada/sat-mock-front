@@ -71,12 +71,12 @@ export default function ReviewModal({
                     onClose()
                   }}
                   className={`
-                    relative h-12 w-12 flex items-center justify-center rounded-lg text-lg font-bold transition-all
+                    relative h-12 w-12 flex items-center justify-center rounded-lg text-lg font-bold transition-all border-[3px]
                     ${isCurrent 
-                        ? 'bg-white border-2 border-dashed border-black text-blue-600 ring-2 ring-blue-100' 
+                        ? 'bg-white border-dashed border-black text-blue-600 ring-2 ring-blue-100' 
                         : isAnswered 
-                            ? 'bg-white border border-gray-200 text-blue-600'
-                            : 'bg-white border border-dashed border-gray-300 text-blue-600'
+                            ? 'bg-white border-green-600 text-blue-600'
+                            : 'bg-white border-gray-400 text-blue-600'
                     }
                   `}
                 >

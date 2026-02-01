@@ -62,18 +62,18 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
                   ) : (
                     enrolledStudents?.map((enrollment) => (
                       <li key={enrollment.id} className="hover:bg-gray-50 transition-colors">
-                        <div className="px-6 py-4 flex items-center justify-between">
+                        <div className="px-8 py-6 flex items-center justify-between">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
+                            <div className="flex-shrink-0 h-16 w-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                                 {enrollment.users.first_name?.[0]}{enrollment.users.last_name?.[0]}
                             </div>
-                            <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{enrollment.users.first_name} {enrollment.users.last_name}</div>
-                                <div className="text-xs text-gray-500">@{enrollment.users.username}</div>
+                            <div className="ml-6">
+                                <div className="text-lg font-bold text-gray-900">{enrollment.users.first_name} {enrollment.users.last_name}</div>
+                                <div className="text-base text-gray-500">@{enrollment.users.username}</div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                              <span className="text-xs text-gray-400 hidden sm:inline-block">
+                          <div className="flex items-center gap-6">
+                              <span className="text-sm text-gray-400 hidden sm:inline-block">
                                 Joined {new Date(enrollment.joined_at).toLocaleDateString()}
                               </span>
                               <RemoveStudentButton classroomId={id} studentId={enrollment.student_id} />

@@ -43,6 +43,7 @@ export default function ExamRunner({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
+  const [allHighlights, setAllHighlights] = useState<Record<string, any[]>>({})
   
   // Timer State
   const [timeLeft, setTimeLeft] = useState(MODULE_CONFIG[0].duration)
@@ -57,6 +58,30 @@ export default function ExamRunner({
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [isAnnotateActive, setIsAnnotateActive] = useState(false)
 
+  // Load state from localStorage on mount
+  useEffect(() => {
+    const savedAnswers = localStorage.getItem(`exam_answers_${studentExamId}`)
+    const savedMarked = localStorage.getItem(`exam_marked_${studentExamId}`)
+    const savedHighlights = localStorage.getItem(`exam_highlights_${studentExamId}`)
+    
+    if (savedAnswers) setAnswers(JSON.parse(savedAnswers))
+    if (savedMarked) setMarkedQuestions(JSON.parse(savedMarked))
+    if (savedHighlights) setAllHighlights(JSON.parse(savedHighlights))
+  }, [studentExamId])
+
+  // Save state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem(`exam_answers_${studentExamId}`, JSON.stringify(answers))
+  }, [studentExamId, answers])
+
+  useEffect(() => {
+    localStorage.setItem(`exam_marked_${studentExamId}`, JSON.stringify(markedQuestions))
+  }, [studentExamId, markedQuestions])
+
+  useEffect(() => {
+    localStorage.setItem(`exam_highlights_${studentExamId}`, JSON.stringify(allHighlights))
+  }, [studentExamId, allHighlights])
+
   // -- Derived Data --
   const modules = useMemo(() => {
       // Filter questions for each module
@@ -65,11 +90,17 @@ export default function ExamRunner({
       
       const rw1 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 1)
       const rw2 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 2)
-      const m1 = allQuestions.filter(q => q.section === 'math' && q.module === 1)
-      const m2 = allQuestions.filter(q => q.section === 'math' && q.module === 2)
 
-      // Fallback: If no explicit module tagging, just split equally? 
-      // For now, assuming data is correct as per user instruction "Model 1 and 2 each should have 27 questions"
+      // Math section specific filter: Remove passage-based MCQ questions
+      const mathFilter = (q: any) => {
+          const isMultipleChoice = q.content?.options && q.content?.options.A
+          const hasPassage = !!q.content?.passage
+          if (isMultipleChoice && hasPassage) return false
+          return true
+      }
+
+      const m1 = allQuestions.filter(q => q.section === 'math' && q.module === 1).filter(mathFilter)
+      const m2 = allQuestions.filter(q => q.section === 'math' && q.module === 2).filter(mathFilter)
       
       return [
           { ...MODULE_CONFIG[0], questions: rw1 },
@@ -209,6 +240,8 @@ export default function ExamRunner({
                   isMarked={!!markedQuestions[currentQuestion.id]}
                   onToggleMark={handleToggleMark}
                   isAnnotateActive={isAnnotateActive}
+                  highlights={allHighlights[currentQuestion.id] || []}
+                  onHighlightsChange={(highlights) => setAllHighlights(prev => ({ ...prev, [currentQuestion.id]: highlights }))}
               />
           ) : (
               <ReviewScreen 

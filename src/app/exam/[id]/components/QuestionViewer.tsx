@@ -29,19 +29,16 @@ const Latex = ({ children, className }: { children: string, className?: string }
         replace: (domNode: any) => {
             if (domNode.type === 'text') {
                 const text = domNode.data
-                const regex = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g
+                // Removed $$ delimiter to prevent unintended rendering
+                const regex = /(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g
                 const parts = text.split(regex)
                 
                 if (parts.length > 1) {
                     return (
                         <>
                             {parts.map((part: string, index: number) => {
-                                if (part.startsWith('$$') && part.endsWith('$$')) {
+                                if (part.startsWith('\\[') && part.endsWith('\\]')) {
                                     return <BlockMath key={index} math={part.slice(2, -2)} />
-                                } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
-                                    return <BlockMath key={index} math={part.slice(2, -2)} />
-                                } else if (part.startsWith('$') && part.endsWith('$')) {
-                                    return <InlineMath key={index} math={part.slice(1, -1)} />
                                 } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
                                     return <InlineMath key={index} math={part.slice(2, -2)} />
                                 } else {
@@ -82,7 +79,9 @@ export default function QuestionViewer({
   isMathSection,
   isMarked,
   onToggleMark,
-  isAnnotateActive
+  isAnnotateActive,
+  highlights = [],
+  onHighlightsChange
 }: { 
   question: any
   questionIndex: number
@@ -93,6 +92,8 @@ export default function QuestionViewer({
   isMarked: boolean
   onToggleMark: () => void
   isAnnotateActive: boolean
+  highlights?: any[]
+  onHighlightsChange?: (highlights: any[]) => void
 }) {
   const isMultipleChoice = question.content.options && question.content.options.A
   const [inputValue, setInputValue] = useState(selectedAnswer || '')
@@ -102,6 +103,19 @@ export default function QuestionViewer({
   // Annotation State
   const passageRef = useRef<HTMLDivElement>(null)
   const [selectionMenu, setSelectionMenu] = useState<{ x: number, y: number, show: boolean, highlightId?: string } | null>(null)
+  
+  // Restore highlights from parent state
+  useEffect(() => {
+    if (passageRef.current && highlights && highlights.length > 0) {
+        // If we have saved HTML, we can restore it. 
+        // For simplicity, let's assume highlights is an array of strings (serialized HTML or ranges)
+        // But the current implementation just manipulates DOM. 
+        // Let's change the strategy: onHighlightsChange will pass the entire innerHTML of the passage.
+        if (typeof highlights[0] === 'string' && highlights[0].startsWith('<')) {
+            passageRef.current.innerHTML = highlights[0]
+        }
+    }
+  }, [question.id]) // Only on question change
 
   // Reset local state when question changes
   useEffect(() => {
@@ -220,6 +234,11 @@ export default function QuestionViewer({
                
                setSelectionMenu(null)
                window.getSelection()?.removeAllRanges()
+               
+               // Persist change
+               if (onHighlightsChange && passageRef.current) {
+                   onHighlightsChange([passageRef.current.innerHTML])
+               }
                return
           }
           node = node.parentNode
@@ -247,6 +266,11 @@ export default function QuestionViewer({
         range.surroundContents(span)
         selection.removeAllRanges()
         setSelectionMenu(null)
+        
+        // Persist change
+        if (onHighlightsChange && passageRef.current) {
+            onHighlightsChange([passageRef.current.innerHTML])
+        }
       } catch (e) {
           console.error("Cannot highlight across elements", e)
       }
@@ -272,6 +296,47 @@ export default function QuestionViewer({
           node = node.parentNode
       }
   }
+
+  const [dividerPosition, setDividerPosition] = useState(50) // percentage
+  const [isResizing, setIsResizing] = useState(false)
+
+  // Load divider position from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('math_divider_position')
+    if (saved) setDividerPosition(Number(saved))
+  }, [])
+
+  const handleDividerMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizing) {
+        const newPos = (e.clientX / window.innerWidth) * 100
+        const clampedPos = Math.max(20, Math.min(80, newPos))
+        setDividerPosition(clampedPos)
+      }
+    }
+
+    const handleMouseUp = () => {
+      if (isResizing) {
+        setIsResizing(false)
+        localStorage.setItem('math_divider_position', dividerPosition.toString())
+      }
+    }
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizing, dividerPosition])
 
   const hasPassage = !!question.content.passage && !isMathSection
   // Check for SPR (Student-Produced Response) in Math section (no multiple choice options)
@@ -310,20 +375,20 @@ export default function QuestionViewer({
 
       {/* Main Layout */}
       {twoColumnLayout ? (
-          <div className="flex w-full h-full p-4 gap-0 items-start">
-              {/* Left: Passage Panel OR SPR Directions OR Math Image */}
+          <div className="flex w-full h-full p-4 gap-0 items-start relative">
+              {/* Left Column */}
               <div 
                 ref={passageRef}
                 className="overflow-y-auto content-pane"
                 style={{ 
-                    width: '50%', 
+                    width: isMathSection ? `${dividerPosition}%` : '50%', 
                     minWidth: '20%',
                     padding: '16px',
                     fontFamily: '"Noto Serif", "Noto Serif Fallback", serif',
                     fontSize: '15px',
                     lineHeight: '24px',
                     color: 'oklch(0.145 0 0)',
-                    borderRight: '1px solid #e5e7eb', // Optional visual separator
+                    borderRight: isMathSection ? 'none' : '1px solid #e5e7eb',
                     height: '100%'
                 }}
               >
@@ -395,18 +460,51 @@ export default function QuestionViewer({
                  ) : null}
               </div>
 
-              {/* Right: Question Panel */}
+              {/* Movable Divider for Math */}
+              {isMathSection && (
+                  <div 
+                    className={`w-1.5 h-full cursor-col-resize hover:bg-indigo-400 transition-colors z-30 ${isResizing ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                    onMouseDown={handleDividerMouseDown}
+                  />
+              )}
+
+              {/* Right Column */}
               <div 
                 className="overflow-y-auto flex flex-col content-pane"
                 style={{ 
-                    width: 'calc(50% - 5px)', 
+                    width: isMathSection ? `${100 - dividerPosition}%` : 'calc(50% - 5px)', 
                     minWidth: '20%',
                     position: 'relative',
-                    left: '5px',
                     height: '100%'
                 }}
               >
-                 <div className="mb-4">
+                 <div className={`mb-4 flex flex-col items-center w-full`}>
+                    <div className="w-full max-w-[600px]">
+                        <QuestionContent 
+                            question={question}
+                            questionIndex={questionIndex}
+                            isMultipleChoice={isMultipleChoice}
+                            selectedAnswer={selectedAnswer}
+                            crossedAnswers={crossedAnswers}
+                            isAbcMode={isAbcMode}
+                            setIsAbcMode={setIsAbcMode}
+                            onAnswerChange={onAnswerChange}
+                            toggleCrossOutDirect={toggleCrossOutDirect}
+                            inputValue={inputValue}
+                            handleInputChange={handleInputChange}
+                            isMarked={isMarked}
+                            onToggleMark={onToggleMark}
+                            showImage={showImageInContent}
+                        />
+                    </div>
+                 </div>
+              </div>
+          </div>
+      ) : (
+          <div className="flex w-full h-full p-4 justify-center">
+              {/* Full Width Question Panel */}
+              <div className="overflow-y-auto p-4 flex flex-col w-full max-w-[1100px] items-center">
+                 <div className="w-full max-w-[600px]">
                     <QuestionContent 
                         question={question}
                         questionIndex={questionIndex}
@@ -424,28 +522,6 @@ export default function QuestionViewer({
                         showImage={showImageInContent}
                     />
                  </div>
-              </div>
-          </div>
-      ) : (
-          <div className="flex w-full h-full p-4 justify-center">
-              {/* Full Width Question Panel */}
-              <div className="overflow-y-auto p-4 flex flex-col w-full max-w-[1100px]">
-                 <QuestionContent 
-                    question={question}
-                    questionIndex={questionIndex}
-                    isMultipleChoice={isMultipleChoice}
-                    selectedAnswer={selectedAnswer}
-                    crossedAnswers={crossedAnswers}
-                    isAbcMode={isAbcMode}
-                    setIsAbcMode={setIsAbcMode}
-                    onAnswerChange={onAnswerChange}
-                    toggleCrossOutDirect={toggleCrossOutDirect}
-                    inputValue={inputValue}
-                    handleInputChange={handleInputChange}
-                    isMarked={isMarked}
-                    onToggleMark={onToggleMark}
-                    showImage={showImageInContent}
-                 />
               </div>
           </div>
       )}

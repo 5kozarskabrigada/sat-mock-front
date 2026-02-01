@@ -11,7 +11,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     <button
       type="submit"
       disabled={pending || disabled}
-      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-6 text-lg font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 h-[58px]"
     >
       {pending ? 'Adding...' : 'Add Student'}
     </button>
@@ -64,10 +64,10 @@ export default function AddStudentToClassroomForm({ classroomId }: { classroomId
   return (
     <div className="bg-white shadow sm:rounded-lg border border-gray-200 mb-6 relative overflow-visible">
       <div className="px-4 py-5 sm:p-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Student to Classroom</h3>
-        <form action={formAction} className="flex gap-4 items-end">
+        <h3 className="text-xl leading-6 font-bold text-gray-900 mb-6">Add Student to Classroom</h3>
+        <form action={formAction} className="flex gap-6 items-end">
           <div className="flex-1 relative">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="username" className="block text-base font-bold text-gray-700 mb-2">
               Search Student
             </label>
             <div className="mt-1 relative">
@@ -81,19 +81,19 @@ export default function AddStudentToClassroomForm({ classroomId }: { classroomId
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
                 autoComplete="off"
                 required
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
+                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg p-4 border text-black h-[58px]"
                 placeholder="Type username or name..."
               />
               {showSuggestions && suggestions.length > 0 && (
-                <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                <ul className="absolute z-10 mt-2 max-h-80 w-full overflow-auto rounded-lg bg-white py-2 text-lg shadow-2xl ring-1 ring-black ring-opacity-10 focus:outline-none">
                   {suggestions.map((student) => (
                     <li
                       key={student.id}
                       onClick={() => selectStudent(student)}
-                      className="relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-indigo-600 hover:text-white text-gray-900"
+                      className="relative cursor-pointer select-none py-4 pl-4 pr-9 hover:bg-indigo-600 hover:text-white text-gray-900 border-b border-gray-100 last:border-0"
                     >
-                      <span className="block truncate font-medium">{student.username}</span>
-                      <span className="block truncate text-xs opacity-70">
+                      <span className="block truncate font-bold text-lg">{student.username}</span>
+                      <span className="block truncate text-sm opacity-70 mt-1">
                          {student.first_name} {student.last_name}
                       </span>
                     </li>
@@ -102,7 +102,7 @@ export default function AddStudentToClassroomForm({ classroomId }: { classroomId
               )}
             </div>
             {selectedStudent && (
-                 <p className="mt-1 text-xs text-green-600">Selected: {selectedStudent.first_name} {selectedStudent.last_name}</p>
+                 <p className="mt-2 text-sm text-green-600 font-medium">Selected: {selectedStudent.first_name} {selectedStudent.last_name}</p>
             )}
           </div>
           <SubmitButton disabled={!selectedStudent} />

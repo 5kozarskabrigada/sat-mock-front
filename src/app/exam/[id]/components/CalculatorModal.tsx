@@ -2,25 +2,28 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import FloatingWindow from '@/components/ui/floating-window'
 
 export default function CalculatorModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [position, setPosition] = useState({ x: 100, y: 100 })
-  const [isDragging, setIsDragging] = useState(false)
-  const dragStart = useRef({ x: 0, y: 0 })
+  const calculatorRef = useRef<any>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isOpen && containerRef.current && !(window as any).DesmosCalculator) {
-      // Load Desmos script dynamically if not already loaded
-      const script = document.createElement('script')
-      script.src = 'https://www.desmos.com/api/v1/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6'
-      script.async = true
-      script.onload = () => {
-        if (containerRef.current) {
-          const elt = document.createElement('div')
-          elt.style.width = '100%'
-          elt.style.height = '100%'
-          containerRef.current.appendChild(elt)
+    if (isOpen && containerRef.current) {
+      const initCalculator = () => {
+        if (!containerRef.current) return
+        
+        // Clear container
+        containerRef.current.innerHTML = ''
+        
+        const elt = document.createElement('div')
+        elt.style.width = '100%'
+        elt.style.height = '100%'
+        containerRef.current.appendChild(elt)
+        
+        try {
           const calculator = (window as any).Desmos.GraphingCalculator(elt, {
             keypad: true,
             expressions: true,
@@ -29,96 +32,95 @@ export default function CalculatorModal({ isOpen, onClose }: { isOpen: boolean; 
             expressionsCollapsed: false,
             autosize: true
           })
-          ;(window as any).DesmosCalculator = calculator
+          calculatorRef.current = calculator
+          setIsLoading(false)
+        } catch (err) {
+          console.error("Desmos init error:", err)
+          setError("Failed to initialize calculator")
+          setIsLoading(false)
         }
       }
-      document.body.appendChild(script)
-    } else if (isOpen && (window as any).DesmosCalculator && containerRef.current) {
-         // If re-opening, we might need to re-append the element if React unmounted the container
-         // But Desmos instance might be tied to the old element. 
-         // For stability, let's just clear and re-init if the container is empty
-         if (containerRef.current.childElementCount === 0) {
-            const elt = document.createElement('div')
-            elt.style.width = '100%'
-            elt.style.height = '100%'
-            containerRef.current.appendChild(elt)
-            // Destroy old instance to be safe
-             if ((window as any).DesmosCalculator && typeof (window as any).DesmosCalculator.destroy === 'function') {
-                 (window as any).DesmosCalculator.destroy();
-             }
-             const calculator = (window as any).Desmos.GraphingCalculator(elt, {
-                keypad: true,
-                expressions: true,
-                settingsMenu: true,
-                zoomButtons: true,
-                expressionsCollapsed: false,
-                autosize: true
-              })
-              ;(window as any).DesmosCalculator = calculator
-         }
+
+      if ((window as any).Desmos) {
+        initCalculator()
+      } else {
+        setIsLoading(true)
+        // Check if script is already in document
+        let script = document.querySelector('script[src*="desmos.com/api"]') as HTMLScriptElement
+        
+        if (!script) {
+          script = document.createElement('script')
+          script.src = 'https://www.desmos.com/api/v1/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6'
+          script.async = true
+          document.body.appendChild(script)
+        }
+
+        const handleLoad = () => {
+          initCalculator()
+        }
+
+        const handleError = () => {
+          setError("Failed to load Desmos script")
+          setIsLoading(false)
+        }
+
+        script.addEventListener('load', handleLoad)
+        script.addEventListener('error', handleError)
+
+        return () => {
+          script.removeEventListener('load', handleLoad)
+          script.removeEventListener('error', handleError)
+        }
+      }
     }
   }, [isOpen])
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true)
-    dragStart.current = { x: e.clientX - position.x, y: e.clientY - position.y }
-  }
-
+  // Cleanup on unmount
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-        if (isDragging) {
-            setPosition({
-                x: e.clientX - dragStart.current.x,
-                y: e.clientY - dragStart.current.y
-            })
-        }
-    }
-    const handleMouseUp = () => {
-        setIsDragging(false)
-    }
-
-    if (isDragging) {
-        document.addEventListener('mousemove', handleMouseMove)
-        document.addEventListener('mouseup', handleMouseUp)
-    }
     return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
+      if (calculatorRef.current) {
+        try {
+          calculatorRef.current.destroy()
+        } catch (e) {}
+      }
     }
-  }, [isDragging])
-
-  if (!isOpen) return null
+  }, [])
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
-      <div 
-        className="absolute bg-white rounded-lg shadow-2xl w-[600px] h-[450px] flex flex-col pointer-events-auto overflow-hidden border border-gray-300"
-        style={{ left: position.x, top: position.y }}
-      >
-        {/* Title Bar */}
-        <div 
-            className="h-8 bg-[#2f3136] flex items-center justify-between px-3 cursor-move select-none"
-            onMouseDown={handleMouseDown}
-        >
-            <div className="flex items-center space-x-2">
-                <span className="text-white font-medium text-xs">Desmos Graphing Calculator</span>
-            </div>
-            <div className="flex items-center space-x-2">
-                <button onClick={onClose} className="text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        {/* Desmos Container */}
+    <FloatingWindow
+      id="desmos_calculator"
+      title="Graphing Calculator"
+      isOpen={isOpen}
+      onClose={onClose}
+      minWidth={300}
+      minHeight={200}
+      defaultWidth={600}
+      defaultHeight={500}
+    >
         <div 
           ref={containerRef} 
-          className="flex-1 w-full h-full relative bg-white"
-          style={{ minHeight: '400px' }}
-        ></div>
-      </div>
-    </div>
+          className="w-full h-full relative bg-white"
+        >
+            {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+            )}
+            {error && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 p-4 text-center">
+                    <svg className="w-12 h-12 text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-gray-900 font-medium">{error}</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+        </div>
+    </FloatingWindow>
   )
 }
