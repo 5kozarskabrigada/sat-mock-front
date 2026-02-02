@@ -348,7 +348,7 @@ export default function QuestionViewer({
   const showImageInContent = hasImage
 
   return (
-    <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)] select-none">
+    <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
       {/* Floating Annotation Menu */}
       {selectionMenu && selectionMenu.show && (
           <div 
@@ -395,7 +395,7 @@ export default function QuestionViewer({
           <div className="flex w-full h-full p-4 gap-0 items-start relative">
               {/* Left Column */}
               <div 
-                className="overflow-y-auto content-pane min-w-0"
+                className={`overflow-y-auto content-pane min-w-0 ${isAnnotateActive ? 'select-text' : 'select-none'}`}
                 style={{ 
                     width: `${dividerPosition}%`, 
                     padding: '16px',
@@ -465,7 +465,7 @@ export default function QuestionViewer({
 
               {/* Right Column */}
               <div 
-                className="overflow-y-auto flex flex-col content-pane min-w-0"
+                className={`overflow-y-auto flex flex-col content-pane min-w-0 ${isAnnotateActive ? 'select-text' : 'select-none'}`}
                 style={{ 
                     width: `${100 - dividerPosition}%`, 
                     position: 'relative',
@@ -489,6 +489,7 @@ export default function QuestionViewer({
                             isMarked={isMarked}
                             onToggleMark={onToggleMark}
                             showImage={showImageInContent}
+                            isAnnotateActive={isAnnotateActive}
                         />
                     </div>
                  </div>
@@ -499,22 +500,23 @@ export default function QuestionViewer({
               {/* Full Width Question Panel */}
               <div className="overflow-y-auto p-4 flex flex-col w-full max-w-[1100px] items-center">
                  <div className="w-full max-w-[600px]">
-                    <QuestionContent 
-                        question={question}
-                        questionIndex={questionIndex}
-                        isMultipleChoice={isMultipleChoice}
-                        selectedAnswer={selectedAnswer}
-                        crossedAnswers={crossedAnswers}
-                        isAbcMode={isAbcMode}
-                        setIsAbcMode={setIsAbcMode}
-                        onAnswerChange={onAnswerChange}
-                        toggleCrossOutDirect={toggleCrossOutDirect}
-                        inputValue={inputValue}
-                        handleInputChange={handleInputChange}
-                        isMarked={isMarked}
-                        onToggleMark={onToggleMark}
-                        showImage={showImageInContent}
-                    />
+                        <QuestionContent 
+                            question={question}
+                            questionIndex={questionIndex}
+                            isMultipleChoice={isMultipleChoice}
+                            selectedAnswer={selectedAnswer}
+                            crossedAnswers={crossedAnswers}
+                            isAbcMode={isAbcMode}
+                            setIsAbcMode={setIsAbcMode}
+                            onAnswerChange={onAnswerChange}
+                            toggleCrossOutDirect={toggleCrossOutDirect}
+                            inputValue={inputValue}
+                            handleInputChange={handleInputChange}
+                            isMarked={isMarked}
+                            onToggleMark={onToggleMark}
+                            showImage={showImageInContent}
+                            isAnnotateActive={isAnnotateActive}
+                        />
                  </div>
               </div>
           </div>
@@ -537,10 +539,11 @@ function QuestionContent({
     handleInputChange,
     isMarked,
     onToggleMark,
-    showImage
+    showImage,
+    isAnnotateActive
 }: any) {
     return (
-        <>
+        <div className={isAnnotateActive ? 'select-text' : 'select-none'}>
             {/* Header: Question Number + Tools */}
             <div className="question-index-container flex items-center justify-between bg-gray-200 rounded mb-2 top-0 z-5" 
                 style={{
@@ -783,6 +786,6 @@ function QuestionContent({
                     </div>
                 )}
             </div>
-        </>
+        </div>
     )
 }

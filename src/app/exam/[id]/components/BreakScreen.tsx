@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 export default function BreakScreen({ 
   timeLeft, 
   onResume 
@@ -7,6 +9,22 @@ export default function BreakScreen({
   timeLeft: number
   onResume: () => void 
 }) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Block Escape key during break
+      if (e.key === 'Escape') {
+        e.preventDefault()
+      }
+      // Block F12 and other dev tools shortcuts
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
     const s = seconds % 60
@@ -25,6 +43,13 @@ export default function BreakScreen({
         <div className="text-gray-400 text-lg animate-pulse">
             The exam will resume automatically when the timer expires.
         </div>
+
+        <button 
+          onClick={onResume}
+          className="px-8 py-3 bg-[#1a2333] border border-gray-700 rounded-lg text-white hover:bg-[#253045] transition-colors text-lg"
+        >
+          Resume Exam
+        </button>
       </div>
 
       <div className="absolute bottom-12 text-center text-gray-500 text-sm max-w-md">

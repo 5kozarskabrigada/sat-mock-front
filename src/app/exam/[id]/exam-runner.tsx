@@ -142,6 +142,10 @@ export default function ExamRunner({
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
             e.preventDefault()
         }
+        // Block Escape
+        if (e.key === 'Escape') {
+            e.preventDefault()
+        }
         // Block PrintScreen
         if (e.key === 'PrintScreen') {
             navigator.clipboard.writeText('') // Clear clipboard
