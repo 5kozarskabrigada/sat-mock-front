@@ -168,3 +168,50 @@ export async function heartbeat(studentExamId: string) {
   if (error) console.error('Heartbeat failed:', error)
   return { success: !error }
 }
+
+export async function disqualifyStudent(studentExamId: string, details: string) {
+  const supabase = await createClient()
+  
+  // 1. Fetch exam info
+  const { data: studentExam } = await supabase
+    .from('student_exams')
+    .select('exam_id, student_id')
+    .eq('id', studentExamId)
+    .single()
+
+  if (!studentExam) return { error: 'Not found' }
+
+  // 2. Atomic update: status = completed, increment violations, log activity
+  const now = new Date().toISOString()
+  
+  const results = await Promise.all([
+    // Update status to completed (disqualified)
+    supabase
+      .from('student_exams')
+      .update({ 
+        status: 'completed',
+        completed_at: now
+      })
+      .eq('id', studentExamId),
+    
+    // Log the disqualification
+    supabase.from('activity_logs').insert({
+      user_id: studentExam.student_id,
+      student_exam_id: studentExamId,
+      exam_id: studentExam.exam_id,
+      type: 'exam_disqualified',
+      details: details
+    })
+  ])
+
+  // Fallback for increment_lockdown_violations if RPC inside update doesn't work as expected 
+  // (PostgREST doesn't support RPC inside update like that easily, better to just increment manually or separate call)
+  
+  // Separate call for violation increment to be safe
+  await supabase.rpc('increment_lockdown_violations', { exam_id: studentExamId })
+
+  revalidatePath('/admin/exams/' + studentExam.exam_id)
+  revalidatePath('/student')
+  
+  return { success: true }
+}

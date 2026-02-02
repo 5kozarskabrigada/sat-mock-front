@@ -471,7 +471,7 @@ export default function QuestionViewer({
                     <div className="prose max-w-none">
                         <div 
                             ref={passageRef}
-                            className={`annotation-tool relative ${isAnnotateActive ? 'select-text cursor-crosshair' : ''}`}
+                            className="annotation-tool relative select-text cursor-auto"
                             dangerouslySetInnerHTML={{ __html: passageHTML }}
                         />
                     </div>

@@ -12,6 +12,15 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
   const { id } = await params
   const supabase = await createClient()
 
+  // 0. Auto-cleanup abandoned sessions (in_progress but not updated for > 30 mins)
+  const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+  await supabase
+    .from('student_exams')
+    .update({ status: 'completed', completed_at: new Date().toISOString() })
+    .eq('exam_id', id)
+    .eq('status', 'in_progress')
+    .lt('updated_at', thirtyMinsAgo)
+
   const { data: exam } = await supabase
     .from('exams')
     .select('*')
@@ -42,13 +51,13 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
 
   const studentsJoinedCount = participation?.length || 0
   
-  // Define "Active/Live" as in_progress AND updated within the last 2 minutes
-  const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString()
-  const studentsActiveCount = participation?.filter(p => 
-    p.status === 'in_progress' && 
-    p.updated_at && 
-    p.updated_at > twoMinutesAgo
-  ).length || 0
+  // Define "Active/Live" as in_progress AND updated within the last 60 seconds
+  const activeThreshold = new Date(Date.now() - 60 * 1000).getTime()
+  const studentsActiveCount = participation?.filter(p => {
+    if (p.status !== 'in_progress' || !p.updated_at) return false
+    const lastUpdate = new Date(p.updated_at).getTime()
+    return lastUpdate > activeThreshold
+  }).length || 0
   
   // Fetch total students in the exam's classroom
   let totalStudentsInClassroom = 0

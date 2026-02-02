@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { submitExam, logLockdownViolation, logExamStarted, heartbeat } from './actions'
+import { submitExam, logLockdownViolation, logExamStarted, heartbeat, disqualifyStudent } from './actions'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
 import ExamFooter from './components/ExamFooter'
@@ -96,7 +96,7 @@ export default function ExamRunner({
 
     const interval = setInterval(() => {
       heartbeat(studentExamId)
-    }, 30000) // Every 30 seconds
+    }, 20000) // Every 20 seconds
 
     return () => clearInterval(interval)
   }, [studentExamId, isAdminPreview, isDisqualified])
@@ -126,14 +126,10 @@ export default function ExamRunner({
         
         if (exam.lockdown_policy === 'disqualify') {
             setIsDisqualified(true)
-            setShowLockdownWarning(true)
-            await logLockdownViolation(studentExamId, `${detail} Student DISQUALIFIED.`)
-            // Auto submit
-            await submitExam(studentExamId, answers)
-            // Redirect after a short delay to allow the user to see the "Disqualified" message if we want, 
-            // but the user said "immediately disqualify", so we should probably redirect.
-            // Actually, showing the modal is good, but let's make sure it's clear.
+            // Immediately redirect - don't wait for server response to close UI
             router.push('/student/completed?disqualified=true')
+            // Fire and forget the disqualification logic
+            disqualifyStudent(studentExamId, `${detail} Student DISQUALIFIED.`)
         } else {
             setShowLockdownWarning(true)
             await logLockdownViolation(studentExamId, detail)
