@@ -21,6 +21,7 @@ function SubmitButton() {
 export default function AddStudentForm() {
   const [state, formAction] = useFormState(createStudent, null)
   const [lastCreated, setLastCreated] = useState<any>(null)
+  const [copied, setCopied] = useState(false)
 
   // Use useEffect to handle side effects of state changes
   useEffect(() => {
@@ -28,9 +29,36 @@ export default function AddStudentForm() {
       // Only update if it's a new student
       if (!lastCreated || lastCreated.username !== state.credentials.username) {
         setLastCreated(state.credentials)
+        setCopied(false)
       }
     }
   }, [state, lastCreated])
+
+  const handleCopy = async () => {
+    if (!lastCreated) return
+    
+    const text = `Student Account Details:
+Name: ${lastCreated.firstName} ${lastCreated.lastName}
+Username: ${lastCreated.username}
+Password: ${lastCreated.password}`
+
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
+  }
+
+  const copyField = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      // We could add individual field feedback if needed
+    } catch (err) {
+      console.error('Failed to copy field: ', err)
+    }
+  }
 
   return (
     <div className="w-full">
@@ -96,19 +124,73 @@ export default function AddStudentForm() {
         {lastCreated && (
           <div className="mt-6 rounded-md bg-green-50 p-4 border border-green-100">
             <div className="flex flex-col">
-                <div className="flex items-center mb-2">
-                    <svg className="h-5 w-5 text-green-400 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <h3 className="text-sm font-medium text-green-800">Success!</h3>
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                        <svg className="h-5 w-5 text-green-400 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <h3 className="text-sm font-medium text-green-800">Success!</h3>
+                    </div>
+                    <button
+                        onClick={handleCopy}
+                        className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white transition-all duration-200 ${
+                            copied ? 'bg-green-600' : 'bg-indigo-600 hover:bg-indigo-700'
+                        }`}
+                    >
+                        {copied ? (
+                            <>
+                                <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Copied!
+                            </>
+                        ) : (
+                            <>
+                                <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                Copy All
+                            </>
+                        )}
+                    </button>
                 </div>
                 <div className="text-sm text-green-700">
-                  <p className="mb-2">Copy credentials:</p>
                   <div className="bg-white p-3 rounded border border-green-200 shadow-sm">
-                    <ul className="space-y-1">
-                      <li>Name: <span className="font-medium text-gray-900">{lastCreated.firstName} {lastCreated.lastName}</span></li>
-                      <li>Username: <span className="font-mono font-bold text-indigo-600 bg-indigo-50 px-1 rounded select-all">{lastCreated.username}</span></li>
-                      <li>Password: <span className="font-mono font-bold text-indigo-600 bg-indigo-50 px-1 rounded select-all">{lastCreated.password}</span></li>
+                    <ul className="space-y-2">
+                      <li className="flex justify-between items-center">
+                        <span className="text-gray-600">Name:</span>
+                        <span className="font-medium text-gray-900">{lastCreated.firstName} {lastCreated.lastName}</span>
+                      </li>
+                      <li className="flex justify-between items-center group">
+                        <span className="text-gray-600">Username:</span>
+                        <div className="flex items-center">
+                            <span className="font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{lastCreated.username}</span>
+                            <button 
+                                onClick={() => copyField(lastCreated.username)}
+                                className="text-gray-400 hover:text-indigo-600 transition-colors"
+                                title="Copy username"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                      </li>
+                      <li className="flex justify-between items-center group">
+                        <span className="text-gray-600">Password:</span>
+                        <div className="flex items-center">
+                            <span className="font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mr-2">{lastCreated.password}</span>
+                            <button 
+                                onClick={() => copyField(lastCreated.password)}
+                                className="text-gray-400 hover:text-indigo-600 transition-colors"
+                                title="Copy password"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        </div>
+                      </li>
                     </ul>
                   </div>
                 </div>
