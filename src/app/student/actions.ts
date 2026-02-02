@@ -101,13 +101,15 @@ export async function joinExam(prevState: any, formData: FormData) {
   }
 
   // 5. Log joining activity
-  await supabase.from('activity_logs').insert({
+  const { error: logError } = await supabase.from('activity_logs').insert({
     user_id: user.id,
     exam_id: exam.id,
     student_exam_id: studentExamId,
     type: 'exam_joined',
     details: `Student joined the exam using code: ${code}`
   })
+  
+  if (logError) console.error('Failed to log exam joined:', logError)
 
   redirect(`/exam/${exam.id}`)
 }

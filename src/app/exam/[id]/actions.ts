@@ -86,29 +86,35 @@ export async function logLockdownViolation(studentExamId: string, details?: stri
   const supabase = await createClient()
   
   // 1. Log the activity
-  const { data: studentExam } = await supabase
+  const { data: studentExam, error: fetchError } = await supabase
     .from('student_exams')
     .select('exam_id, student_id')
     .eq('id', studentExamId)
     .single()
 
+  if (fetchError) {
+    console.error('Error fetching student exam for logging:', fetchError)
+  }
+
   if (studentExam) {
     const isDisqualification = details?.toLowerCase().includes('disqualified')
-    await supabase.from('activity_logs').insert({
+    const { error: logError } = await supabase.from('activity_logs').insert({
       user_id: studentExam.student_id,
       student_exam_id: studentExamId,
       exam_id: studentExam.exam_id,
       type: isDisqualification ? 'exam_disqualified' : 'lockdown_violation',
       details: details || 'Student attempted to leave the exam environment'
     })
+    if (logError) console.error('Failed to log lockdown violation:', logError)
   }
 
   // 2. Increment violation count
-  const { error } = await supabase.rpc('increment_lockdown_violations', {
+  const { error: rpcError } = await supabase.rpc('increment_lockdown_violations', {
     exam_id: studentExamId
   })
 
-  if (error) {
+  if (rpcError) {
+    console.warn('RPC increment_lockdown_violations failed, falling back to manual update:', rpcError)
     const { data: current } = await supabase
       .from('student_exams')
       .select('lockdown_violations')
@@ -128,20 +134,25 @@ export async function logLockdownViolation(studentExamId: string, details?: stri
 
 export async function logExamStarted(studentExamId: string) {
   const supabase = await createClient()
-  const { data: studentExam } = await supabase
+  const { data: studentExam, error: fetchError } = await supabase
     .from('student_exams')
     .select('exam_id, student_id')
     .eq('id', studentExamId)
     .single()
 
+  if (fetchError) {
+    console.error('Error fetching student exam for starting log:', fetchError)
+  }
+
   if (studentExam) {
-    await supabase.from('activity_logs').insert({
+    const { error: logError } = await supabase.from('activity_logs').insert({
       user_id: studentExam.student_id,
       student_exam_id: studentExamId,
       exam_id: studentExam.exam_id,
       type: 'exam_started',
       details: 'Student started the mock exam'
     })
+    if (logError) console.error('Failed to log exam started:', logError)
   }
   return { success: true }
 }

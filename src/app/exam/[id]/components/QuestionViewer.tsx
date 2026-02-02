@@ -102,6 +102,7 @@ export default function QuestionViewer({
   
   // Annotation State
   const passageRef = useRef<HTMLDivElement>(null)
+  const savedRangeRef = useRef<Range | null>(null)
   const [selectionMenu, setSelectionMenu] = useState<{ x: number, y: number, show: boolean, highlightId?: string } | null>(null)
   
   // Memoize passage content to show it instantly
@@ -119,6 +120,7 @@ export default function QuestionViewer({
     setInputValue(selectedAnswer || '')
     setSelectionMenu(null)
     setIsAbcMode(false)
+    savedRangeRef.current = null
   }, [question.id])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +146,7 @@ export default function QuestionViewer({
         const selection = window.getSelection()
         if (selection && selection.toString().trim().length > 0 && passageRef.current?.contains(selection.anchorNode)) {
             const range = selection.getRangeAt(0)
+            savedRangeRef.current = range.cloneRange() // Save the range
             const rect = range.getBoundingClientRect()
             setSelectionMenu({
                 x: rect.left + (rect.width / 2),
@@ -168,13 +171,14 @@ export default function QuestionViewer({
             })
             const range = document.createRange()
             range.selectNodeContents(target)
+            savedRangeRef.current = range.cloneRange()
             const sel = window.getSelection()
             sel?.removeAllRanges()
             sel?.addRange(range)
         }
     }
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
         setTimeout(handleSelection, 10)
     }
 
@@ -196,14 +200,18 @@ export default function QuestionViewer({
   useEffect(() => {
       if (!isAnnotateActive) {
           setSelectionMenu(null)
+          savedRangeRef.current = null
           return
       }
 
       const handleClickOutside = (e: MouseEvent) => {
           if ((e.target as HTMLElement).closest('.annotation-menu')) return
           if ((e.target as HTMLElement).classList.contains('annotation-highlight')) return
-          if (window.getSelection()?.toString().length === 0) {
+          
+          const selection = window.getSelection()
+          if (!selection || selection.toString().trim().length === 0) {
               setSelectionMenu(null)
+              savedRangeRef.current = null
           }
       }
       document.addEventListener('mousedown', handleClickOutside)
@@ -211,11 +219,15 @@ export default function QuestionViewer({
   }, [isAnnotateActive])
 
   const applyHighlight = (color: string) => {
+      let range = savedRangeRef.current
       const selection = window.getSelection()
-      if (!selection || selection.rangeCount === 0) return
+      
+      // If we have a current selection, use it, otherwise use saved range
+      if (selection && selection.rangeCount > 0 && !selection.getRangeAt(0).collapsed) {
+          range = selection.getRangeAt(0)
+      }
 
-      const range = selection.getRangeAt(0)
-      if (range.collapsed) return
+      if (!range || range.collapsed) return
 
       const span = document.createElement('span')
       span.className = `annotation-highlight border-b-2 cursor-pointer`
@@ -241,12 +253,15 @@ export default function QuestionViewer({
       span.style.borderBottomWidth = color === 'underline' ? '2px' : '1px'
 
       try {
+        // Clear current selection to avoid issues
+        selection?.removeAllRanges()
+        
         // Robust range handling: If range spans multiple nodes, surroundContents fails.
         // We use a more manual approach if needed, but for simple passages surroundContents is okay.
-        // If it fails, we'll log it.
         range.surroundContents(span)
-        selection.removeAllRanges()
+        
         setSelectionMenu(null)
+        savedRangeRef.current = null
         
         // Persist change
         if (onHighlightsChange && passageRef.current) {
@@ -259,8 +274,8 @@ export default function QuestionViewer({
               const contents = range.extractContents()
               span.appendChild(contents)
               range.insertNode(span)
-              selection.removeAllRanges()
               setSelectionMenu(null)
+              savedRangeRef.current = null
               if (onHighlightsChange && passageRef.current) {
                   onHighlightsChange([passageRef.current.innerHTML])
               }
@@ -272,9 +287,15 @@ export default function QuestionViewer({
 
   const removeHighlight = () => {
       const selection = window.getSelection()
-      if (!selection || selection.rangeCount === 0) return
+      let range = savedRangeRef.current
+      
+      if (selection && selection.rangeCount > 0) {
+          range = selection.getRangeAt(0)
+      }
 
-      let node = selection.anchorNode
+      if (!range) return
+
+      let node = range.startContainer
       while (node && node !== passageRef.current) {
           if (node.nodeType === 1 && (node as Element).classList.contains('annotation-highlight')) {
                const el = node as HTMLElement
@@ -284,10 +305,15 @@ export default function QuestionViewer({
                    parent.removeChild(el)
                }
                setSelectionMenu(null)
+               savedRangeRef.current = null
                window.getSelection()?.removeAllRanges()
+               
+               if (onHighlightsChange && passageRef.current) {
+                   onHighlightsChange([passageRef.current.innerHTML])
+               }
                return
           }
-          node = node.parentNode
+          node = node.parentNode as Node
       }
   }
 
@@ -356,22 +382,26 @@ export default function QuestionViewer({
             style={{ left: selectionMenu.x, top: selectionMenu.y - 10 }}
           >
               <button 
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => applyHighlight('yellow')} 
                 className="w-8 h-8 bg-yellow-200 border-2 border-yellow-400 rounded-full hover:scale-110 transition-transform shadow-sm" 
                 title="Highlight Yellow"
               />
               <button 
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => applyHighlight('blue')} 
                 className="w-8 h-8 bg-blue-200 border-2 border-blue-400 rounded-full hover:scale-110 transition-transform shadow-sm" 
                 title="Highlight Blue"
               />
               <button 
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => applyHighlight('pink')} 
                 className="w-8 h-8 bg-pink-200 border-2 border-pink-400 rounded-full hover:scale-110 transition-transform shadow-sm" 
                 title="Highlight Pink"
               />
               <div className="w-px h-6 bg-gray-200 mx-1" />
               <button 
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => applyHighlight('underline')} 
                 className="w-8 h-8 flex items-center justify-center border-2 border-gray-200 rounded-full hover:scale-110 transition-transform bg-white hover:border-black shadow-sm"
                 title="Underline"
@@ -379,6 +409,7 @@ export default function QuestionViewer({
                  <span className="border-b-2 border-black font-bold text-sm">U</span>
               </button>
               <button 
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={removeHighlight} 
                 className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 border-2 border-transparent rounded-full transition-all" 
                 title="Delete Highlight"

@@ -4,7 +4,7 @@ import Link from 'next/link'
 export default async function AdminLogsPage() {
   const supabase = await createClient()
 
-  const { data: logs } = await supabase
+  const { data: logs, error: fetchError } = await supabase
     .from('activity_logs')
     .select(`
       *,
@@ -19,6 +19,15 @@ export default async function AdminLogsPage() {
     `)
     .order('created_at', { ascending: false })
     .limit(100)
+
+  if (fetchError) {
+      return (
+          <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <h2 className="text-lg font-bold mb-2">Error loading logs</h2>
+              <p>{fetchError.message}</p>
+          </div>
+      )
+  }
 
   const getLogTypeColor = (type: string) => {
     switch (type) {
