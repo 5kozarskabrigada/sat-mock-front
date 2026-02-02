@@ -139,22 +139,27 @@ export default function QuestionViewer({
   }
 
   // Annotation: Handle Text Selection & Click on Highlights
+  const handleSelection = useCallback(() => {
+      const selection = window.getSelection()
+      if (selection && selection.toString().trim().length > 0 && passageRef.current?.contains(selection.anchorNode)) {
+          const range = selection.getRangeAt(0)
+          savedRangeRef.current = range.cloneRange() // Save the range
+          const rect = range.getBoundingClientRect()
+          setSelectionMenu({
+              x: rect.left + (rect.width / 2),
+              y: rect.top - 10,
+              show: true
+          })
+          return
+      } 
+  }, [])
+
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
+      // Use timeout to allow selection to complete
+      setTimeout(handleSelection, 10)
+  }, [handleSelection])
+
   useEffect(() => {
-    const handleSelection = () => {
-        const selection = window.getSelection()
-        if (selection && selection.toString().trim().length > 0 && passageRef.current?.contains(selection.anchorNode)) {
-            const range = selection.getRangeAt(0)
-            savedRangeRef.current = range.cloneRange() // Save the range
-            const rect = range.getBoundingClientRect()
-            setSelectionMenu({
-                x: rect.left + (rect.width / 2),
-                y: rect.top - 10,
-                show: true
-            })
-            return
-        } 
-    }
-    
     const handleClick = (e: MouseEvent) => {
         const target = e.target as HTMLElement
         if (target.classList.contains('annotation-highlight')) {
@@ -174,22 +179,16 @@ export default function QuestionViewer({
         }
     }
 
-    // Memoize handlers to prevent re-renders of PassageComponent
-    const handleMouseUp = useCallback((e: React.MouseEvent) => {
-        // Use timeout to allow selection to complete
-        setTimeout(handleSelection, 10)
-    }, []) // handleSelection is stable enough or we can add it to deps if needed
-
-    // We need to define handleSelection with useCallback too
-    // But handleSelection depends on passageRef, setSelectionMenu
-    
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
   }, [isAnnotateActive])
 
   // Define Passage Component
   const PassageComponent = useMemo(() => {
-      return React.memo(({ html }: { html: string }) => (
+      return React.memo(({ html, onMouseUp }: { html: string, onMouseUp: (e: React.MouseEvent) => void }) => (
         <div 
             ref={passageRef}
+            onMouseUp={onMouseUp}
             className="annotation-tool relative select-text cursor-auto"
             dangerouslySetInnerHTML={{ __html: html }}
         />
