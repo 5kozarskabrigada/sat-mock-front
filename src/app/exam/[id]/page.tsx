@@ -3,6 +3,8 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import ExamRunner from './exam-runner'
 
+import { Suspense } from 'react'
+
 export default async function ExamPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -55,11 +57,13 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
   const studentName = profile ? `${profile.first_name} ${profile.last_name}` : 'Student'
 
   return (
-    <ExamRunner 
-      exam={exam} 
-      questions={questions || []} 
-      studentExamId={studentExam.id}
-      studentName={studentName}
-    />
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading Exam...</div>}>
+      <ExamRunner 
+        exam={exam} 
+        questions={questions || []} 
+        studentExamId={studentExam.id}
+        studentName={studentName}
+      />
+    </Suspense>
   )
 }

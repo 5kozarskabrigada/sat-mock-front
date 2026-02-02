@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import SubmissionsSearch from './submissions-search'
+import { Suspense } from 'react'
 
 export default async function AdminSubmissionsPage({ searchParams }: { searchParams: { q?: string } }) {
   const supabase = await createClient()
@@ -35,7 +36,9 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
           <h1 className="text-2xl font-bold text-gray-900">Exam Submissions</h1>
           <p className="mt-1 text-sm text-gray-500">View and manage completed student exam reports.</p>
         </div>
-        <SubmissionsSearch />
+        <Suspense fallback={<div className="h-10 w-64 bg-gray-100 animate-pulse rounded-lg" />}>
+          <SubmissionsSearch />
+        </Suspense>
       </div>
 
       <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
