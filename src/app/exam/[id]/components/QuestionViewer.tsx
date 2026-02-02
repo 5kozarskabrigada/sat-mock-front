@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
 import parse from 'html-react-parser'
