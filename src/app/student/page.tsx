@@ -20,6 +20,16 @@ function SubmitButton() {
 export default function StudentDashboard() {
   const [state, formAction] = useFormState(joinExam, null)
 
+  const handleSubmit = (formData: FormData) => {
+    // Request fullscreen as soon as user interacts to join
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+    }
+    formAction(formData)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -33,7 +43,7 @@ export default function StudentDashboard() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form action={formAction} className="space-y-6">
+          <form action={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="code" className="block text-sm font-medium text-gray-700">
                 Exam Code

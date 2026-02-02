@@ -37,10 +37,11 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
   // Fetch participation stats
   const { data: participation } = await supabase
     .from('student_exams')
-    .select('student_id')
+    .select('student_id, status')
     .eq('exam_id', id)
 
-  const studentsStartedCount = participation?.length || 0
+  const studentsJoinedCount = participation?.length || 0
+  const studentsActiveCount = participation?.filter(p => p.status === 'in_progress').length || 0
   
   // Fetch total students in the exam's classroom
   let totalStudentsInClassroom = 0
@@ -107,10 +108,17 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
             </dd>
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Participation</dt>
+            <dt className="text-sm font-medium text-gray-500 truncate">Active Participation</dt>
             <dd className="mt-2 text-lg font-semibold text-gray-900 tracking-tight">
-                {studentsStartedCount}{totalStudentsInClassroom > 0 ? ` / ${totalStudentsInClassroom}` : ''} 
-                <span className="ml-2 text-xs font-normal text-gray-500">Students Joined</span>
+                {studentsActiveCount} / {totalStudentsInClassroom > 0 ? totalStudentsInClassroom : '1'} 
+                <span className="ml-2 text-xs font-normal text-gray-500">Live Students</span>
+            </dd>
+         </div>
+         <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
+            <dt className="text-sm font-medium text-gray-500 truncate">Total Enrollment</dt>
+            <dd className="mt-2 text-lg font-semibold text-gray-900 tracking-tight">
+                {studentsJoinedCount}
+                <span className="ml-2 text-xs font-normal text-gray-500">Ever Joined</span>
             </dd>
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">

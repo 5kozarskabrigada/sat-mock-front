@@ -63,6 +63,7 @@ export default function ExamRunner({
   const [showLockdownWarning, setShowLockdownWarning] = useState(false)
   const [lockdownViolations, setLockdownViolations] = useState(0)
   const [isDisqualified, setIsDisqualified] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -81,6 +82,9 @@ export default function ExamRunner({
         logExamStarted(studentExamId)
         sessionStorage.setItem(`exam_started_logged_${studentExamId}`, 'true')
       }
+      
+      // Request fullscreen immediately on mount if possible
+      requestFullscreen()
     }
   }, [studentExamId])
 
@@ -101,30 +105,31 @@ export default function ExamRunner({
   useEffect(() => {
     if (isAdminPreview) return // No lockdown for admins
 
-    const handleViolation = async () => {
-        if (isDisqualified) return
+    const handleViolation = async (type: string) => {
+        if (isDisqualified || isAdminPreview) return
 
         setLockdownViolations(prev => prev + 1)
+        const detail = `Lockdown Violation: ${type}.`
         
         if (exam.lockdown_policy === 'disqualify') {
             setIsDisqualified(true)
             setShowLockdownWarning(true)
-            await logLockdownViolation(studentExamId, 'Student disqualified for lockdown violation')
+            await logLockdownViolation(studentExamId, `${detail} Student DISQUALIFIED.`)
             // Auto submit
             await submitExam(studentExamId, answers)
         } else {
             setShowLockdownWarning(true)
-            await logLockdownViolation(studentExamId)
+            await logLockdownViolation(studentExamId, detail)
         }
     }
 
     const handleBlur = () => {
-        handleViolation()
+        handleViolation('Tab switched or window lost focus')
     }
 
     const handleFullscreenChange = () => {
         if (!document.fullscreenElement && !showLockdownWarning) {
-            handleViolation()
+            handleViolation('Exited fullscreen mode')
         }
     }
 
@@ -157,16 +162,14 @@ export default function ExamRunner({
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
 
-    // Request Fullscreen on first click
-    const enterFullscreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(e => {
-                console.warn("Fullscreen request failed", e)
-            })
+    // Request Fullscreen on any interaction if not in fullscreen
+    const persistentFullscreen = () => {
+        if (!document.fullscreenElement && !showLockdownWarning && !isDisqualified && !isAdminPreview) {
+            document.documentElement.requestFullscreen().catch(() => {})
         }
     }
 
-    document.addEventListener('click', enterFullscreen, { once: true })
+    document.addEventListener('click', persistentFullscreen)
 
     return () => {
         window.removeEventListener('blur', handleBlur)
@@ -174,7 +177,7 @@ export default function ExamRunner({
         window.removeEventListener('keydown', handleKeyDown)
         window.removeEventListener('beforeunload', handleBeforeUnload)
         document.removeEventListener('fullscreenchange', handleFullscreenChange)
-        document.removeEventListener('click', enterFullscreen)
+        document.removeEventListener('click', persistentFullscreen)
     }
   }, [isAdminPreview, studentExamId, showLockdownWarning])
 
@@ -246,8 +249,15 @@ export default function ExamRunner({
       if (currentModuleIndex >= modules.length - 1) {
           // Final Submit
           if (!isAdminPreview) {
-              await submitExam(studentExamId, answers)
-              router.push('/student/completed')
+              setIsSubmitting(true)
+              try {
+                  await submitExam(studentExamId, answers)
+                  router.push('/student/completed')
+              } catch (e) {
+                  console.error(e)
+                  setIsSubmitting(false)
+                  alert("Failed to submit exam. Please try again.")
+              }
           } else {
               alert("Admin Preview: Submission disabled.")
               router.push('/admin/exams/' + exam.id)
@@ -325,7 +335,7 @@ export default function ExamRunner({
   const isMathSection = currentModule.type === 'math'
 
   return (
-    <div className={`flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)] ${!isAdminPreview ? 'select-none' : ''}`}>
+    <div className="flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)]">
       <ExamHeader 
           title={currentModule.title} 
           timeLeft={timeLeft}
@@ -524,6 +534,14 @@ export default function ExamRunner({
                       </div>
                   )}
               </div>
+          </div>
+      )}
+      {/* Submission Loading Overlay */}
+      {isSubmitting && (
+          <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm">
+              <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <h3 className="text-xl font-bold text-gray-900">Submitting Exam...</h3>
+              <p className="text-gray-500">Please do not close this window.</p>
           </div>
       )}
     </div>

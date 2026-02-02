@@ -96,5 +96,13 @@ export async function joinExam(prevState: any, formData: FormData) {
     }
   }
 
+  // 5. Log joining activity
+  await supabase.from('activity_logs').insert({
+    user_id: user.id,
+    exam_id: exam.id,
+    type: 'exam_joined',
+    details: `Student joined the exam using code: ${code}`
+  })
+
   redirect(`/exam/${exam.id}`)
 }

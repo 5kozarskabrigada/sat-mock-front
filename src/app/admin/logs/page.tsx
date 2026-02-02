@@ -23,6 +23,8 @@ export default async function AdminLogsPage() {
   const getLogTypeColor = (type: string) => {
     switch (type) {
       case 'lockdown_violation': return 'text-red-600 bg-red-50'
+      case 'exam_disqualified': return 'text-orange-600 bg-orange-50 font-bold'
+      case 'exam_joined': return 'text-purple-600 bg-purple-50'
       case 'exam_started': return 'text-green-600 bg-green-50'
       case 'exam_completed': return 'text-blue-600 bg-blue-50'
       default: return 'text-gray-600 bg-gray-50'
@@ -32,6 +34,8 @@ export default async function AdminLogsPage() {
   const getLogTypeLabel = (type: string) => {
     switch (type) {
       case 'lockdown_violation': return 'Security Violation'
+      case 'exam_disqualified': return 'Disqualified'
+      case 'exam_joined': return 'Joined Exam'
       case 'exam_started': return 'Exam Started'
       case 'exam_completed': return 'Exam Submitted'
       default: return type

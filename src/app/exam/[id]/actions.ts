@@ -7,10 +7,6 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   const supabase = await createClient()
 
   // 0. Fetch necessary data to grade the exam
-  // We need to fetch the questions that correspond to these answers to check correctness.
-  // Ideally, we should fetch all questions for the exam this attempt belongs to.
-  
-  // Get exam_id and student_id from student_exam
   const { data: studentExam } = await supabase
     .from('student_exams')
     .select('exam_id, student_id')
@@ -36,14 +32,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     const answerStr = value?.toString().trim() || ''
 
     if (question && question.correct_answer) {
-        // Support multiple correct answers separated by '|'
         const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
-        
-        // Check if student answer matches any of the correct answers
-        // For Math (SPR), we might want to be more lenient (e.g. 0.5 vs .5), but strict string match is standard for now unless parsed.
-        // SAT SPR often allows .5 and 0.5, so let's handle simple number formatting if possible, 
-        // but strict string match against provided valid options is safest.
-        
         isCorrect = correctAnswers.includes(answerStr)
     }
 
@@ -55,40 +44,39 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     }
   })
 
+  // 2. Perform DB operations in parallel where possible or streamlined
+  const operations = []
+  
   if (answerInserts.length > 0) {
-    const { error: answersError } = await supabase
-      .from('student_answers')
-      .insert(answerInserts)
-    
-    if (answersError) {
-      console.error('Error saving answers:', answersError)
-      // We might continue to close the exam even if saving answers fails partially, 
-      // or return error. For now, we log and proceed to ensure exam is closed.
-    }
+    operations.push(supabase.from('student_answers').insert(answerInserts))
   }
 
-  // 2. Mark exam as completed
-  const { error: updateError } = await supabase
-    .from('student_exams')
-    .update({ 
-      status: 'completed',
-      completed_at: new Date().toISOString()
+  operations.push(
+    supabase
+      .from('student_exams')
+      .update({ 
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', studentExamId)
+  )
+
+  operations.push(
+    supabase.from('activity_logs').insert({
+        user_id: studentExam.student_id,
+        student_exam_id: studentExamId,
+        exam_id: studentExam.exam_id,
+        type: 'exam_completed',
+        details: 'Student submitted the exam'
     })
-    .eq('id', studentExamId)
+  )
 
-  if (updateError) {
-    console.error('Error closing exam:', updateError)
-    return { error: 'Failed to submit exam' }
+  const results = await Promise.all(operations)
+  const errors = results.filter(r => r.error)
+  
+  if (errors.length > 0) {
+      console.error('Errors during submission:', errors)
   }
-
-  // 3. Log completion
-  await supabase.from('activity_logs').insert({
-    user_id: studentExam.student_id,
-    student_exam_id: studentExamId,
-    exam_id: studentExam.exam_id,
-    type: 'exam_completed',
-    details: 'Student submitted the exam'
-  })
 
   revalidatePath('/student')
   return { success: true }
@@ -105,22 +93,22 @@ export async function logLockdownViolation(studentExamId: string, details?: stri
     .single()
 
   if (studentExam) {
+    const isDisqualification = details?.toLowerCase().includes('disqualified')
     await supabase.from('activity_logs').insert({
       user_id: studentExam.student_id,
       student_exam_id: studentExamId,
       exam_id: studentExam.exam_id,
-      type: 'lockdown_violation',
+      type: isDisqualification ? 'exam_disqualified' : 'lockdown_violation',
       details: details || 'Student attempted to leave the exam environment'
     })
   }
 
   // 2. Increment violation count
-  const { data, error } = await supabase.rpc('increment_lockdown_violations', {
+  const { error } = await supabase.rpc('increment_lockdown_violations', {
     exam_id: studentExamId
   })
 
   if (error) {
-    // Fallback if RPC doesn't exist yet
     const { data: current } = await supabase
       .from('student_exams')
       .select('lockdown_violations')

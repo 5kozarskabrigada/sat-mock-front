@@ -348,7 +348,7 @@ export default function QuestionViewer({
   const showImageInContent = hasImage
 
   return (
-    <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
+    <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)] select-none">
       {/* Floating Annotation Menu */}
       {selectionMenu && selectionMenu.show && (
           <div 
