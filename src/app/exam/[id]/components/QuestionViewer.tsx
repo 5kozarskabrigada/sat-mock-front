@@ -141,8 +141,6 @@ export default function QuestionViewer({
   // Annotation: Handle Text Selection & Click on Highlights
   useEffect(() => {
     const handleSelection = () => {
-        if (!isAnnotateActive) return
-
         const selection = window.getSelection()
         if (selection && selection.toString().trim().length > 0 && passageRef.current?.contains(selection.anchorNode)) {
             const range = selection.getRangeAt(0)
@@ -158,8 +156,6 @@ export default function QuestionViewer({
     }
     
     const handleClick = (e: MouseEvent) => {
-        if (!isAnnotateActive) return
-
         const target = e.target as HTMLElement
         if (target.classList.contains('annotation-highlight')) {
             const rect = target.getBoundingClientRect()
@@ -196,14 +192,8 @@ export default function QuestionViewer({
     }
   }, [isAnnotateActive])
 
-  // Clear menu on global click or when annotation mode is disabled
+  // Clear menu on global click
   useEffect(() => {
-      if (!isAnnotateActive) {
-          setSelectionMenu(null)
-          savedRangeRef.current = null
-          return
-      }
-
       const handleClickOutside = (e: MouseEvent) => {
           if ((e.target as HTMLElement).closest('.annotation-menu')) return
           if ((e.target as HTMLElement).classList.contains('annotation-highlight')) return
@@ -216,7 +206,7 @@ export default function QuestionViewer({
       }
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isAnnotateActive])
+  }, [])
 
   const applyHighlight = (color: string) => {
       let range = savedRangeRef.current
@@ -426,7 +416,7 @@ export default function QuestionViewer({
           <div className="flex w-full h-full p-4 gap-0 items-start relative">
               {/* Left Column */}
               <div 
-                className={`overflow-y-auto content-pane min-w-0 ${isAnnotateActive ? 'select-text' : 'select-none'}`}
+                className={`overflow-y-auto content-pane min-w-0 select-text`}
                 style={{ 
                     width: `${dividerPosition}%`, 
                     padding: '16px',
@@ -496,7 +486,7 @@ export default function QuestionViewer({
 
               {/* Right Column */}
               <div 
-                className={`overflow-y-auto flex flex-col content-pane min-w-0 ${isAnnotateActive ? 'select-text' : 'select-none'}`}
+                className={`overflow-y-auto flex flex-col content-pane min-w-0 select-text`}
                 style={{ 
                     width: `${100 - dividerPosition}%`, 
                     position: 'relative',
@@ -574,7 +564,7 @@ function QuestionContent({
     isAnnotateActive
 }: any) {
     return (
-        <div className={isAnnotateActive ? 'select-text' : 'select-none'}>
+        <div className="select-text">
             {/* Header: Question Number + Tools */}
             <div className="question-index-container flex items-center justify-between bg-gray-200 rounded mb-2 top-0 z-5" 
                 style={{

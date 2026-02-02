@@ -75,10 +75,14 @@ export async function joinExam(prevState: any, formData: FormData) {
   // 4. Check if already started
   const { data: existingAttempt } = await supabase
     .from('student_exams')
-    .select('id')
+    .select('id, status')
     .eq('student_id', user.id)
     .eq('exam_id', exam.id)
     .single()
+
+  if (existingAttempt?.status === 'completed') {
+    return { error: 'You have already submitted this exam or have been disqualified.' }
+  }
 
   let studentExamId = existingAttempt?.id
 

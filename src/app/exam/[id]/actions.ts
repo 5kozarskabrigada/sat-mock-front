@@ -156,3 +156,15 @@ export async function logExamStarted(studentExamId: string) {
   }
   return { success: true }
 }
+
+export async function heartbeat(studentExamId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('student_exams')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', studentExamId)
+    .eq('status', 'in_progress')
+  
+  if (error) console.error('Heartbeat failed:', error)
+  return { success: !error }
+}
