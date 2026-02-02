@@ -39,6 +39,11 @@ export default function ExamStatusToggle({
   const [selectedClassroom, setSelectedClassroom] = useState<string>('')
   const [policy, setPolicy] = useState(lockdownPolicy)
 
+  // Sync state with props in case of external updates or revalidation
+  useEffect(() => {
+    setPolicy(lockdownPolicy)
+  }, [lockdownPolicy])
+
   // Bind the arguments to the action
   const toggleAction = toggleExamStatus.bind(null, examId, status, selectedClassroom || null)
   const [state, formAction] = useFormState(toggleAction, null)
@@ -51,8 +56,21 @@ export default function ExamStatusToggle({
   }, [state])
 
   const handlePolicyChange = async (newPolicy: string) => {
+    // Optimistic update
+    const previousPolicy = policy
     setPolicy(newPolicy)
-    await updateLockdownPolicy(examId, newPolicy as 'log' | 'disqualify')
+    
+    try {
+        const result = await updateLockdownPolicy(examId, newPolicy as 'log' | 'disqualify')
+        if (result?.error) {
+            console.error("Policy update failed:", result.error)
+            alert("Failed to update policy: " + result.error)
+            setPolicy(previousPolicy) // Revert
+        }
+    } catch (e) {
+        console.error("Policy update exception:", e)
+        setPolicy(previousPolicy)
+    }
   }
 
   const isLive = status === 'active'

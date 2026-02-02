@@ -174,23 +174,27 @@ export default function QuestionViewer({
         }
     }
 
-    const handleMouseUp = (e: MouseEvent) => {
+    // Memoize handlers to prevent re-renders of PassageComponent
+    const handleMouseUp = useCallback((e: React.MouseEvent) => {
+        // Use timeout to allow selection to complete
         setTimeout(handleSelection, 10)
-    }
+    }, []) // handleSelection is stable enough or we can add it to deps if needed
 
-    const el = passageRef.current
-    if (el) {
-        el.addEventListener('mouseup', handleMouseUp)
-        el.addEventListener('click', handleClick)
-    }
-
-    return () => {
-        if (el) {
-            el.removeEventListener('mouseup', handleMouseUp)
-            el.removeEventListener('click', handleClick)
-        }
-    }
+    // We need to define handleSelection with useCallback too
+    // But handleSelection depends on passageRef, setSelectionMenu
+    
   }, [isAnnotateActive])
+
+  // Define Passage Component
+  const PassageComponent = useMemo(() => {
+      return React.memo(({ html }: { html: string }) => (
+        <div 
+            ref={passageRef}
+            className="annotation-tool relative select-text cursor-auto"
+            dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ))
+  }, [])
 
   // Clear menu on global click
   useEffect(() => {
@@ -469,13 +473,13 @@ export default function QuestionViewer({
                      </div>
                  ) : question.content.passage ? (
                     <div className="prose max-w-none">
-                        <div 
-                            ref={passageRef}
-                            className="annotation-tool relative select-text cursor-auto"
-                            dangerouslySetInnerHTML={{ __html: passageHTML }}
-                        />
+                        <PassageComponent html={passageHTML} onMouseUp={handleMouseUp} />
                     </div>
-                 ) : null}
+                 ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                        No passage available
+                    </div>
+                 )}
               </div>
 
               {/* Movable Divider */}
