@@ -175,10 +175,10 @@ export async function validateExamQuestions(examId: string) {
   const mathM2 = await getCount('math', 2)
 
   const required = {
-      rwM1: 32,
-      rwM2: 32,
-      mathM1: 28,
-      mathM2: 28
+      rwM1: 27,
+      rwM2: 27,
+      mathM1: 22,
+      mathM2: 22
   }
 
   const current = {

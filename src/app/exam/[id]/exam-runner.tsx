@@ -149,6 +149,14 @@ export default function ExamRunner({
     window.addEventListener('keydown', handleKeyDown)
     document.addEventListener('fullscreenchange', handleFullscreenChange)
 
+    // Prevent Reload
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        if (isAdminPreview) return
+        e.preventDefault()
+        e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
     // Request Fullscreen on first click
     const enterFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -164,6 +172,7 @@ export default function ExamRunner({
         window.removeEventListener('blur', handleBlur)
         window.removeEventListener('contextmenu', handleContextMenu)
         window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('beforeunload', handleBeforeUnload)
         document.removeEventListener('fullscreenchange', handleFullscreenChange)
         document.removeEventListener('click', enterFullscreen)
     }
@@ -316,7 +325,7 @@ export default function ExamRunner({
   const isMathSection = currentModule.type === 'math'
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)]">
+    <div className={`flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)] ${!isAdminPreview ? 'select-none' : ''}`}>
       <ExamHeader 
           title={currentModule.title} 
           timeLeft={timeLeft}

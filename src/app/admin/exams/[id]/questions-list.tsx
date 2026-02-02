@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import LatexRenderer from '@/components/ui/latex-renderer'
+import { deleteQuestion } from './actions'
+import ConfirmationModal from '@/components/confirmation-modal'
 
 interface Question {
     id: string
@@ -26,11 +28,28 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
     ringClass: string
 }) {
     const [isExpanded, setIsExpanded] = useState(true)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+
+    const handleDelete = async () => {
+        if (deletingId) {
+            await deleteQuestion(deletingId, examId)
+            setDeletingId(null)
+        }
+    }
 
     if (questions.length === 0) return null
 
     return (
         <div className="mb-6 last:mb-0">
+            <ConfirmationModal 
+                isOpen={!!deletingId}
+                onClose={() => setDeletingId(null)}
+                onConfirm={handleDelete}
+                title="Delete Question"
+                message="Are you sure you want to delete this question? This action cannot be undone."
+                confirmText="Delete"
+                isDangerous={true}
+            />
             <button 
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`w-full flex items-center justify-between px-4 py-3 ${colorClass} rounded-lg mb-3 hover:opacity-90 transition-opacity`}
@@ -90,7 +109,19 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
                                             </div>
                                         </div>
 
-                                        <div className="flex-shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex-shrink-0 self-center flex items-center gap-2">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setDeletingId(q.id)
+                                                }}
+                                                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                title="Delete Question"
+                                            >
+                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                             <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                             </svg>

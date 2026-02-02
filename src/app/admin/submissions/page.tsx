@@ -1,14 +1,16 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import SubmissionsSearch from './submissions-search'
 
-export default async function AdminSubmissionsPage() {
+export default async function AdminSubmissionsPage({ searchParams }: { searchParams: { q?: string } }) {
   const supabase = await createClient()
+  const query = (await searchParams)?.q || ''
 
-  const { data: submissions } = await supabase
+  let dbQuery = supabase
     .from('student_exams')
     .select(`
       *,
-      users (
+      users!inner (
         first_name,
         last_name,
         username
@@ -19,13 +21,21 @@ export default async function AdminSubmissionsPage() {
       )
     `)
     .eq('status', 'completed')
-    .order('completed_at', { ascending: false })
+
+  if (query) {
+    dbQuery = dbQuery.or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`, { foreignTable: 'users' })
+  }
+
+  const { data: submissions } = await dbQuery.order('completed_at', { ascending: false })
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Exam Submissions</h1>
-        <p className="mt-1 text-sm text-gray-500">View and manage completed student exam reports.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Exam Submissions</h1>
+          <p className="mt-1 text-sm text-gray-500">View and manage completed student exam reports.</p>
+        </div>
+        <SubmissionsSearch />
       </div>
 
       <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">

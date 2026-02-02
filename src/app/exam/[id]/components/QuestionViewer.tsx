@@ -450,7 +450,7 @@ export default function QuestionViewer({
                     <div className="prose max-w-none">
                         <div 
                             ref={passageRef}
-                            className="annotation-tool relative"
+                            className={`annotation-tool relative ${isAnnotateActive ? 'select-text cursor-crosshair' : ''}`}
                             dangerouslySetInnerHTML={{ __html: passageHTML }}
                         />
                     </div>
@@ -746,7 +746,7 @@ function QuestionContent({
                                 placeholder="Enter your answer (e.g., 5.566, -5.566, 2/3, -2/3)"
                                 value={inputValue}
                                 onChange={handleInputChange}
-                                className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 min-w-0 bg-transparent shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive w-full p-3 text-base border-2 border-black rounded-lg"
+                                className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 min-w-0 bg-transparent shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive w-full p-3 text-base border-2 border-black rounded-lg select-text"
                                 style={{
                                     appearance: 'auto',
                                     backgroundColor: 'rgba(0, 0, 0, 0)',

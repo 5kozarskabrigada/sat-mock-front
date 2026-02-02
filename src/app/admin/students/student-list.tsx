@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { deleteStudent, updateStudent } from './actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 
@@ -79,10 +80,10 @@ export default function StudentList({ students }: { students: any[] }) {
                         </form>
                     ) : (
                         <div className="flex items-center justify-between">
-                            <div className="truncate">
+                            <Link href={`/admin/students/${student.id}`} className="truncate group">
                                 <div className="flex text-sm">
-                                <p className="font-medium text-indigo-600 truncate">{student.username}</p>
-                                <p className="ml-1 shrink-0 font-normal text-gray-500">
+                                <p className="font-medium text-indigo-600 truncate group-hover:text-indigo-800">{student.username}</p>
+                                <p className="ml-1 shrink-0 font-normal text-gray-500 group-hover:text-gray-700">
                                     {student.first_name} {student.last_name}
                                 </p>
                                 </div>
@@ -91,7 +92,7 @@ export default function StudentList({ students }: { students: any[] }) {
                                     Joined {new Date(student.created_at).toLocaleDateString()}
                                 </div>
                                 </div>
-                            </div>
+                            </Link>
                             <div className="flex space-x-4">
                                 <button onClick={() => setEditingId(student.id)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Edit</button>
                                 <button onClick={() => setDeleteId(student.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
