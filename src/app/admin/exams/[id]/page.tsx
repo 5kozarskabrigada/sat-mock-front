@@ -8,6 +8,8 @@ import ExamStatusToggle from './exam-status-toggle'
 import DeleteExamButton from './delete-exam-button'
 import QuestionsList from './questions-list'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ExamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()

@@ -228,6 +228,21 @@ export async function toggleExamStatus(examId: string, currentStatus: string, cl
 
 export async function updateLockdownPolicy(examId: string, policy: 'log' | 'disqualify') {
   const supabase = await createClient()
+  
+  // Try using the RPC first as it might bypass schema cache issues
+  const { error: rpcError } = await supabase.rpc('update_lockdown_policy', {
+    exam_id: examId,
+    new_policy: policy
+  })
+
+  if (!rpcError) {
+    revalidatePath(`/admin/exams/${examId}`)
+    return { success: true }
+  }
+
+  console.warn("RPC update failed, falling back to direct update:", rpcError.message)
+
+  // Fallback to direct update if RPC fails
   const { error } = await supabase
     .from('exams')
     .update({ lockdown_policy: policy })
