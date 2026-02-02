@@ -4,25 +4,30 @@ import { useEffect } from 'react'
 
 export default function BreakScreen({ 
   timeLeft, 
-  onResume 
+  onResume,
+  isAdmin = false
 }: { 
   timeLeft: number
   onResume: () => void 
+  isAdmin?: boolean
 }) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Block Escape key during break
+      // Block Escape key during break - use stopImmediatePropagation to prevent any browser defaults
       if (e.key === 'Escape') {
         e.preventDefault()
+        e.stopImmediatePropagation()
       }
       // Block F12 and other dev tools shortcuts
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
         e.preventDefault()
+        e.stopImmediatePropagation()
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    // Use capture: true to catch the event before it reaches other handlers
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
   }, [])
 
   const formatTime = (seconds: number) => {
@@ -44,12 +49,14 @@ export default function BreakScreen({
             The exam will resume automatically when the timer expires.
         </div>
 
-        <button 
-          onClick={onResume}
-          className="px-8 py-3 bg-[#1a2333] border border-gray-700 rounded-lg text-white hover:bg-[#253045] transition-colors text-lg"
-        >
-          Resume Exam
-        </button>
+        {isAdmin && (
+          <button 
+            onClick={onResume}
+            className="px-8 py-3 bg-[#1a2333] border border-gray-700 rounded-lg text-white hover:bg-[#253045] transition-colors text-lg"
+          >
+            Resume Exam (Admin)
+          </button>
+        )}
       </div>
 
       <div className="absolute bottom-12 text-center text-gray-500 text-sm max-w-md">

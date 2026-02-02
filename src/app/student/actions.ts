@@ -80,26 +80,31 @@ export async function joinExam(prevState: any, formData: FormData) {
     .eq('exam_id', exam.id)
     .single()
 
+  let studentExamId = existingAttempt?.id
+
   if (!existingAttempt) {
-    const { error: createError } = await supabase
+    const { data: newAttempt, error: createError } = await supabase
       .from('student_exams')
       .insert({
         student_id: user.id,
         exam_id: exam.id,
         status: 'in_progress'
       })
+      .select('id')
+      .single()
     
     if (createError) {
       console.error('Join exam error:', createError)
-      // Return specific error message if useful, otherwise generic
       return { error: `Failed to join exam: ${createError.message}` }
     }
+    studentExamId = newAttempt.id
   }
 
   // 5. Log joining activity
   await supabase.from('activity_logs').insert({
     user_id: user.id,
     exam_id: exam.id,
+    student_exam_id: studentExamId,
     type: 'exam_joined',
     details: `Student joined the exam using code: ${code}`
   })

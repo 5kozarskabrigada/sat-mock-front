@@ -141,10 +141,12 @@ export default function ExamRunner({
         // Block F12 (DevTools)
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
             e.preventDefault()
+            e.stopImmediatePropagation()
         }
-        // Block Escape
+        // Block Escape - use stopImmediatePropagation and capture phase
         if (e.key === 'Escape') {
             e.preventDefault()
+            e.stopImmediatePropagation()
         }
         // Block PrintScreen
         if (e.key === 'PrintScreen') {
@@ -155,7 +157,7 @@ export default function ExamRunner({
 
     window.addEventListener('blur', handleBlur)
     window.addEventListener('contextmenu', handleContextMenu)
-    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown, true) // Use capture phase
     document.addEventListener('fullscreenchange', handleFullscreenChange)
 
     // Prevent Reload
@@ -178,7 +180,7 @@ export default function ExamRunner({
     return () => {
         window.removeEventListener('blur', handleBlur)
         window.removeEventListener('contextmenu', handleContextMenu)
-        window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keydown', handleKeyDown, true)
         window.removeEventListener('beforeunload', handleBeforeUnload)
         document.removeEventListener('fullscreenchange', handleFullscreenChange)
         document.removeEventListener('click', persistentFullscreen)
@@ -331,7 +333,7 @@ export default function ExamRunner({
 
   // 1. Break Screen
   if (currentModule.type === 'break') {
-      return <BreakScreen timeLeft={timeLeft} onResume={handleResumeFromBreak} />
+      return <BreakScreen timeLeft={timeLeft} onResume={handleResumeFromBreak} isAdmin={isAdminPreview} />
   }
 
   // 2. Exam Screen
