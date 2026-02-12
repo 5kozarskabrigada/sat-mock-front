@@ -1,38 +1,36 @@
+import { createClient } from '@/utils/supabase/server'
+import JoinExamForm from './JoinForm'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
-'use client'
+export default async function StudentDashboard() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-import { useFormState, useFormStatus } from 'react-dom'
-import { joinExam } from './actions'
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-    >
-      {pending ? 'Joining...' : 'Start Exam'}
-    </button>
-  )
-}
-
-export default function StudentDashboard() {
-  const [state, formAction] = useFormState(joinExam, null)
-
-  const handleSubmit = (formData: FormData) => {
-    // Request fullscreen as soon as user interacts to join
-    if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
-        });
-    }
-    formAction(formData)
+  if (!user) {
+    redirect('/login')
   }
+
+  // Fetch active exams (in_progress)
+  const { data: activeExams } = await supabase
+    .from('student_exams')
+    .select(`
+      id,
+      exam_id,
+      status,
+      exams (
+        title,
+        code
+      )
+    `)
+    .eq('student_id', user.id)
+    .eq('status', 'in_progress')
+    .order('created_at', { ascending: false })
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <img src="/logo.png" alt="ExamRoom Logo" className="h-12 mx-auto mb-6" />
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Student Dashboard
         </h2>
@@ -41,36 +39,33 @@ export default function StudentDashboard() {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md space-y-6">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form action={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700">
-                Exam Code
-              </label>
-              <div className="mt-1">
-                <input
-                  id="code"
-                  name="code"
-                  type="text"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center uppercase tracking-widest font-mono font-bold text-lg text-black"
-                  placeholder="ABC123"
-                />
-              </div>
-            </div>
-
-            {state?.error && (
-              <div className="text-sm text-red-600 text-center">
-                {state.error}
-              </div>
-            )}
-
-            <div>
-              <SubmitButton />
-            </div>
-          </form>
+          <JoinExamForm />
         </div>
+
+        {/* Active Exams List */}
+        {activeExams && activeExams.length > 0 && (
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Resume Active Exams</h3>
+            <div className="space-y-4">
+              {activeExams.map((attempt: any) => (
+                <div key={attempt.id} className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                  <div>
+                    <h4 className="font-bold text-indigo-900">{attempt.exams?.title || 'Untitled Exam'}</h4>
+                    <p className="text-xs text-indigo-700 mt-1">Code: {attempt.exams?.code}</p>
+                  </div>
+                  <Link
+                    href={`/exam/${attempt.exam_id}`}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Resume
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         <div className="mt-6 text-center">
              <form action="/auth/signout" method="post">

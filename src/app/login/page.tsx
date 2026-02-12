@@ -44,6 +44,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="p-8 sm:p-10">
           <div className="text-center mb-10">
+            <img src="/logo.png" alt="ExamRoom Logo" className="h-12 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome Back</h1>
             <p className="text-gray-500">Sign in to the SAT Mock Exam Platform</p>
           </div>

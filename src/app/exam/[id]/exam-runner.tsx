@@ -96,7 +96,7 @@ export default function ExamRunner({
 
     const interval = setInterval(() => {
       heartbeat(studentExamId)
-    }, 20000) // Every 20 seconds
+    }, 60000) // Every 60 seconds (Optimized for Quantity & Quality)
 
     return () => clearInterval(interval)
   }, [studentExamId, isAdminPreview, isDisqualified])
@@ -165,6 +165,11 @@ export default function ExamRunner({
         if (e.key === 'PrintScreen') {
             navigator.clipboard.writeText('') // Clear clipboard
             alert("Screenshots are disabled.")
+        }
+        // Block Copy/Paste Shortcuts
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 'a')) {
+            e.preventDefault()
+            e.stopImmediatePropagation()
         }
     }
 

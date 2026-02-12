@@ -80,29 +80,31 @@ export async function joinExam(prevState: any, formData: FormData) {
     .eq('exam_id', exam.id)
     .single()
 
-  if (existingAttempt?.status === 'completed') {
-    return { error: 'You have already submitted this exam or have been disqualified.' }
-  }
-
-  let studentExamId = existingAttempt?.id
-
-  if (!existingAttempt) {
-    const { data: newAttempt, error: createError } = await supabase
-      .from('student_exams')
-      .insert({
-        student_id: user.id,
-        exam_id: exam.id,
-        status: 'in_progress'
-      })
-      .select('id')
-      .single()
-    
-    if (createError) {
-      console.error('Join exam error:', createError)
-      return { error: `Failed to join exam: ${createError.message}` }
+  if (existingAttempt) {
+    if (existingAttempt.status === 'completed') {
+      return { error: 'You have already submitted this exam or have been disqualified.' }
     }
-    studentExamId = newAttempt.id
+    // Strict Join Policy: Cannot use code again if already started.
+    return { error: 'You have already joined this exam. Please resume it from your dashboard.' }
   }
+
+  let studentExamId: string
+
+  const { data: newAttempt, error: createError } = await supabase
+    .from('student_exams')
+    .insert({
+      student_id: user.id,
+      exam_id: exam.id,
+      status: 'in_progress'
+    })
+    .select('id')
+    .single()
+  
+  if (createError) {
+    console.error('Join exam error:', createError)
+    return { error: `Failed to join exam: ${createError.message}` }
+  }
+  studentExamId = newAttempt.id
 
   // 5. Log joining activity
   const { error: logError } = await supabase.from('activity_logs').insert({

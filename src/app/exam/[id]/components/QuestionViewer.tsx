@@ -367,7 +367,13 @@ export default function QuestionViewer({
   const showImageInContent = hasImage
 
   return (
-    <div className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]">
+    <div 
+      className="flex-1 flex overflow-hidden relative h-full bg-[var(--sat-bg)]"
+      onCopy={(e) => { e.preventDefault(); return false; }}
+      onCut={(e) => { e.preventDefault(); return false; }}
+      onPaste={(e) => { e.preventDefault(); return false; }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* Floating Annotation Menu */}
       {selectionMenu && selectionMenu.show && (
           <div 

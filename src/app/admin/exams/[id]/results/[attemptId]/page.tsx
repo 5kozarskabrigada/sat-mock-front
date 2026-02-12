@@ -165,6 +165,63 @@ export default async function ScoreReportPage({ params }: { params: { id: string
             </div>
         </div>
       </div>
+
+      {/* Detailed Question Breakdown */}
+      <div className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:break-before-page">
+        <div className="bg-gray-900 text-white p-6 border-b border-gray-800">
+            <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
+            <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
+        </div>
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+                <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Answer</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+                </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+                {questions?.sort((a, b) => a.section.localeCompare(b.section))?.map((q, idx) => {
+                    const answer = answers?.find(a => a.question_id === q.id)
+                    const isCorrect = answer?.is_correct
+                    const studentAnswer = answer?.answer_value || '(Skipped)'
+                    const isSkipped = !answer
+                    
+                    return (
+                        <tr key={q.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{idx + 1}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{q.section.replace('_', ' ')}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]" title={q.domain}>{q.domain}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{q.correct_answer}</td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
+                            {studentAnswer}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                            {isCorrect ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Correct
+                            </span>
+                            ) : isSkipped ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Skipped
+                            </span>
+                            ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Incorrect
+                            </span>
+                            )}
+                        </td>
+                        </tr>
+                    )
+                })}
+            </tbody>
+            </table>
+        </div>
+      </div>
     </div>
   )
 }

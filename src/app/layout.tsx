@@ -14,7 +14,7 @@ import "./globals.css";
 // });
 
 export const metadata: Metadata = {
-  title: "SAT Mock Platform",
+  title: "ExamRoom",
   description: "SAT Mock Exam Platform",
 };
 
