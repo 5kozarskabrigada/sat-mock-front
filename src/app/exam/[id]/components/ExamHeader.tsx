@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Logo from '@/components/Logo'
 
 export default function ExamHeader({ 
   title, 
@@ -51,7 +52,9 @@ export default function ExamHeader({
     >
       {/* Left: Section Title & Directions */}
       <div className="pl-4 flex items-center gap-3">
-          <img src="/logo.png" alt="ExamRoom" className="h-8 hidden sm:block" />
+          <div className="hidden sm:block bg-[#0f172a] p-1.5 rounded-lg">
+             <Logo className="h-6 w-auto" />
+          </div>
           <div>
             <p className="font-semibold text-lg leading-tight">{title}</p>
             <button className="text-sm text-blue-600 hover:underline">Directions</button>

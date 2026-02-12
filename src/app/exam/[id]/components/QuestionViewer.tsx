@@ -124,8 +124,21 @@ export default function QuestionViewer({
   }, [question.id])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
-    onAnswerChange(e.target.value)
+    const newValue = e.target.value
+    // Count characters excluding '-' (negative sign)
+    // The user requirement: "can only write 5 characters EXCLUDING -, doesnt include -, you can write minus"
+    // So if the input is "-12345", length is 6, but char count is 5. Allowed.
+    // If input is "12345", length is 5. Allowed.
+    // If input is "123456", length is 6. Blocked.
+    const charCount = newValue.replace(/-/g, '').length
+    
+    // We only update if the new value meets the length constraint OR if the user is deleting (newValue.length < inputValue.length)
+    // But since e.target.value is the *result* of the change, checking charCount is enough.
+    // However, we must allow the user to type if it's valid.
+    if (charCount <= 5) {
+        setInputValue(newValue)
+        onAnswerChange(newValue)
+    }
   }
 
   const toggleCrossOutDirect = (key: string) => {
