@@ -41,59 +41,63 @@ export default function AdminSidebar({ email }: { email: string }) {
   ]
 
   return (
-    <div className={`flex flex-col bg-[#0F172A] border-r border-slate-800 h-full transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
-      <div className="flex items-center justify-between h-20 border-b border-slate-800 px-4">
-        {!isCollapsed && <Logo className="h-12 w-auto" />}
+    <div className={`flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'}`}>
+      <div className="flex items-center justify-between h-32 border-b border-gray-200 px-6 bg-[#0f172a]">
+        {!isCollapsed && <Logo className="h-24 w-auto rounded-xl" />}
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none"
+          className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
         >
           {isCollapsed ? (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
           ) : (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
           )}
         </button>
       </div>
+      
+      <div className="flex flex-col flex-1 overflow-y-auto">
+        <nav className="flex-1 px-2 py-4 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              title={isCollapsed ? item.name : undefined}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-md group ${
+                isActive(item.href) && item.href !== '/admin' || (item.href === '/admin' && pathname === '/admin')
+                  ? 'bg-indigo-50 text-indigo-600'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              } ${isCollapsed ? 'justify-center px-2' : ''}`}
+            >
+              <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
+              {!isCollapsed && <span>{item.name}</span>}
+            </Link>
+          ))}
+        </nav>
 
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                >
-                  <span className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>
-                    {item.icon}
-                  </span>
-                  {!isCollapsed && <span className="ml-3 truncate">{item.name}</span>}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
-
-      <div className="border-t border-slate-800 p-4">
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-            {email[0].toUpperCase()}
-          </div>
+        <div className="p-4 border-t border-gray-200">
           {!isCollapsed && (
-            <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">{email}</p>
-              <form action="/auth/signout" method="post">
-                <button className="text-xs text-slate-400 hover:text-white">Sign out</button>
-              </form>
+            <div className="flex items-center mb-4">
+              <div className="ml-0">
+                <p className="text-sm font-medium text-gray-700 truncate w-48" title={email}>
+                  {email}
+                </p>
+              </div>
             </div>
           )}
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              title={isCollapsed ? "Sign out" : undefined}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ${isCollapsed ? 'px-2' : ''}`}
+            >
+              {isCollapsed ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+              ) : (
+                "Sign out"
+              )}
+            </button>
+          </form>
         </div>
       </div>
     </div>
