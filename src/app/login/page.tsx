@@ -41,45 +41,73 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8 sm:p-10">
-          <div className="text-center mb-10">
-            <div className="flex justify-center mb-6">
-               <Logo className="h-24 w-auto" />
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Branding Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0F172A] flex-col justify-center items-center text-white relative overflow-hidden">
+        {/* Abstract Background Shapes */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                <path d="M0 100 L100 0 L100 100 Z" fill="currentColor" />
+            </svg>
+        </div>
+        
+        <div className="relative z-10 text-center px-12">
+            <div className="mb-8 flex justify-center">
+                 <Logo className="h-32 w-auto" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome Back</h1>
-            <p className="text-gray-500">Sign in to the SAT Mock Exam Platform</p>
+            <h1 className="text-4xl font-extrabold tracking-tight mb-4">Master Your SAT</h1>
+            <p className="text-lg text-slate-300 max-w-md mx-auto">
+                Join thousands of students achieving their dream scores with our realistic mock exams and detailed analytics.
+            </p>
+        </div>
+      </div>
+
+      {/* Login Form Section */}
+      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:w-1/2 lg:px-20 xl:px-24 bg-white">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div className="lg:hidden text-center mb-10">
+            <div className="flex justify-center mb-6">
+               <Logo className="h-16 w-auto" />
+            </div>
+          </div>
+          
+          <div className="text-center lg:text-left mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Sign in</h2>
+            <p className="mt-2 text-sm text-gray-600">
+                Access your dashboard
+            </p>
           </div>
 
           <form className="space-y-6" onSubmit={handleLogin}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
-                </label>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <div className="mt-1">
                 <input
                   id="username"
                   name="username"
                   type="text"
                   required
-                  className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 transition-colors text-black"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
-              
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1">
                 <input
                   id="password"
                   name="password"
                   type="password"
                   required
-                  className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 transition-colors text-black"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -88,32 +116,21 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 text-center animate-pulse">
+              <div className="text-sm text-red-600 text-center">
                 {error}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02]"
-            >
-              {loading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </span>
-              ) : 'Sign in'}
-            </button>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Signing in...' : 'Sign in'}
+              </button>
+            </div>
           </form>
-        </div>
-        <div className="px-8 py-4 bg-gray-50 border-t border-gray-100 text-center">
-          <p className="text-xs text-gray-500">
-            Forgot your credentials? Contact your administrator.
-          </p>
         </div>
       </div>
     </div>

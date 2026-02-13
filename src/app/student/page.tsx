@@ -29,12 +29,26 @@ export default async function StudentDashboard() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-6 mx-auto w-fit">
-           <Logo className="h-12 w-auto" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Dark Header */}
+      <div className="bg-[#0F172A] border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+                <div className="flex-shrink-0 flex items-center">
+                    <Logo className="h-8 w-auto" />
+                </div>
+                <div className="flex items-center">
+                    <form action="/auth/signout" method="post">
+                        <button className="text-sm text-slate-300 hover:text-white transition-colors">Sign out</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+      </div>
+
+      <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900">
           Student Dashboard
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
