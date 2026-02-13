@@ -90,6 +90,7 @@ export default async function StudentDashboard() {
              </form>
         </div>
       </div>
+      </div>
     </div>
   )
 }
