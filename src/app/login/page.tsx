@@ -45,8 +45,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="p-8 sm:p-10">
           <div className="text-center mb-10">
-            <div className="flex justify-center mb-10 bg-[#0f172a] p-10 rounded-3xl shadow-2xl">
-               <Logo className="h-48 w-96" /> {/* Enlarge to 200% from h-24 (6rem -> 12rem) */}
+            <div className="flex justify-center mb-10">
+               <Logo className="h-20 w-auto" /> 
             </div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome Back</h1>
             <p className="text-gray-500">Sign in to the SAT Mock Exam Platform</p>
