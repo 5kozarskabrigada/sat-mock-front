@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
@@ -365,4 +366,24 @@ body {
     font-family: "Noto Serif Fallback";
     src: local("Times New Roman");
     ascent-override:90.29%;descent-override:24.75%;line-gap-override:0.00%;size-adjust:118.40%
+}
+
+/* Ensure Tiptap lists are visible even if typography plugin is not fully applying */
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
 }
