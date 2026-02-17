@@ -102,6 +102,42 @@ export default function UnifiedToolbar({ editor, showMath = true }: UnifiedToolb
           </ToolbarButton>
         </div>
 
+        {/* Alignment */}
+        <div className="flex items-center gap-0.5 border-r border-gray-200 pr-2 mr-1">
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().setTextAlign('left').run()}
+            isActive={activeEditor?.isActive({ textAlign: 'left' })}
+            disabled={isDisabled}
+            title="Align Left"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().setTextAlign('center').run()}
+            isActive={activeEditor?.isActive({ textAlign: 'center' })}
+            disabled={isDisabled}
+            title="Align Center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="19" y1="12" x2="5" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().setTextAlign('right').run()}
+            isActive={activeEditor?.isActive({ textAlign: 'right' })}
+            disabled={isDisabled}
+            title="Align Right"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => activeEditor?.chain().focus().setTextAlign('justify').run()}
+            isActive={activeEditor?.isActive({ textAlign: 'justify' })}
+            disabled={isDisabled}
+            title="Justify"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+          </ToolbarButton>
+        </div>
+
         {/* Tables */}
         <div className="flex items-center gap-0.5 border-r border-gray-200 pr-2 mr-1">
           <ToolbarButton
