@@ -77,7 +77,7 @@ export default function MathInput({ value, onChange, onInit, className }: MathIn
           restrictMismatchedBrackets: true,
           sumStartsWithNEquals: true,
           supSubsRequireOperand: true,
-          charsThatBreakOutOfSupSub: '+-=<>',
+          charsThatBreakOutOfSupSub: '+=<>',
           autoSubscriptNumerals: true,
           autoCommands: 'pi theta sqrt sum int alpha beta gamma infty approx le ge ne angle triangle parallel perp',
           autoOperatorNames: 'sin cos tan log ln',
