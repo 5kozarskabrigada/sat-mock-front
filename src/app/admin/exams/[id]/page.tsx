@@ -7,6 +7,7 @@ import { toggleExamStatus } from './actions'
 import ExamStatusToggle from './exam-status-toggle'
 import DeleteExamButton from './delete-exam-button'
 import QuestionsList from './questions-list'
+import ExamCodeEditor from './exam-code-editor'
 
 export const dynamic = 'force-dynamic'
 
@@ -141,8 +142,7 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
             </dd>
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
-            <dt className="text-sm font-medium text-gray-500 truncate">Exam Code</dt>
-            <dd className="mt-2 text-lg font-mono font-semibold text-gray-900 tracking-tight">{exam.code}</dd>
+            <ExamCodeEditor examId={exam.id} currentCode={exam.code} />
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <dt className="text-sm font-medium text-gray-500 truncate">Lockdown Policy</dt>

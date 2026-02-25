@@ -5,6 +5,37 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+export async function updateExamCode(examId: string, newCode: string) {
+  const supabase = await createClient()
+
+  const code = newCode.trim().toUpperCase()
+  if (!code || code.length < 4) {
+    return { error: 'Code must be at least 4 characters.' }
+  }
+
+  // Check for duplicates
+  const { data: existing } = await supabase
+    .from('exams')
+    .select('id')
+    .eq('code', code)
+    .neq('id', examId)
+    .single()
+
+  if (existing) {
+    return { error: 'This code is already in use by another exam.' }
+  }
+
+  const { error } = await supabase
+    .from('exams')
+    .update({ code })
+    .eq('id', examId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/exams/${examId}`)
+  return { success: true, code }
+}
+
 export async function addQuestion(examId: string, formData: FormData) {
   const supabase = await createClient()
 
