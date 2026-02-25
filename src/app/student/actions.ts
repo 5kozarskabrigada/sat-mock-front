@@ -1,23 +1,28 @@
 
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function joinExam(prevState: any, formData: FormData) {
   const code = formData.get('code') as string
   const supabase = await createClient()
 
-  // 1. Find the exam by code (use Service Role to bypass RLS for initial check)
-  // We need to check if exam exists first, because RLS might hide it if not in classroom
-  const { data: exam, error } = await supabase
+  // 1. Find the exam by code using service role to bypass RLS
+  // RLS hides exams from students if they're not in the right classroom or exam isn't active
+  const serviceClient = createServiceClient()
+  const { data: exam, error } = await serviceClient
     .from('exams')
-    .select('id, status, classroom_id')
+    .select('id, status, classroom_id, deleted_at')
     .eq('code', code)
     .single()
 
   if (error || !exam) {
     return { error: 'Invalid exam code' }
+  }
+
+  if (exam.deleted_at) {
+    return { error: 'This exam has been deleted.' }
   }
 
   // 2. Get authenticated user
