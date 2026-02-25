@@ -85,21 +85,22 @@ export default function ExamStatusToggle({
   return (
     <>
     <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-inner">
-        {!isLive && (
-            <div className="flex flex-col items-start">
-                <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Assign Classroom</label>
-                <select 
-                    className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-[180px] bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                    value={selectedClassroom}
-                    onChange={(e) => setSelectedClassroom(e.target.value)}
-                >
-                    <option value="">All Students (Public)</option>
-                    {classrooms.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
-            </div>
-        )}
+        <div className="flex flex-col items-start">
+            <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">
+                {isLive ? 'Assigned Classroom' : 'Assign Classroom'}
+            </label>
+            <select 
+                className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-[180px] bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
+                value={selectedClassroom}
+                onChange={(e) => setSelectedClassroom(e.target.value)}
+                disabled={isLive}
+            >
+                <option value="">All Students (Public)</option>
+                {classrooms.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+            </select>
+        </div>
 
         <div className="flex flex-col items-start">
             <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Security Policy</label>
