@@ -141,38 +141,50 @@ export async function deleteQuestion(questionId: string, examId: string) {
 
 export async function deleteExam(examId: string) {
     const supabase = await createClient()
+    const now = new Date().toISOString()
     
+    // Soft-delete the exam
     const { error } = await supabase
         .from('exams')
-        .update({ deleted_at: new Date().toISOString() })
+        .update({ deleted_at: now })
         .eq('id', examId)
 
     if (error) {
         return { error: error.message }
     }
 
+    // Also soft-delete all questions belonging to this exam
+    await supabase
+        .from('questions')
+        .update({ deleted_at: now })
+        .eq('exam_id', examId)
+        .is('deleted_at', null)
+
     revalidatePath('/admin/exams')
+    revalidatePath('/admin/recycle-bin')
     return { success: true }
 }
 
 export async function validateExamQuestions(examId: string) {
   const supabase = await createClient()
 
-  const getCount = async (section: string, module: number) => {
-    const { count } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('exam_id', examId)
-        .eq('section', section)
-        .eq('module', module)
-        .is('deleted_at', null)
-    return count || 0
+  // Fetch all non-deleted questions for this exam in a single query
+  const { data: questions, error } = await supabase
+    .from('questions')
+    .select('id, section, module')
+    .eq('exam_id', examId)
+    .is('deleted_at', null)
+
+  if (error) {
+    console.error('Validation query error:', error)
   }
 
-  const rwM1 = await getCount('reading_writing', 1)
-  const rwM2 = await getCount('reading_writing', 2)
-  const mathM1 = await getCount('math', 1)
-  const mathM2 = await getCount('math', 2)
+  const allQuestions = questions || []
+
+  const rwM1 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 1).length
+  const rwM2 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 2).length
+  const mathM1 = allQuestions.filter(q => q.section === 'math' && q.module === 1).length
+  const mathM2 = allQuestions.filter(q => q.section === 'math' && q.module === 2).length
 
   const required = {
       rwM1: 27,

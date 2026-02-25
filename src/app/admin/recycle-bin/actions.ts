@@ -6,12 +6,24 @@ import { revalidatePath } from 'next/cache'
 
 export async function restoreExam(examId: string) {
   const supabase = await createClient()
+  
+  // Restore the exam
   const { error } = await supabase
     .from('exams')
     .update({ deleted_at: null })
     .eq('id', examId)
 
   if (error) return { error: error.message }
+
+  // Also restore all questions belonging to this exam
+  const { error: qError } = await supabase
+    .from('questions')
+    .update({ deleted_at: null })
+    .eq('exam_id', examId)
+    .not('deleted_at', 'is', null)
+
+  if (qError) return { error: qError.message }
+
   revalidatePath('/admin/recycle-bin')
   revalidatePath('/admin/exams')
   return { success: true }
