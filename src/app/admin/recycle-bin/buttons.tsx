@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { restoreExam, restoreQuestion, permanentlyDeleteExam, permanentlyDeleteQuestion } from './actions'
 import { useState } from 'react'
 import ConfirmationModal from '@/components/confirmation-modal'
@@ -22,19 +23,19 @@ function ActionButton({ label, loadingLabel, color = 'indigo', onClick }: { labe
 
 export function RestoreExamButton({ examId }: { examId: string }) {
   const restore = restoreExam.bind(null, examId)
-  const [state, formAction] = useFormState(restore, null)
+  const [state, formAction] = useActionState(restore, null)
   return <form action={formAction}><ActionButton label="Restore" loadingLabel="Restoring..." /></form>
 }
 
 export function RestoreQuestionButton({ questionId }: { questionId: string }) {
   const restore = restoreQuestion.bind(null, questionId)
-  const [state, formAction] = useFormState(restore, null)
+  const [state, formAction] = useActionState(restore, null)
   return <form action={formAction}><ActionButton label="Restore" loadingLabel="Restoring..." /></form>
 }
 
 export function PermanentDeleteExamButton({ examId }: { examId: string }) {
   const del = permanentlyDeleteExam.bind(null, examId)
-  const [state, formAction] = useFormState(del, null)
+  const [state, formAction] = useActionState(del, null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
@@ -65,7 +66,7 @@ export function PermanentDeleteExamButton({ examId }: { examId: string }) {
 
 export function PermanentDeleteQuestionButton({ questionId }: { questionId: string }) {
   const del = permanentlyDeleteQuestion.bind(null, questionId)
-  const [state, formAction] = useFormState(del, null)
+  const [state, formAction] = useActionState(del, null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (

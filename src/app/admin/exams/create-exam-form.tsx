@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { createExam } from './actions'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -20,7 +21,7 @@ function SubmitButton() {
 }
 
 export default function CreateExamForm() {
-  const [state, formAction] = useFormState(createExam, null)
+  const [state, formAction] = useActionState(createExam, null)
   const router = useRouter()
 
   useEffect(() => {

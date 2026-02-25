@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { removeStudentFromClassroom } from '../actions'
 import { useState } from 'react'
 import ConfirmationModal from '@/components/confirmation-modal'
@@ -22,7 +23,7 @@ function RemoveButton({ onClick }: { onClick: () => void }) {
 
 export default function RemoveStudentButton({ classroomId, studentId }: { classroomId: string, studentId: string }) {
   const removeAction = removeStudentFromClassroom.bind(null, classroomId, studentId)
-  const [state, formAction] = useFormState(removeAction, null)
+  const [state, formAction] = useActionState(removeAction, null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (

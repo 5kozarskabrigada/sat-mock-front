@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { toggleExamStatus, updateLockdownPolicy } from './actions'
 import { useState, useEffect } from 'react'
 import ActivationErrorModal from '@/components/activation-error-modal'
@@ -29,14 +30,16 @@ export default function ExamStatusToggle({
   examId, 
   status, 
   classrooms,
-  lockdownPolicy = 'log'
+  lockdownPolicy = 'log',
+  currentClassroomId = ''
 }: { 
   examId: string, 
   status: string, 
   classrooms: any[],
-  lockdownPolicy?: string
+  lockdownPolicy?: string,
+  currentClassroomId?: string
 }) {
-  const [selectedClassroom, setSelectedClassroom] = useState<string>('')
+  const [selectedClassroom, setSelectedClassroom] = useState<string>(currentClassroomId)
   const [policy, setPolicy] = useState(lockdownPolicy)
 
   // Sync state with props in case of external updates or revalidation
@@ -44,9 +47,13 @@ export default function ExamStatusToggle({
     setPolicy(lockdownPolicy)
   }, [lockdownPolicy])
 
+  useEffect(() => {
+    setSelectedClassroom(currentClassroomId)
+  }, [currentClassroomId])
+
   // Bind the arguments to the action
   const toggleAction = toggleExamStatus.bind(null, examId, status, selectedClassroom || null)
-  const [state, formAction] = useFormState(toggleAction, null)
+  const [state, formAction] = useActionState(toggleAction, null)
   const [showValidationModal, setShowValidationModal] = useState(false)
 
   useEffect(() => {

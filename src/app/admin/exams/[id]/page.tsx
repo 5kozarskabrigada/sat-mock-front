@@ -110,6 +110,7 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
                 status={exam.status} 
                 classrooms={classrooms || []} 
                 lockdownPolicy={exam.lockdown_policy}
+                currentClassroomId={exam.classroom_id || ''}
              />
              <DeleteExamButton examId={exam.id} />
         </div>

@@ -1,8 +1,8 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useState, useEffect, useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { createStudent } from './actions'
 
 function SubmitButton() {
@@ -19,7 +19,7 @@ function SubmitButton() {
 }
 
 export default function AddStudentForm() {
-  const [state, formAction] = useFormState(createStudent, null)
+  const [state, formAction] = useActionState(createStudent, null)
   const [lastCreated, setLastCreated] = useState<any>(null)
   const [copied, setCopied] = useState(false)
 

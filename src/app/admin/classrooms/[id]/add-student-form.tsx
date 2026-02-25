@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { addStudentToClassroom, searchStudents } from '../actions'
 import { useState, useEffect, useRef } from 'react'
 
@@ -20,7 +21,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 
 export default function AddStudentToClassroomForm({ classroomId }: { classroomId: string }) {
   const addStudentWithId = addStudentToClassroom.bind(null, classroomId)
-  const [state, formAction] = useFormState(addStudentWithId, null)
+  const [state, formAction] = useActionState(addStudentWithId, null)
   
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<any[]>([])

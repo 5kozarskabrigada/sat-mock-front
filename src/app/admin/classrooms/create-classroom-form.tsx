@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { createClassroom } from './actions'
 import { useState, useEffect } from 'react'
 
@@ -19,7 +20,7 @@ function SubmitButton() {
 }
 
 export default function CreateClassroomForm() {
-  const [state, formAction] = useFormState(createClassroom, null)
+  const [state, formAction] = useActionState(createClassroom, null)
   const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {

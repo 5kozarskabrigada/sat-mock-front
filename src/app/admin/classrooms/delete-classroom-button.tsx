@@ -1,7 +1,8 @@
 
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { deleteClassroom } from './actions'
 import { useState } from 'react'
 import ConfirmationModal from '@/components/confirmation-modal'
@@ -22,7 +23,7 @@ function DeleteButton({ onClick }: { onClick: () => void }) {
 
 export default function DeleteClassroomButton({ classroomId }: { classroomId: string }) {
   const deleteAction = deleteClassroom.bind(null, classroomId)
-  const [state, formAction] = useFormState(deleteAction, null)
+  const [state, formAction] = useActionState(deleteAction, null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { joinExam } from './actions'
 
 function SubmitButton() {
@@ -17,7 +18,7 @@ function SubmitButton() {
 }
 
 export default function JoinExamForm() {
-  const [state, formAction] = useFormState(joinExam, null)
+  const [state, formAction] = useActionState(joinExam, null)
 
   const handleSubmit = (formData: FormData) => {
     // Request fullscreen as soon as user interacts to join

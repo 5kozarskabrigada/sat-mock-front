@@ -2,8 +2,8 @@
 'use client'
 
 import { createClient } from '@/utils/supabase/client'
-import { useState } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useState, useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { updateQuestion, deleteQuestion } from '../../actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 import RichTextEditor from '@/components/ui/rich-text-editor'
@@ -166,7 +166,7 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
 
 function EditQuestionContent({ question, examId }: { question: any, examId: string }) {
   const updateQuestionWithId = updateQuestion.bind(null, question.id, examId)
-  const [state, formAction] = useFormState(updateQuestionWithId, null)
+  const [state, formAction] = useActionState(updateQuestionWithId, null)
   const [selectedSection, setSelectedSection] = useState<string>(question.section)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [questionType, setQuestionType] = useState<string>(
