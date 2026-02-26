@@ -43,7 +43,7 @@ export default function AdminSidebar({ email }: { email: string }) {
   return (
     <div className={`flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
       <div className="flex items-center justify-between h-16 border-b border-gray-200 px-4">
-        {!isCollapsed && <Logo className="h-8 w-auto" />}
+        {!isCollapsed && <Logo className="h-10 w-auto" />}
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
