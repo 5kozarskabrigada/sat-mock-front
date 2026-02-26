@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" fill="none">
+  <rect width="800" height="200" rx="0" fill="#183564"/>
+  <g fill="#ffffff">
+    <!-- EXAM text -->
+    <text x="72" y="122" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="300" letter-spacing="6" fill="white">EXAM</text>
+    
+    <!-- Stopwatch icon replacing the first O in ROOM -->
+    <!-- Stopwatch circle -->
+    <circle cx="460" cy="108" r="26" stroke="white" stroke-width="3" fill="none"/>
+    <!-- Stopwatch top button -->
+    <rect x="456" y="76" width="8" height="10" rx="2" fill="white"/>
+    <!-- Stopwatch top ring -->
+    <circle cx="460" cy="78" r="6" stroke="white" stroke-width="2.5" fill="none"/>
+    <!-- Stopwatch hands -->
+    <line x1="460" y1="108" x2="460" y2="92" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="460" y1="108" x2="470" y2="102" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <!-- Small left ear -->
+    <line x1="448" y1="82" x2="444" y2="78" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Small right ear -->
+    <line x1="472" y1="82" x2="476" y2="78" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- OM text after stopwatch -->
+    <text x="492" y="122" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="300" letter-spacing="6" fill="white">OM</text>
+    
+    <!-- R text before stopwatch -->
+    <text x="390" y="122" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="300" letter-spacing="6" fill="white">R</text>
+  </g>
+</svg>
