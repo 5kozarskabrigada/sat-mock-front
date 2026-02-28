@@ -3,6 +3,7 @@
 
 import { useState, ChangeEvent, useRef } from 'react'
 import { addQuestion } from './actions'
+import { createClient } from '@/utils/supabase/client'
 import RichTextEditor from '@/components/ui/rich-text-editor'
 import { EditorProvider } from '@/components/ui/editor-context'
 import UnifiedToolbar from '@/components/ui/unified-toolbar'
@@ -25,30 +26,6 @@ const DOMAINS = {
 
 export default function AddQuestionForm({ examId }: { examId: string }) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [imageBase64, setImageBase64] = useState<string>('')
-  const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
-  const [questionType, setQuestionType] = useState<string>('multiple_choice')
-  const questionInputRef = useRef<HTMLTextAreaElement>(null)
-
-  // Math Editor State
-  const [mathEquation, setMathEquation] = useState('')
-  const mathFieldRef = useRef<any>(null)
-
-  const handleMathInsert = (latex: string) => {
-    if (mathFieldRef.current) {
-      mathFieldRef.current.cmd(latex)
-      mathFieldRef.current.focus()
-    }
-  }
-
-  // Reset form state helper
-  const resetForm = () => {
-      setIsExpanded(false)
-      setImageBase64('')
-      setQuestionType('multiple_choice')
-      setMathEquation('')
-      if (questionInputRef.current) questionInputRef.current.value = ''
-  }
 
   if (!isExpanded) {
     return (
@@ -73,8 +50,10 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
 }
 
 function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: string, isExpanded: boolean, setIsExpanded: (v: boolean) => void }) {
-  const [imageBase64, setImageBase64] = useState<string>('')
+  const [imageUrl, setImageUrl] = useState<string>('')
   const [imageDescription, setImageDescription] = useState<string>('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [selectedSection, setSelectedSection] = useState<string>('reading_writing')
   const [questionType, setQuestionType] = useState<string>('multiple_choice')
   const questionInputRef = useRef<HTMLTextAreaElement>(null)
@@ -85,32 +64,58 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
   // Reset form state helper
   const resetForm = () => {
       setIsExpanded(false)
-      setImageBase64('')
+      setImageUrl('')
+      setImageDescription('')
+      setUploadError(null)
       setQuestionType('multiple_choice')
       if (questionInputRef.current) questionInputRef.current.value = ''
   }
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImageBase64(reader.result as string)
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadError(null)
+      setUploading(true)
+
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const supabase = createClient()
+
+      const { error: uploadErr } = await supabase.storage
+        .from('exam-images')
+        .upload(filePath, file)
+
+      if (uploadErr) {
+        throw uploadErr
       }
-      reader.readAsDataURL(file)
+
+      const { data } = supabase.storage
+        .from('exam-images')
+        .getPublicUrl(filePath)
+
+      setImageUrl(data.publicUrl)
+    } catch (err: any) {
+      console.error('Upload error:', err)
+      setUploadError('Error uploading image. Ensure the "exam-images" storage bucket exists and is public.')
+    } finally {
+      setUploading(false)
     }
   }
 
   const clearImage = () => {
-      setImageBase64('')
-      // Reset file input if possible, though React state is enough for the preview
+      setImageUrl('')
+      setUploadError(null)
       const fileInput = document.getElementById('imageUpload') as HTMLInputElement
       if (fileInput) fileInput.value = ''
   }
 
   const handleSubmit = async (formData: FormData) => {
-    if (imageBase64) {
-        formData.set('imageUrl', imageBase64)
+    if (imageUrl) {
+        formData.set('imageUrl', imageUrl)
     }
     const result = await addQuestion(examId, formData)
     if (result?.error) {
@@ -193,7 +198,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
             </div>
 
             <div className="sm:col-span-6">
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
+              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image (Optional)</label>
               <div className="mt-1 flex flex-col gap-2">
                   <RichTextEditor
                     id="imageDescription"
@@ -204,38 +209,43 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
                     rows={2}
                     enableMath={true}
                   />
-                  <div className="flex space-x-4">
-                    <input 
-                        type="url" 
-                        id="imageUrl" 
-                        name="imageUrl" 
-                        placeholder="https://example.com/image.png"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black flex-1" 
+                  <div className="flex items-center gap-4">
+                    <input
+                        type="file"
+                        id="imageUpload"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                     />
-                    <div className="flex items-center">
-                        <span className="text-gray-500 text-sm mr-2">OR Upload:</span>
-                        <input 
-                            id="imageUpload"
-                            type="file" 
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                        />
-                    </div>
+                    {uploading && <span className="text-sm text-gray-500">Uploading...</span>}
+                  </div>
+                  <div>
+                    <input
+                        type="text"
+                        id="imageUrl"
+                        name="imageUrl"
+                        placeholder="Or paste image URL directly"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs p-2 border text-gray-500"
+                        value={imageUrl || ''}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                    />
                   </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">Paste a link OR upload an image (it will be embedded directly).</p>
-              {imageBase64 && (
+              {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
+              <p className="mt-1 text-xs text-gray-500">Upload an image or paste a direct URL.</p>
+              {imageUrl && (
                   <div className="mt-2 relative inline-block group">
-                      <p className="text-xs text-green-600 font-semibold">Image selected ready for upload.</p>
-                      <img src={imageBase64} alt="Preview" className="h-20 w-auto mt-1 border border-gray-200 rounded" />
+                      <img src={imageUrl} alt="Preview" className="h-32 w-auto object-contain rounded border border-gray-300" />
                       <button 
                           type="button" 
                           onClick={clearImage}
-                          className="absolute top-6 right-0 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 shadow-sm hover:bg-red-200"
                           title="Remove Image"
                       >
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                          </svg>
                       </button>
                   </div>
               )}
