@@ -1,12 +1,14 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function submitExam(studentExamId: string, answers: Record<string, any>) {
   const supabase = await createClient()
+  // Use service client for writes to bypass RLS — this is a trusted server action
+  const serviceClient = createServiceClient()
 
-  // 0. Fetch necessary data to grade the exam
+  // 0. Verify the student owns this exam attempt
   const { data: studentExam } = await supabase
     .from('student_exams')
     .select('exam_id, student_id, status')
@@ -26,7 +28,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
 
   const questionMap = new Map(questions?.map(q => [q.id, q]))
 
-  // 1. Save answers with grading
+  // 1. Grade answers
   const answerInserts = Object.entries(answers).map(([questionId, value]) => {
     const question = questionMap.get(questionId)
     let isCorrect = false
@@ -45,41 +47,44 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     }
   })
 
-  // 2. Save answers FIRST (the critical operation) — run sequentially for reliability
-  if (answerInserts.length > 0) {
-    // Delete any existing answers first (handles retries cleanly regardless of unique constraints)
-    await supabase
-      .from('student_answers')
-      .delete()
-      .eq('student_exam_id', studentExamId)
+  // 2. Delete old answers + insert new ones + update status in parallel (via service client to bypass RLS)
+  // First, clear any partial answers from previous failed attempts
+  const { error: deleteError } = await serviceClient
+    .from('student_answers')
+    .delete()
+    .eq('student_exam_id', studentExamId)
 
-    // Insert fresh answers
-    const { error: answerError } = await supabase
-      .from('student_answers')
-      .insert(answerInserts)
-
-    if (answerError) {
-      console.error('Failed to save answers:', answerError)
-      return { error: 'Failed to save your answers. Please try again.' }
-    }
+  if (deleteError) {
+    console.error('Failed to clear old answers:', deleteError)
   }
 
-  // 3. Mark exam as completed (only after answers are safely saved)
-  const { error: statusError } = await supabase
-    .from('student_exams')
-    .update({ 
-      status: 'completed',
-      completed_at: new Date().toISOString()
-    })
-    .eq('id', studentExamId)
+  // Now do the critical operations in parallel — all via service client
+  const [answerResult, statusResult] = await Promise.all([
+    // Insert graded answers
+    answerInserts.length > 0
+      ? serviceClient.from('student_answers').insert(answerInserts)
+      : Promise.resolve({ error: null }),
+    // Mark exam as completed
+    serviceClient
+      .from('student_exams')
+      .update({ 
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', studentExamId)
+  ])
 
-  if (statusError) {
-    console.error('Failed to update exam status:', statusError)
-    // Answers are saved, so don't fail completely — status can be fixed
+  if (answerResult.error) {
+    console.error('Failed to save answers:', answerResult.error)
+    return { error: 'Failed to save your answers. Please try again.' }
   }
 
-  // 4. Log activity (non-critical, don't fail submission if this errors)
-  await supabase.from('activity_logs').insert({
+  if (statusResult.error) {
+    console.error('Failed to update exam status:', statusResult.error)
+  }
+
+  // 3. Log activity (non-critical, fire and forget)
+  serviceClient.from('activity_logs').insert({
     user_id: studentExam.student_id,
     student_exam_id: studentExamId,
     exam_id: studentExam.exam_id,

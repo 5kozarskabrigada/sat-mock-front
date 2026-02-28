@@ -1,5 +1,5 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import ExamRunner from './exam-runner'
 
@@ -79,7 +79,8 @@ export default async function ExamPage({
 
   // Check if exam is truly completed (has saved answers)
   if (studentExam.status === 'completed') {
-    const { count } = await supabase
+    const serviceClient = createServiceClient()
+    const { count } = await serviceClient
       .from('student_answers')
       .select('id', { count: 'exact', head: true })
       .eq('student_exam_id', studentExam.id)
@@ -90,7 +91,7 @@ export default async function ExamPage({
     } else {
       // Status is 'completed' but no answers saved (partial failure from previous attempt)
       // Reset status so the student can resubmit
-      await supabase
+      await serviceClient
         .from('student_exams')
         .update({ status: 'in_progress', completed_at: null })
         .eq('id', studentExam.id)
