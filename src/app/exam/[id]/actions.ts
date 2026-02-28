@@ -17,11 +17,12 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
       return { error: 'Student exam not found' }
   }
 
-  // Fetch all questions for this exam
+  // Fetch all questions for this exam (excluding soft-deleted)
   const { data: questions } = await supabase
       .from('questions')
       .select('id, correct_answer, section')
       .eq('exam_id', studentExam.exam_id)
+      .is('deleted_at', null)
 
   const questionMap = new Map(questions?.map(q => [q.id, q]))
 
@@ -48,7 +49,11 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   const operations = []
   
   if (answerInserts.length > 0) {
-    operations.push(supabase.from('student_answers').insert(answerInserts))
+    operations.push(
+      supabase.from('student_answers').upsert(answerInserts, {
+        onConflict: 'student_exam_id,question_id'
+      })
+    )
   }
 
   operations.push(
@@ -75,7 +80,10 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   const errors = results.filter(r => r.error)
   
   if (errors.length > 0) {
-      console.error('Errors during submission:', errors)
+      console.error('Errors during submission:', errors.map(r => r.error))
+      // Check if the critical answers insert failed
+      const criticalError = errors.find(r => r.error)
+      return { error: criticalError?.error?.message || 'Failed to save exam answers. Please try again.' }
   }
 
   revalidatePath('/student')

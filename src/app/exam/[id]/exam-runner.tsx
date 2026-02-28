@@ -275,8 +275,14 @@ export default function ExamRunner({
           if (!isAdminPreview) {
               setIsSubmitting(true)
               try {
-                  await submitExam(studentExamId, answers)
-                  router.push('/student/completed')
+                  const result = await submitExam(studentExamId, answers)
+                  if (result?.error) {
+                      console.error('Submission error:', result.error)
+                      setIsSubmitting(false)
+                      alert(`Failed to submit exam: ${result.error}. Please try again.`)
+                  } else {
+                      router.push('/student/completed')
+                  }
               } catch (e) {
                   console.error(e)
                   setIsSubmitting(false)
