@@ -9,7 +9,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   // 0. Fetch necessary data to grade the exam
   const { data: studentExam } = await supabase
     .from('student_exams')
-    .select('exam_id, student_id')
+    .select('exam_id, student_id, status')
     .eq('id', studentExamId)
     .single()
       
@@ -45,46 +45,49 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     }
   })
 
-  // 2. Perform DB operations in parallel where possible or streamlined
-  const operations = []
-  
+  // 2. Save answers FIRST (the critical operation) — run sequentially for reliability
   if (answerInserts.length > 0) {
-    operations.push(
-      supabase.from('student_answers').upsert(answerInserts, {
-        onConflict: 'student_exam_id,question_id'
-      })
-    )
+    // Delete any existing answers first (handles retries cleanly regardless of unique constraints)
+    await supabase
+      .from('student_answers')
+      .delete()
+      .eq('student_exam_id', studentExamId)
+
+    // Insert fresh answers
+    const { error: answerError } = await supabase
+      .from('student_answers')
+      .insert(answerInserts)
+
+    if (answerError) {
+      console.error('Failed to save answers:', answerError)
+      return { error: 'Failed to save your answers. Please try again.' }
+    }
   }
 
-  operations.push(
-    supabase
-      .from('student_exams')
-      .update({ 
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', studentExamId)
-  )
-
-  operations.push(
-    supabase.from('activity_logs').insert({
-        user_id: studentExam.student_id,
-        student_exam_id: studentExamId,
-        exam_id: studentExam.exam_id,
-        type: 'exam_completed',
-        details: 'Student submitted the exam'
+  // 3. Mark exam as completed (only after answers are safely saved)
+  const { error: statusError } = await supabase
+    .from('student_exams')
+    .update({ 
+      status: 'completed',
+      completed_at: new Date().toISOString()
     })
-  )
+    .eq('id', studentExamId)
 
-  const results = await Promise.all(operations)
-  const errors = results.filter(r => r.error)
-  
-  if (errors.length > 0) {
-      console.error('Errors during submission:', errors.map(r => r.error))
-      // Check if the critical answers insert failed
-      const criticalError = errors.find(r => r.error)
-      return { error: criticalError?.error?.message || 'Failed to save exam answers. Please try again.' }
+  if (statusError) {
+    console.error('Failed to update exam status:', statusError)
+    // Answers are saved, so don't fail completely — status can be fixed
   }
+
+  // 4. Log activity (non-critical, don't fail submission if this errors)
+  await supabase.from('activity_logs').insert({
+    user_id: studentExam.student_id,
+    student_exam_id: studentExamId,
+    exam_id: studentExam.exam_id,
+    type: 'exam_completed',
+    details: 'Student submitted the exam'
+  }).then(({ error }) => {
+    if (error) console.error('Failed to log exam completion:', error)
+  })
 
   revalidatePath('/student')
   return { success: true }

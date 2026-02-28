@@ -77,8 +77,24 @@ export default async function ExamPage({
     redirect('/student')
   }
 
+  // Check if exam is truly completed (has saved answers)
   if (studentExam.status === 'completed') {
-    redirect('/student/completed')
+    const { count } = await supabase
+      .from('student_answers')
+      .select('id', { count: 'exact', head: true })
+      .eq('student_exam_id', studentExam.id)
+
+    if (count && count > 0) {
+      // Exam was properly submitted with answers
+      redirect('/student/completed')
+    } else {
+      // Status is 'completed' but no answers saved (partial failure from previous attempt)
+      // Reset status so the student can resubmit
+      await supabase
+        .from('student_exams')
+        .update({ status: 'in_progress', completed_at: null })
+        .eq('id', studentExam.id)
+    }
   }
 
   // 3. Fetch questions

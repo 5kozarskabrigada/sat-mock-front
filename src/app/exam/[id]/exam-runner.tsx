@@ -40,15 +40,38 @@ export default function ExamRunner({
   const searchParams = useSearchParams()
   const isAdminPreview = searchParams.get('preview') === 'true'
   
-  // -- State --
-  const [currentModuleIndex, setCurrentModuleIndex] = useState(0)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  // -- State (restore from localStorage if available) --
+  const [currentModuleIndex, setCurrentModuleIndex] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`exam_module_${studentExamId}`)
+      if (saved) return parseInt(saved, 10)
+    }
+    return 0
+  })
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`exam_question_${studentExamId}`)
+      if (saved) return parseInt(saved, 10)
+    }
+    return 0
+  })
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
   const [allHighlights, setAllHighlights] = useState<Record<string, any[]>>({})
   
   // Timer State
-  const [timeLeft, setTimeLeft] = useState(MODULE_CONFIG[0].duration)
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedModule = localStorage.getItem(`exam_module_${studentExamId}`)
+      if (savedModule) {
+        const moduleIdx = parseInt(savedModule, 10)
+        const savedTime = localStorage.getItem(`exam_time_${studentExamId}`)
+        if (savedTime) return parseInt(savedTime, 10)
+        return MODULE_CONFIG[moduleIdx]?.duration || MODULE_CONFIG[0].duration
+      }
+    }
+    return MODULE_CONFIG[0].duration
+  })
   const [isTimerRunning, setIsTimerRunning] = useState(true)
 
   // View State
@@ -113,6 +136,19 @@ export default function ExamRunner({
   useEffect(() => {
     localStorage.setItem(`exam_highlights_${studentExamId}`, JSON.stringify(allHighlights))
   }, [studentExamId, allHighlights])
+
+  // Persist module index, question index, and time left
+  useEffect(() => {
+    localStorage.setItem(`exam_module_${studentExamId}`, String(currentModuleIndex))
+  }, [studentExamId, currentModuleIndex])
+
+  useEffect(() => {
+    localStorage.setItem(`exam_question_${studentExamId}`, String(currentQuestionIndex))
+  }, [studentExamId, currentQuestionIndex])
+
+  useEffect(() => {
+    localStorage.setItem(`exam_time_${studentExamId}`, String(timeLeft))
+  }, [studentExamId, timeLeft])
 
   // -- Lockdown Browser Logic --
   useEffect(() => {
@@ -281,6 +317,13 @@ export default function ExamRunner({
                       setIsSubmitting(false)
                       alert(`Failed to submit exam: ${result.error}. Please try again.`)
                   } else {
+                      // Clear saved exam state from localStorage on successful submit
+                      localStorage.removeItem(`exam_answers_${studentExamId}`)
+                      localStorage.removeItem(`exam_marked_${studentExamId}`)
+                      localStorage.removeItem(`exam_highlights_${studentExamId}`)
+                      localStorage.removeItem(`exam_module_${studentExamId}`)
+                      localStorage.removeItem(`exam_question_${studentExamId}`)
+                      localStorage.removeItem(`exam_time_${studentExamId}`)
                       router.push('/student/completed')
                   }
               } catch (e) {
