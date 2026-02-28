@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { submitExam, logLockdownViolation, logExamStarted, heartbeat, disqualifyStudent } from './actions'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
@@ -87,6 +87,7 @@ export default function ExamRunner({
   const [lockdownViolations, setLockdownViolations] = useState(0)
   const [isDisqualified, setIsDisqualified] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isSubmittingRef = useRef(false)
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -162,10 +163,14 @@ export default function ExamRunner({
         
         if (exam.lockdown_policy === 'disqualify') {
             setIsDisqualified(true)
-            // Immediately redirect - don't wait for server response to close UI
-            router.push('/student/completed?disqualified=true')
+            isSubmittingRef.current = true // Prevent beforeunload blocking redirect
             // Fire and forget the disqualification logic
             disqualifyStudent(studentExamId, `${detail} Student DISQUALIFIED.`)
+            // Exit fullscreen and hard redirect
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {})
+            }
+            window.location.href = '/student/completed?disqualified=true'
         } else {
             setShowLockdownWarning(true)
             await logLockdownViolation(studentExamId, detail)
@@ -173,10 +178,12 @@ export default function ExamRunner({
     }
 
     const handleBlur = () => {
+        if (isSubmittingRef.current) return
         handleViolation('Tab switched or window lost focus')
     }
 
     const handleFullscreenChange = () => {
+        if (isSubmittingRef.current) return
         if (!document.fullscreenElement && !showLockdownWarning) {
             handleViolation('Exited fullscreen mode')
         }
@@ -216,7 +223,7 @@ export default function ExamRunner({
 
     // Prevent Reload
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        if (isAdminPreview) return
+        if (isAdminPreview || isSubmittingRef.current) return
         e.preventDefault()
         e.returnValue = ''
     }
@@ -310,10 +317,12 @@ export default function ExamRunner({
           // Final Submit
           if (!isAdminPreview) {
               setIsSubmitting(true)
+              isSubmittingRef.current = true
               try {
                   const result = await submitExam(studentExamId, answers)
                   if (result?.error) {
                       console.error('Submission error:', result.error)
+                      isSubmittingRef.current = false
                       setIsSubmitting(false)
                       alert(`Failed to submit exam: ${result.error}. Please try again.`)
                   } else {
@@ -324,10 +333,16 @@ export default function ExamRunner({
                       localStorage.removeItem(`exam_module_${studentExamId}`)
                       localStorage.removeItem(`exam_question_${studentExamId}`)
                       localStorage.removeItem(`exam_time_${studentExamId}`)
-                      router.push('/student/completed')
+                      // Exit fullscreen before navigating
+                      if (document.fullscreenElement) {
+                          document.exitFullscreen().catch(() => {})
+                      }
+                      // Hard redirect to bypass lockdown event listeners entirely
+                      window.location.href = '/student/completed'
                   }
               } catch (e) {
                   console.error(e)
+                  isSubmittingRef.current = false
                   setIsSubmitting(false)
                   alert("Failed to submit exam. Please try again.")
               }

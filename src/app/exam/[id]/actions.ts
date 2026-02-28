@@ -94,7 +94,6 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     if (error) console.error('Failed to log exam completion:', error)
   })
 
-  revalidatePath('/student')
   return { success: true }
 }
 
