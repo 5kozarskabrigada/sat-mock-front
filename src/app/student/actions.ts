@@ -5,7 +5,7 @@ import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function joinExam(prevState: any, formData: FormData) {
-  const code = formData.get('code') as string
+  const code = (formData.get('code') as string).trim().toUpperCase()
   const supabase = await createClient()
 
   // 1. Find the exam by code using service role to bypass RLS

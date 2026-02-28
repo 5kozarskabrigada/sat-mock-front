@@ -262,10 +262,53 @@ export default function QuestionViewer({
         // Clear current selection to avoid issues
         selection?.removeAllRanges()
         
-        // Robust range handling: If range spans multiple nodes, surroundContents fails.
-        // We use a more manual approach if needed, but for simple passages surroundContents is okay.
-        range.surroundContents(span)
-        
+        // Collect all text nodes within the range
+        const textNodes: Text[] = []
+        const walker = document.createTreeWalker(
+            range.commonAncestorContainer,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: (node) => {
+                    const nodeRange = document.createRange()
+                    nodeRange.selectNodeContents(node)
+                    return range.compareBoundaryPoints(Range.END_TO_START, nodeRange) < 0 &&
+                           range.compareBoundaryPoints(Range.START_TO_END, nodeRange) > 0
+                        ? NodeFilter.FILTER_ACCEPT
+                        : NodeFilter.FILTER_REJECT
+                }
+            }
+        )
+        let textNode: Text | null
+        while ((textNode = walker.nextNode() as Text | null)) {
+            if (textNode.textContent && textNode.textContent.trim().length > 0) {
+                textNodes.push(textNode)
+            }
+        }
+
+        if (textNodes.length <= 1) {
+            // Simple case: selection within a single text node — use surroundContents
+            range.surroundContents(span)
+        } else {
+            // Complex case: selection spans multiple nodes (e.g. across list items)
+            // Wrap each text node individually to avoid breaking DOM structure
+            textNodes.forEach((tNode, idx) => {
+                const wrapSpan = idx === 0 ? span : span.cloneNode(false) as HTMLSpanElement
+                const nodeRange = document.createRange()
+
+                if (tNode === range.startContainer) {
+                    nodeRange.setStart(tNode, range.startOffset)
+                    nodeRange.setEnd(tNode, tNode.length)
+                } else if (tNode === range.endContainer) {
+                    nodeRange.setStart(tNode, 0)
+                    nodeRange.setEnd(tNode, range.endOffset)
+                } else {
+                    nodeRange.selectNodeContents(tNode)
+                }
+
+                nodeRange.surroundContents(wrapSpan)
+            })
+        }
+
         setSelectionMenu(null)
         savedRangeRef.current = null
         
@@ -274,20 +317,7 @@ export default function QuestionViewer({
             onHighlightsChange([passageRef.current.innerHTML])
         }
       } catch (e) {
-          console.warn("Simple surround failed, trying complex wrap", e)
-          // Fallback: extract contents and wrap
-          try {
-              const contents = range.extractContents()
-              span.appendChild(contents)
-              range.insertNode(span)
-              setSelectionMenu(null)
-              savedRangeRef.current = null
-              if (onHighlightsChange && passageRef.current) {
-                  onHighlightsChange([passageRef.current.innerHTML])
-              }
-          } catch (err) {
-              console.error("Critical highlight error", err)
-          }
+          console.warn("Highlight application failed", e)
       }
   }
 
