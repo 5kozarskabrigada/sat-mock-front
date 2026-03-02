@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  productionBrowserSourceMaps: false,
+  serverExternalPackages: [],
+  experimental: {
+    serverSourceMaps: false,
+  },
 };
 
 export default nextConfig;
