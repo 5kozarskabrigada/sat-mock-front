@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { calculateDomainScores, calculateRWScore, calculateMathScore } from '@/lib/score-calculator'
 import DownloadReportButton from './download-button'
+import DownloadBreakdownButton from './download-breakdown-button'
 
 export default async function ScoreReportPage({ params }: { params: { id: string, attemptId: string } }) {
   const supabase = await createClient()
@@ -56,6 +57,17 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   const rwScore = calculateRWScore(rwCorrect, rwQuestions.length)
   const mathScore = calculateMathScore(mathCorrect, mathQuestions.length)
   const totalScore = rwScore + mathScore
+
+  // Calculate module-level stats
+  const rwM1Questions = questions?.filter(q => q.section === 'reading_writing' && q.module === 1) || []
+  const rwM2Questions = questions?.filter(q => q.section === 'reading_writing' && q.module === 2) || []
+  const mathM1Questions = questions?.filter(q => q.section === 'math' && q.module === 1) || []
+  const mathM2Questions = questions?.filter(q => q.section === 'math' && q.module === 2) || []
+  
+  const rwM1Correct = answers?.filter(a => a.is_correct && rwM1Questions.some(q => q.id === a.question_id)).length || 0
+  const rwM2Correct = answers?.filter(a => a.is_correct && rwM2Questions.some(q => q.id === a.question_id)).length || 0
+  const mathM1Correct = answers?.filter(a => a.is_correct && mathM1Questions.some(q => q.id === a.question_id)).length || 0
+  const mathM2Correct = answers?.filter(a => a.is_correct && mathM2Questions.some(q => q.id === a.question_id)).length || 0
 
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-8">
@@ -156,22 +168,26 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                 )}
             </div>
         </div>
+      </div>
 
-        {/* Admin Summary Section */}
-        <div className="p-6 bg-gray-50 border-t border-gray-200">
-            <h3 className="text-sm font-bold uppercase text-gray-500 tracking-wider mb-4">Teacher Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
+      {/* Teacher Summary Section - Outside score-report for PDF exclusion */}
+      <div className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:hidden">
+        <div className="p-6 bg-gray-50 border-b border-gray-200">
+            <h3 className="text-sm font-bold uppercase text-gray-500 tracking-wider">Teacher Summary</h3>
+        </div>
+        <div className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <p className="text-xs text-gray-500 uppercase font-medium">Reading & Writing</p>
                     <p className="text-xl font-bold text-gray-900">{rwCorrect}/{rwQuestions.length}</p>
                     <p className="text-xs text-gray-400">questions correct</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <p className="text-xs text-gray-500 uppercase font-medium">Math</p>
                     <p className="text-xl font-bold text-gray-900">{mathCorrect}/{mathQuestions.length}</p>
                     <p className="text-xs text-gray-400">questions correct</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <p className="text-xs text-gray-500 uppercase font-medium">Overall</p>
                     <p className="text-xl font-bold text-gray-900">{rwCorrect + mathCorrect}/{rwQuestions.length + mathQuestions.length}</p>
                     <p className="text-xs text-gray-400">total correct</p>
@@ -184,14 +200,51 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                     <p className="text-xs text-gray-400">{attempt.lockdown_violations > 0 ? 'violations detected' : 'no violations'}</p>
                 </div>
             </div>
+            
+            {/* Module Breakdown */}
+            <div className="border-t border-gray-200 pt-6">
+                <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">Module Breakdown</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {rwM1Questions.length > 0 && (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <p className="text-xs text-gray-500 font-medium">R&W Module 1</p>
+                        <p className="text-lg font-bold text-gray-900">{rwM1Correct}/{rwM1Questions.length}</p>
+                    </div>
+                    )}
+                    {rwM2Questions.length > 0 && (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <p className="text-xs text-gray-500 font-medium">R&W Module 2</p>
+                        <p className="text-lg font-bold text-gray-900">{rwM2Correct}/{rwM2Questions.length}</p>
+                    </div>
+                    )}
+                    {mathM1Questions.length > 0 && (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <p className="text-xs text-gray-500 font-medium">Math Module 1</p>
+                        <p className="text-lg font-bold text-gray-900">{mathM1Correct}/{mathM1Questions.length}</p>
+                    </div>
+                    )}
+                    {mathM2Questions.length > 0 && (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                        <p className="text-xs text-gray-500 font-medium">Math Module 2</p>
+                        <p className="text-lg font-bold text-gray-900">{mathM2Correct}/{mathM2Questions.length}</p>
+                    </div>
+                    )}
+                </div>
+            </div>
         </div>
       </div>
 
       {/* Detailed Question Breakdown */}
       <div id="question-breakdown" className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:break-before-page">
-        <div className="bg-gray-900 text-white p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
-            <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
+        <div className="bg-gray-900 text-white p-6 border-b border-gray-800 flex justify-between items-center">
+            <div>
+                <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
+                <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
+            </div>
+            <DownloadBreakdownButton 
+                studentName={`${attempt.users.first_name} ${attempt.users.last_name}`}
+                examTitle={attempt.exams.title}
+            />
         </div>
         
         {/* Group questions by module */}
