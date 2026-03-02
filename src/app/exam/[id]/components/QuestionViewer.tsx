@@ -158,8 +158,15 @@ export default function QuestionViewer({
           const range = selection.getRangeAt(0)
           savedRangeRef.current = range.cloneRange() // Save the range
           const rect = range.getBoundingClientRect()
+          // Calculate x position with bounds checking to prevent toolbar from going off screen
+          // Toolbar is approximately 280px wide, so we need at least 140px from center to edge
+          const toolbarHalfWidth = 140
+          const minX = toolbarHalfWidth + 10 // 10px padding from edge
+          const maxX = window.innerWidth - toolbarHalfWidth - 10
+          const rawX = rect.left + (rect.width / 2)
+          const clampedX = Math.max(minX, Math.min(maxX, rawX))
           setSelectionMenu({
-              x: rect.left + (rect.width / 2),
+              x: clampedX,
               y: rect.top - 10,
               show: true
           })
@@ -177,8 +184,14 @@ export default function QuestionViewer({
         const target = e.target as HTMLElement
         if (target.classList.contains('annotation-highlight')) {
             const rect = target.getBoundingClientRect()
+            // Calculate x position with bounds checking to prevent toolbar from going off screen
+            const toolbarHalfWidth = 140
+            const minX = toolbarHalfWidth + 10
+            const maxX = window.innerWidth - toolbarHalfWidth - 10
+            const rawX = rect.left + (rect.width / 2)
+            const clampedX = Math.max(minX, Math.min(maxX, rawX))
             setSelectionMenu({
-                x: rect.left + (rect.width / 2),
+                x: clampedX,
                 y: rect.top - 10,
                 show: true,
                 highlightId: target.id 

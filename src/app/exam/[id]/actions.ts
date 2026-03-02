@@ -28,26 +28,30 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
 
   const questionMap = new Map(questions?.map(q => [q.id, q]))
 
-  // 1. Grade answers
-  const answerInserts = Object.entries(answers).map(([questionId, value]) => {
-    const question = questionMap.get(questionId)
-    let isCorrect = false
-    const answerStr = value?.toString().trim() || ''
+  // 1. Grade answers - only for valid questions in the exam
+  const answerInserts = Object.entries(answers)
+    .filter(([questionId]) => questionMap.has(questionId)) // Only include answers for valid questions
+    .map(([questionId, value]) => {
+      const question = questionMap.get(questionId)
+      let isCorrect = false
+      const answerStr = value?.toString().trim() || ''
 
-    if (question && question.correct_answer) {
-        const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
-        isCorrect = correctAnswers.includes(answerStr)
-    }
+      if (question && question.correct_answer) {
+          const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
+          isCorrect = correctAnswers.includes(answerStr)
+      }
 
-    return {
-        student_exam_id: studentExamId,
-        question_id: questionId,
-        answer_value: answerStr,
-        is_correct: isCorrect
-    }
-  })
+      return {
+          student_exam_id: studentExamId,
+          question_id: questionId,
+          answer_value: answerStr,
+          is_correct: isCorrect
+      }
+    })
 
-  // 2. Delete old answers + insert new ones + update status in parallel (via service client to bypass RLS)
+  // 2. Delete old answers + insert new ones, then update status
+  // We do this sequentially to ensure answers are saved before marking as completed
+  
   // First, clear any partial answers from previous failed attempts
   const { error: deleteError } = await serviceClient
     .from('student_answers')
@@ -56,31 +60,31 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
 
   if (deleteError) {
     console.error('Failed to clear old answers:', deleteError)
+    // Continue anyway - there might not be any old answers
   }
 
-  // Now do the critical operations in parallel — all via service client
-  const [answerResult, statusResult] = await Promise.all([
-    // Insert graded answers
-    answerInserts.length > 0
-      ? serviceClient.from('student_answers').insert(answerInserts)
-      : Promise.resolve({ error: null }),
-    // Mark exam as completed
-    serviceClient
-      .from('student_exams')
-      .update({ 
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', studentExamId)
-  ])
-
-  if (answerResult.error) {
-    console.error('Failed to save answers:', answerResult.error)
-    return { error: 'Failed to save your answers. Please try again.' }
+  // Insert graded answers
+  if (answerInserts.length > 0) {
+    const { error: answerError } = await serviceClient.from('student_answers').insert(answerInserts)
+    
+    if (answerError) {
+      console.error('Failed to save answers:', answerError)
+      return { error: 'Failed to save your answers. Please try again.' }
+    }
   }
 
-  if (statusResult.error) {
-    console.error('Failed to update exam status:', statusResult.error)
+  // Only mark as completed AFTER answers are successfully saved
+  const { error: statusError } = await serviceClient
+    .from('student_exams')
+    .update({ 
+      status: 'completed',
+      completed_at: new Date().toISOString()
+    })
+    .eq('id', studentExamId)
+
+  if (statusError) {
+    console.error('Failed to update exam status:', statusError)
+    // Answers were saved successfully, status update failed - this is less critical
   }
 
   // 3. Log activity (non-critical, fire and forget)

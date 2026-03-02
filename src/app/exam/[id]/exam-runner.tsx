@@ -55,9 +55,39 @@ export default function ExamRunner({
     }
     return 0
   })
-  const [answers, setAnswers] = useState<Record<string, any>>({})
-  const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
-  const [allHighlights, setAllHighlights] = useState<Record<string, any[]>>({})
+  const [answers, setAnswers] = useState<Record<string, any>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`exam_answers_${studentExamId}`)
+        if (saved) return JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to parse saved answers:', e)
+      }
+    }
+    return {}
+  })
+  const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`exam_marked_${studentExamId}`)
+        if (saved) return JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to parse saved marked questions:', e)
+      }
+    }
+    return {}
+  })
+  const [allHighlights, setAllHighlights] = useState<Record<string, any[]>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`exam_highlights_${studentExamId}`)
+        if (saved) return JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to parse saved highlights:', e)
+      }
+    }
+    return {}
+  })
   
   // Timer State
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -88,17 +118,10 @@ export default function ExamRunner({
   const [isDisqualified, setIsDisqualified] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isSubmittingRef = useRef(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
-  // Load state from localStorage on mount
+  // Initialize on mount - log exam start and request fullscreen
   useEffect(() => {
-    const savedAnswers = localStorage.getItem(`exam_answers_${studentExamId}`)
-    const savedMarked = localStorage.getItem(`exam_marked_${studentExamId}`)
-    const savedHighlights = localStorage.getItem(`exam_highlights_${studentExamId}`)
-    
-    if (savedAnswers) setAnswers(JSON.parse(savedAnswers))
-    if (savedMarked) setMarkedQuestions(JSON.parse(savedMarked))
-    if (savedHighlights) setAllHighlights(JSON.parse(savedHighlights))
-
     // Log exam start (only if not already logged in this session)
     if (!isAdminPreview) {
       const hasLoggedStart = sessionStorage.getItem(`exam_started_logged_${studentExamId}`)
@@ -313,6 +336,10 @@ export default function ExamRunner({
   }
 
   const handleFinishModule = async () => {
+      // Prevent multiple rapid calls (spam clicking protection)
+      if (isTransitioning) return
+      setIsTransitioning(true)
+      
       if (currentModuleIndex >= modules.length - 1) {
           // Final Submit
           if (!isAdminPreview) {
@@ -324,6 +351,7 @@ export default function ExamRunner({
                       console.error('Submission error:', result.error)
                       isSubmittingRef.current = false
                       setIsSubmitting(false)
+                      setIsTransitioning(false)
                       alert(`Failed to submit exam: ${result.error}. Please try again.`)
                   } else {
                       // Clear saved exam state from localStorage on successful submit
@@ -344,10 +372,12 @@ export default function ExamRunner({
                   console.error(e)
                   isSubmittingRef.current = false
                   setIsSubmitting(false)
+                  setIsTransitioning(false)
                   alert("Failed to submit exam. Please try again.")
               }
           } else {
               alert("Admin Preview: Submission disabled.")
+              setIsTransitioning(false)
               router.push('/admin/exams/' + exam.id)
           }
       } else {
@@ -359,7 +389,8 @@ export default function ExamRunner({
           setView('question')
           setShowSubmitConfirm(false)
           
-          // If next is Break, ensure timer runs (or maybe user wants to start break manually? Standard is auto)
+          // Reset transition lock after a short delay to allow state to settle
+          setTimeout(() => setIsTransitioning(false), 500)
       }
   }
 
