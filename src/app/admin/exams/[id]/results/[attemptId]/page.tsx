@@ -93,11 +93,6 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                 <div className="text-right">
                     <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Date</p>
                     <p className="text-lg font-bold">{new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    {attempt.lockdown_violations > 0 && (
-                        <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
-                            {attempt.lockdown_violations} Security Violations
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
@@ -114,10 +109,10 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                 </div>
                 <p className="text-xs text-gray-500 text-right">200–800</p>
                 
+                {domainStats.some(d => DOMAINS.reading_writing.includes(d.name)) && (
                 <div className="mt-6 space-y-3">
                     <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
-                    {domainStats.filter(d => DOMAINS.reading_writing.includes(d.name) || !DOMAINS.math.includes(d.name)).map(stat => (
-                        DOMAINS.reading_writing.includes(stat.name) && (
+                    {domainStats.filter(d => DOMAINS.reading_writing.includes(d.name)).map(stat => (
                         <div key={stat.name} className="flex justify-between items-center text-sm">
                             <span className="text-gray-700">{stat.name}</span>
                             <div className="flex items-center space-x-2">
@@ -127,9 +122,9 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                                 <span className="text-xs font-medium w-8 text-right">{stat.percentage}%</span>
                             </div>
                         </div>
-                        )
                     ))}
                 </div>
+                )}
             </div>
 
             {/* Math Section */}
@@ -143,10 +138,10 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                 </div>
                 <p className="text-xs text-gray-500 text-right">200–800</p>
 
+                {domainStats.some(d => DOMAINS.math.includes(d.name)) && (
                 <div className="mt-6 space-y-3">
                     <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
-                    {domainStats.map(stat => (
-                        DOMAINS.math.includes(stat.name) && (
+                    {domainStats.filter(d => DOMAINS.math.includes(d.name)).map(stat => (
                         <div key={stat.name} className="flex justify-between items-center text-sm">
                             <span className="text-gray-700">{stat.name}</span>
                             <div className="flex items-center space-x-2">
@@ -156,15 +151,44 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                                 <span className="text-xs font-medium w-8 text-right">{stat.percentage}%</span>
                             </div>
                         </div>
-                        )
                     ))}
+                </div>
+                )}
+            </div>
+        </div>
+
+        {/* Admin Summary Section */}
+        <div className="p-6 bg-gray-50 border-t border-gray-200">
+            <h3 className="text-sm font-bold uppercase text-gray-500 tracking-wider mb-4">Teacher Summary</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-xs text-gray-500 uppercase font-medium">Reading & Writing</p>
+                    <p className="text-xl font-bold text-gray-900">{rwCorrect}/{rwQuestions.length}</p>
+                    <p className="text-xs text-gray-400">questions correct</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-xs text-gray-500 uppercase font-medium">Math</p>
+                    <p className="text-xl font-bold text-gray-900">{mathCorrect}/{mathQuestions.length}</p>
+                    <p className="text-xs text-gray-400">questions correct</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-xs text-gray-500 uppercase font-medium">Overall</p>
+                    <p className="text-xl font-bold text-gray-900">{rwCorrect + mathCorrect}/{rwQuestions.length + mathQuestions.length}</p>
+                    <p className="text-xs text-gray-400">total correct</p>
+                </div>
+                <div className={`rounded-lg p-4 border ${attempt.lockdown_violations > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                    <p className="text-xs text-gray-500 uppercase font-medium">Security</p>
+                    <p className={`text-xl font-bold ${attempt.lockdown_violations > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {attempt.lockdown_violations > 0 ? attempt.lockdown_violations : 'Clean'}
+                    </p>
+                    <p className="text-xs text-gray-400">{attempt.lockdown_violations > 0 ? 'violations detected' : 'no violations'}</p>
                 </div>
             </div>
         </div>
       </div>
 
       {/* Detailed Question Breakdown */}
-      <div className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:break-before-page">
+      <div id="question-breakdown" className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:break-before-page">
         <div className="bg-gray-900 text-white p-6 border-b border-gray-800">
             <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
             <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
