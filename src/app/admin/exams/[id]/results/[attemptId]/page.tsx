@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { calculateDomainScores } from '@/lib/score-calculator'
+import { calculateDomainScores, calculateRWScore, calculateMathScore } from '@/lib/score-calculator'
 import DownloadReportButton from './download-button'
 
 export default async function ScoreReportPage({ params }: { params: { id: string, attemptId: string } }) {
@@ -45,21 +45,16 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   // Calculate stats
   const domainStats = calculateDomainScores(questions || [], answers || [])
   
-  // SAT Score Calculation
+  // SAT Score Calculation using Albert.io conversion tables
   const rwQuestions = questions?.filter(q => q.section === 'reading_writing') || []
   const mathQuestions = questions?.filter(q => q.section === 'math') || []
   
   const rwCorrect = answers?.filter(a => a.is_correct && rwQuestions.some(q => q.id === a.question_id)).length || 0
   const mathCorrect = answers?.filter(a => a.is_correct && mathQuestions.some(q => q.id === a.question_id)).length || 0
   
-  const calculateScore = (correct: number, total: number) => {
-      if (total === 0) return 200;
-      // Linear scaling for mock purposes: 200 base + (ratio * 600)
-      return Math.round((200 + (correct / total) * 600) / 10) * 10;
-  }
-  
-  const rwScore = calculateScore(rwCorrect, rwQuestions.length)
-  const mathScore = calculateScore(mathCorrect, mathQuestions.length)
+  // Use Albert.io score conversion
+  const rwScore = calculateRWScore(rwCorrect, rwQuestions.length)
+  const mathScore = calculateMathScore(mathCorrect, mathQuestions.length)
   const totalScore = rwScore + mathScore
 
   return (
