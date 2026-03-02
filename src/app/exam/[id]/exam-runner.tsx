@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { submitExam, logLockdownViolation, logExamStarted, heartbeat, disqualifyStudent } from './actions'
+import { submitExam, saveAnswersProgress, logLockdownViolation, logExamStarted, heartbeat, disqualifyStudent } from './actions'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ExamHeader from './components/ExamHeader'
 import ExamFooter from './components/ExamFooter'
@@ -135,6 +135,12 @@ export default function ExamRunner({
     }
   }, [studentExamId])
 
+  // Use ref to track latest answers for periodic save without causing re-renders
+  const answersRef = useRef(answers)
+  useEffect(() => {
+    answersRef.current = answers
+  }, [answers])
+
   useEffect(() => {
     if (isAdminPreview || isDisqualified) return
 
@@ -143,6 +149,12 @@ export default function ExamRunner({
 
     const interval = setInterval(() => {
       heartbeat(studentExamId)
+      // Also save answers to server periodically to prevent data loss
+      if (Object.keys(answersRef.current).length > 0) {
+        saveAnswersProgress(studentExamId, answersRef.current).catch(e => {
+          console.error('Periodic save failed:', e)
+        })
+      }
     }, 60000) // Every 60 seconds (Optimized for Quantity & Quality)
 
     return () => clearInterval(interval)
@@ -381,7 +393,16 @@ export default function ExamRunner({
               router.push('/admin/exams/' + exam.id)
           }
       } else {
-          // Move to next module
+          // Move to next module - save progress to server first
+          if (!isAdminPreview) {
+              try {
+                  await saveAnswersProgress(studentExamId, answers)
+              } catch (e) {
+                  console.error('Failed to save progress at module transition:', e)
+                  // Continue anyway - localStorage backup is still there
+              }
+          }
+          
           const nextIndex = currentModuleIndex + 1
           setCurrentModuleIndex(nextIndex)
           setCurrentQuestionIndex(0)

@@ -3,6 +3,75 @@
 import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+// Save answers periodically during exam (at module transitions) to prevent data loss
+export async function saveAnswersProgress(studentExamId: string, answers: Record<string, any>) {
+  const supabase = await createClient()
+  const serviceClient = createServiceClient()
+
+  // Verify the student owns this exam attempt
+  const { data: studentExam } = await supabase
+    .from('student_exams')
+    .select('exam_id, student_id, status')
+    .eq('id', studentExamId)
+    .single()
+      
+  if (!studentExam) {
+    return { error: 'Student exam not found' }
+  }
+
+  // Don't save if exam is already completed
+  if (studentExam.status === 'completed') {
+    return { success: true }
+  }
+
+  // Fetch all questions for this exam (excluding soft-deleted)
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('id, correct_answer, section')
+    .eq('exam_id', studentExam.exam_id)
+    .is('deleted_at', null)
+
+  const questionMap = new Map(questions?.map(q => [q.id, q]))
+
+  // Grade answers - only for valid questions in the exam
+  const answerUpserts = Object.entries(answers)
+    .filter(([questionId]) => questionMap.has(questionId))
+    .map(([questionId, value]) => {
+      const question = questionMap.get(questionId)
+      let isCorrect = false
+      const answerStr = value?.toString().trim() || ''
+
+      if (question && question.correct_answer) {
+        const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
+        isCorrect = correctAnswers.includes(answerStr)
+      }
+
+      return {
+        student_exam_id: studentExamId,
+        question_id: questionId,
+        answer_value: answerStr,
+        is_correct: isCorrect
+      }
+    })
+
+  if (answerUpserts.length > 0) {
+    // Use upsert to update existing answers or insert new ones
+    const { error: upsertError } = await serviceClient
+      .from('student_answers')
+      .upsert(answerUpserts, { 
+        onConflict: 'student_exam_id,question_id',
+        ignoreDuplicates: false 
+      })
+
+    if (upsertError) {
+      console.error('Failed to save answer progress:', upsertError)
+      return { error: 'Failed to save progress' }
+    }
+  }
+
+  return { success: true }
+}
+
 export async function submitExam(studentExamId: string, answers: Record<string, any>) {
   const supabase = await createClient()
   // Use service client for writes to bypass RLS — this is a trusted server action
