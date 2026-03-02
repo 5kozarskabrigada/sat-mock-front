@@ -34,11 +34,13 @@ export default async function ScoreReportPage({ params }: { params: { id: string
     .select('*')
     .eq('student_exam_id', attemptId)
 
-  // Fetch questions for this exam to get domain info
+  // Fetch questions for this exam to get domain info (exclude soft-deleted)
   const { data: questions } = await supabase
     .from('questions')
-    .select('id, domain, content, correct_answer, section')
+    .select('id, domain, content, correct_answer, section, module')
     .eq('exam_id', id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
 
   // Calculate stats
   const domainStats = calculateDomainScores(questions || [], answers || [])
@@ -172,55 +174,87 @@ export default async function ScoreReportPage({ params }: { params: { id: string
             <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
             <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
         </div>
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-                <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Answer</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
-                </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-                {questions?.sort((a, b) => a.section.localeCompare(b.section))?.map((q, idx) => {
-                    const answer = answers?.find(a => a.question_id === q.id)
-                    const isCorrect = answer?.is_correct
-                    const studentAnswer = answer?.answer_value || '(Skipped)'
-                    const isSkipped = !answer
-                    
-                    return (
-                        <tr key={q.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{idx + 1}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{q.section.replace('_', ' ')}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]" title={q.domain}>{q.domain}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{q.correct_answer}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
-                            {studentAnswer}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                            {isCorrect ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Correct
-                            </span>
-                            ) : isSkipped ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                Skipped
-                            </span>
-                            ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Incorrect
-                            </span>
-                            )}
-                        </td>
-                        </tr>
-                    )
-                })}
-            </tbody>
-            </table>
-        </div>
+        
+        {/* Group questions by module */}
+        {(() => {
+          const moduleGroups = [
+            { label: 'Section 1, Module 1: Reading and Writing', section: 'reading_writing', module: 1 },
+            { label: 'Section 1, Module 2: Reading and Writing', section: 'reading_writing', module: 2 },
+            { label: 'Section 2, Module 1: Math', section: 'math', module: 1 },
+            { label: 'Section 2, Module 2: Math', section: 'math', module: 2 },
+          ]
+          
+          return moduleGroups.map((group) => {
+            const moduleQuestions = questions?.filter(
+              q => q.section === group.section && q.module === group.module
+            ) || []
+            
+            if (moduleQuestions.length === 0) return null
+            
+            const moduleCorrect = moduleQuestions.filter(q => {
+              const answer = answers?.find((a: any) => a.question_id === q.id)
+              return answer?.is_correct
+            }).length
+            
+            return (
+              <div key={`${group.section}-${group.module}`}>
+                <div className="bg-gray-50 px-6 py-3 border-b border-t border-gray-200 flex justify-between items-center">
+                  <h4 className="font-bold text-gray-800 text-sm">{group.label}</h4>
+                  <span className="text-xs font-medium text-gray-500">
+                    {moduleCorrect}/{moduleQuestions.length} correct
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50/50">
+                      <tr>
+                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
+                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
+                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
+                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Answer</th>
+                        <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {moduleQuestions.map((q, idx) => {
+                        const answer = answers?.find((a: any) => a.question_id === q.id)
+                        const isCorrect = answer?.is_correct
+                        const studentAnswer = answer?.answer_value || '(Skipped)'
+                        const isSkipped = !answer
+                        
+                        return (
+                          <tr key={q.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-700">{idx + 1}</td>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]" title={q.domain}>{q.domain}</td>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{q.correct_answer}</td>
+                            <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
+                              {studentAnswer}
+                            </td>
+                            <td className="px-6 py-3 whitespace-nowrap text-center">
+                              {isCorrect ? (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Correct
+                                </span>
+                              ) : isSkipped ? (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  Skipped
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  Incorrect
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )
+          })
+        })()}
       </div>
     </div>
   )

@@ -55,9 +55,27 @@ export default function ExamRunner({
     }
     return 0
   })
-  const [answers, setAnswers] = useState<Record<string, any>>({})
-  const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>({})
-  const [allHighlights, setAllHighlights] = useState<Record<string, any[]>>({})
+  const [answers, setAnswers] = useState<Record<string, any>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`exam_answers_${studentExamId}`)
+      if (saved) try { return JSON.parse(saved) } catch {}
+    }
+    return {}
+  })
+  const [markedQuestions, setMarkedQuestions] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`exam_marked_${studentExamId}`)
+      if (saved) try { return JSON.parse(saved) } catch {}
+    }
+    return {}
+  })
+  const [allHighlights, setAllHighlights] = useState<Record<string, any[]>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`exam_highlights_${studentExamId}`)
+      if (saved) try { return JSON.parse(saved) } catch {}
+    }
+    return {}
+  })
   
   // Timer State
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -88,17 +106,10 @@ export default function ExamRunner({
   const [isDisqualified, setIsDisqualified] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isSubmittingRef = useRef(false)
+  const isTransitioningRef = useRef(false)
 
-  // Load state from localStorage on mount
+  // On-mount setup: log exam start & request fullscreen
   useEffect(() => {
-    const savedAnswers = localStorage.getItem(`exam_answers_${studentExamId}`)
-    const savedMarked = localStorage.getItem(`exam_marked_${studentExamId}`)
-    const savedHighlights = localStorage.getItem(`exam_highlights_${studentExamId}`)
-    
-    if (savedAnswers) setAnswers(JSON.parse(savedAnswers))
-    if (savedMarked) setMarkedQuestions(JSON.parse(savedMarked))
-    if (savedHighlights) setAllHighlights(JSON.parse(savedHighlights))
-
     // Log exam start (only if not already logged in this session)
     if (!isAdminPreview) {
       const hasLoggedStart = sessionStorage.getItem(`exam_started_logged_${studentExamId}`)
@@ -308,11 +319,16 @@ export default function ExamRunner({
   // -- Handlers --
 
   const handleModuleTimeUp = () => {
-      // Time is up for the current module. Submit it and move to next.
+      // Time is up for the current module. Reset guard and advance.
+      isTransitioningRef.current = false
       handleFinishModule()
   }
 
   const handleFinishModule = async () => {
+      // Guard against rapid re-entry (spam clicks bleeding through module transitions)
+      if (isTransitioningRef.current) return
+      isTransitioningRef.current = true
+
       if (currentModuleIndex >= modules.length - 1) {
           // Final Submit
           if (!isAdminPreview) {
@@ -323,6 +339,7 @@ export default function ExamRunner({
                   if (result?.error) {
                       console.error('Submission error:', result.error)
                       isSubmittingRef.current = false
+                      isTransitioningRef.current = false
                       setIsSubmitting(false)
                       alert(`Failed to submit exam: ${result.error}. Please try again.`)
                   } else {
@@ -343,6 +360,7 @@ export default function ExamRunner({
               } catch (e) {
                   console.error(e)
                   isSubmittingRef.current = false
+                  isTransitioningRef.current = false
                   setIsSubmitting(false)
                   alert("Failed to submit exam. Please try again.")
               }
@@ -359,11 +377,13 @@ export default function ExamRunner({
           setView('question')
           setShowSubmitConfirm(false)
           
-          // If next is Break, ensure timer runs (or maybe user wants to start break manually? Standard is auto)
+          // Allow transitions again after a short delay to prevent click bleed-through
+          setTimeout(() => { isTransitioningRef.current = false }, 500)
       }
   }
 
   const handleResumeFromBreak = () => {
+      isTransitioningRef.current = false // Allow transition from break
       handleFinishModule() // Move from Break to next section
   }
 

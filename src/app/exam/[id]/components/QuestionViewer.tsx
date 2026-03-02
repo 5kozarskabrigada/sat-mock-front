@@ -158,8 +158,12 @@ export default function QuestionViewer({
           const range = selection.getRangeAt(0)
           savedRangeRef.current = range.cloneRange() // Save the range
           const rect = range.getBoundingClientRect()
+          // Clamp X so the toolbar (≈260px wide) stays within viewport
+          const toolbarHalfWidth = 140
+          const rawX = rect.left + (rect.width / 2)
+          const clampedX = Math.max(toolbarHalfWidth, Math.min(rawX, window.innerWidth - toolbarHalfWidth))
           setSelectionMenu({
-              x: rect.left + (rect.width / 2),
+              x: clampedX,
               y: rect.top - 10,
               show: true
           })
