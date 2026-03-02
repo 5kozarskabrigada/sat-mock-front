@@ -11,6 +11,13 @@ export default function BreakScreen({
   onResume: () => void 
   isAdmin?: boolean
 }) {
+  // Auto-resume when timer hits 0
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      onResume()
+    }
+  }, [timeLeft, onResume])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Block Escape key during break - use stopImmediatePropagation to prevent any browser defaults
