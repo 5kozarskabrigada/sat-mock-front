@@ -15,42 +15,32 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
   const { id } = await params
   const supabase = await createClient()
 
-  // 0. Auto-cleanup abandoned sessions (in_progress but not updated for > 30 mins)
+  // Run all queries in parallel for faster loading
+  const [examResult, questionsResult, classroomsResult, participationResult] = await Promise.all([
+    supabase.from('exams').select('*').eq('id', id).single(),
+    supabase.from('questions').select('*').eq('exam_id', id).is('deleted_at', null).order('created_at', { ascending: true }),
+    supabase.from('classrooms').select('*').order('name'),
+    supabase.from('student_exams').select('student_id, status, updated_at').eq('exam_id', id),
+  ])
+
+  const exam = examResult.data
+  if (!exam) {
+    notFound()
+  }
+
+  const questions = questionsResult.data
+  const classrooms = classroomsResult.data
+  const participation = participationResult.data
+
+  // Fire and forget: Auto-cleanup abandoned sessions (non-blocking)
   const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  await supabase
+  supabase
     .from('student_exams')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('exam_id', id)
     .eq('status', 'in_progress')
     .lt('updated_at', thirtyMinsAgo)
-
-  const { data: exam } = await supabase
-    .from('exams')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (!exam) {
-    notFound()
-  }
-
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('*')
-    .eq('exam_id', id)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: true })
-
-  const { data: classrooms } = await supabase
-    .from('classrooms')
-    .select('*')
-    .order('name')
-
-  // Fetch participation stats
-  const { data: participation } = await supabase
-    .from('student_exams')
-    .select('student_id, status, updated_at')
-    .eq('exam_id', id)
+    .then(() => {}) // Fire and forget
 
   const studentsJoinedCount = participation?.length || 0
   
@@ -62,7 +52,7 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
     return lastUpdate > activeThreshold
   }).length || 0
   
-  // Fetch total students in the exam's classroom
+  // Fetch total students in the exam's classroom (only if needed)
   let totalStudentsInClassroom = 0
   if (exam.classroom_id) {
     const { count } = await supabase
