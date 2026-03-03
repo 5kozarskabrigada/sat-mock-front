@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { calculateDomainScores, calculateRWScore, calculateMathScore } from '@/lib/score-calculator'
+import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
 import DownloadReportButton from './download-button'
 import DownloadBreakdownButton from './download-breakdown-button'
 
@@ -50,15 +50,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   const rwQuestions = questions?.filter(q => q.section === 'reading_writing') || []
   const mathQuestions = questions?.filter(q => q.section === 'math') || []
   
-  const rwCorrect = answers?.filter(a => a.is_correct && rwQuestions.some(q => q.id === a.question_id)).length || 0
-  const mathCorrect = answers?.filter(a => a.is_correct && mathQuestions.some(q => q.id === a.question_id)).length || 0
-  
-  // Use Albert.io score conversion
-  const rwScore = calculateRWScore(rwCorrect, rwQuestions.length)
-  const mathScore = calculateMathScore(mathCorrect, mathQuestions.length)
-  const totalScore = rwScore + mathScore
-
-  // Calculate module-level stats
+  // Calculate module-level stats first (needed for Albert.io-style scoring)
   const rwM1Questions = questions?.filter(q => q.section === 'reading_writing' && q.module === 1) || []
   const rwM2Questions = questions?.filter(q => q.section === 'reading_writing' && q.module === 2) || []
   const mathM1Questions = questions?.filter(q => q.section === 'math' && q.module === 1) || []
@@ -68,6 +60,14 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   const rwM2Correct = answers?.filter(a => a.is_correct && rwM2Questions.some(q => q.id === a.question_id)).length || 0
   const mathM1Correct = answers?.filter(a => a.is_correct && mathM1Questions.some(q => q.id === a.question_id)).length || 0
   const mathM2Correct = answers?.filter(a => a.is_correct && mathM2Questions.some(q => q.id === a.question_id)).length || 0
+
+  const rwCorrect = rwM1Correct + rwM2Correct
+  const mathCorrect = mathM1Correct + mathM2Correct
+  
+  // Use Albert.io score conversion with per-module scoring: (M1 + M2 - 200)
+  const rwScore = calculateRWScoreByModule(rwM1Correct, rwM2Correct)
+  const mathScore = calculateMathScoreByModule(mathM1Correct, mathM2Correct)
+  const totalScore = rwScore + mathScore
 
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-8">
