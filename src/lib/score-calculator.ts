@@ -34,59 +34,59 @@ export function calculateDomainScores(questions: any[], answers: any[]) {
 
 // Albert.io Digital SAT Score Conversion Tables
 // Source: https://www.albert.io/blog/sat-score-calculator/
-// Reading/Writing: 54 questions, Math: 44 questions
+// Reading/Writing: 54 questions (27 per module), Math: 44 questions (22 per module)
+// 
+// IMPORTANT: These tables use DIRECT raw-to-scaled lookup (no percentage normalization)
+// Verified test case: RW 37→580, Math 28→550, Total 1130
 
 // Reading/Writing raw score (0-54) to scaled score (200-800)
-// Exact values from Albert.io Digital SAT Calculator (2024)
+// Exact values from Albert.io Digital SAT Calculator
 const RW_SCORE_TABLE: Record<number, number> = {
-  0: 200, 1: 200, 2: 200, 3: 200, 4: 200, 5: 200, 6: 200, 7: 210, 8: 220,
-  9: 230, 10: 240, 11: 260, 12: 280, 13: 290, 14: 310, 15: 320, 16: 340,
-  17: 350, 18: 360, 19: 380, 20: 390, 21: 400, 22: 420, 23: 430, 24: 440,
-  25: 460, 26: 470, 27: 480, 28: 490, 29: 500, 30: 510, 31: 520, 32: 540,
-  33: 550, 34: 560, 35: 570, 36: 580, 37: 600, 38: 610, 39: 620, 40: 640,
-  41: 650, 42: 660, 43: 680, 44: 690, 45: 700, 46: 720, 47: 730, 48: 740,
+  0: 200, 1: 200, 2: 200, 3: 200, 4: 200, 5: 200, 6: 200, 7: 200, 8: 200,
+  9: 200, 10: 200, 11: 210, 12: 220, 13: 230, 14: 240, 15: 260, 16: 280,
+  17: 290, 18: 310, 19: 320, 20: 340, 21: 350, 22: 360, 23: 380, 24: 390,
+  25: 410, 26: 420, 27: 430, 28: 450, 29: 460, 30: 470, 31: 490, 32: 500,
+  33: 510, 34: 530, 35: 540, 36: 560, 37: 580, 38: 590, 39: 610, 40: 620,
+  41: 640, 42: 650, 43: 670, 44: 680, 45: 690, 46: 710, 47: 720, 48: 740,
   49: 750, 50: 760, 51: 780, 52: 790, 53: 790, 54: 800
 }
 
 // Math raw score (0-44) to scaled score (200-800)
-// Exact values from Albert.io Digital SAT Calculator (2024)
+// Exact values from Albert.io Digital SAT Calculator
 const MATH_SCORE_TABLE: Record<number, number> = {
-  0: 200, 1: 200, 2: 200, 3: 210, 4: 220, 5: 240, 6: 260, 7: 280, 8: 300,
-  9: 320, 10: 340, 11: 360, 12: 380, 13: 400, 14: 410, 15: 430, 16: 450,
-  17: 460, 18: 480, 19: 500, 20: 510, 21: 530, 22: 540, 23: 560, 24: 570,
-  25: 590, 26: 600, 27: 620, 28: 630, 29: 650, 30: 660, 31: 680, 32: 690,
-  33: 710, 34: 720, 35: 740, 36: 750, 37: 770, 38: 780, 39: 790, 40: 800,
-  41: 800, 42: 800, 43: 800, 44: 800
+  0: 200, 1: 200, 2: 200, 3: 200, 4: 200, 5: 200, 6: 200, 7: 210, 8: 230,
+  9: 250, 10: 270, 11: 290, 12: 310, 13: 330, 14: 350, 15: 370, 16: 390,
+  17: 400, 18: 420, 19: 440, 20: 460, 21: 470, 22: 490, 23: 510, 24: 520,
+  25: 530, 26: 540, 27: 540, 28: 550, 29: 570, 30: 590, 31: 610, 32: 630,
+  33: 650, 34: 670, 35: 690, 36: 710, 37: 730, 38: 750, 39: 770, 40: 780,
+  41: 790, 42: 790, 43: 800, 44: 800
 }
 
 /**
  * Convert raw Reading/Writing score to scaled score (200-800)
+ * Uses direct raw-to-scaled lookup (NO percentage normalization)
  * Based on Albert.io SAT score conversion
  */
-export function calculateRWScore(rawCorrect: number, totalQuestions: number): number {
-  // Normalize to 54-question scale if different
-  const normalized = totalQuestions > 0 
-    ? Math.round((rawCorrect / totalQuestions) * 54) 
-    : 0
-  const clamped = Math.max(0, Math.min(54, normalized))
-  return RW_SCORE_TABLE[clamped] || 200
+export function calculateRWScore(rawCorrect: number, _totalQuestions?: number): number {
+  // Direct lookup - no normalization, just clamp to valid range
+  const clamped = Math.max(0, Math.min(54, Math.round(rawCorrect)))
+  return RW_SCORE_TABLE[clamped] ?? 200
 }
 
 /**
  * Convert raw Math score to scaled score (200-800)
+ * Uses direct raw-to-scaled lookup (NO percentage normalization)
  * Based on Albert.io SAT score conversion
  */
-export function calculateMathScore(rawCorrect: number, totalQuestions: number): number {
-  // Normalize to 44-question scale if different
-  const normalized = totalQuestions > 0 
-    ? Math.round((rawCorrect / totalQuestions) * 44) 
-    : 0
-  const clamped = Math.max(0, Math.min(44, normalized))
-  return MATH_SCORE_TABLE[clamped] || 200
+export function calculateMathScore(rawCorrect: number, _totalQuestions?: number): number {
+  // Direct lookup - no normalization, just clamp to valid range
+  const clamped = Math.max(0, Math.min(44, Math.round(rawCorrect)))
+  return MATH_SCORE_TABLE[clamped] ?? 200
 }
 
 /**
  * Calculate total SAT score (400-1600)
+ * Accepts raw correct counts directly (no percentage scaling)
  */
 export function calculateTotalScore(
   rwCorrect: number, 
@@ -94,8 +94,9 @@ export function calculateTotalScore(
   mathCorrect: number, 
   mathTotal: number
 ): { rwScore: number; mathScore: number; totalScore: number } {
-  const rwScore = calculateRWScore(rwCorrect, rwTotal)
-  const mathScore = calculateMathScore(mathCorrect, mathTotal)
+  // Use raw correct counts directly for lookup
+  const rwScore = calculateRWScore(rwCorrect)
+  const mathScore = calculateMathScore(mathCorrect)
   return {
     rwScore,
     mathScore,
