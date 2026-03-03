@@ -2,7 +2,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import ExamListActions from './exam-list-actions'
 
 interface Exam {
@@ -18,6 +19,7 @@ interface Exam {
 export default function ExamListFilter({ exams }: { exams: Exam[] }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
+    const router = useRouter()
 
     const filteredExams = exams.filter(exam => {
         const matchesSearch = 
@@ -28,6 +30,11 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
 
         return matchesSearch && matchesStatus
     })
+
+    // Prefetch on hover for faster navigation
+    const handleMouseEnter = useCallback((examId: string) => {
+        router.prefetch(`/admin/exams/${examId}`)
+    }, [router])
 
     return (
         <div className="space-y-6">
@@ -67,9 +74,11 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
                     <div 
                         key={exam.id} 
                         className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md"
+                        onMouseEnter={() => handleMouseEnter(exam.id)}
                     >
                         <Link 
                             href={`/admin/exams/${exam.id}`}
+                            prefetch={true}
                             className="flex-1 p-6 flex flex-col justify-between hover:bg-gray-50/50"
                         >
                             <div>
