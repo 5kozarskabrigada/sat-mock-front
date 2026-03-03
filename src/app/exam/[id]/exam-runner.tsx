@@ -325,7 +325,8 @@ export default function ExamRunner({
 
   // -- Timer Logic --
   useEffect(() => {
-    if (!isTimerRunning) return
+    // Don't run timer for admin preview mode
+    if (!isTimerRunning || isAdminPreview) return
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -338,7 +339,7 @@ export default function ExamRunner({
       })
     }, 1000)
     return () => clearInterval(timer)
-  }, [isTimerRunning, currentModuleIndex])
+  }, [isTimerRunning, currentModuleIndex, isAdminPreview])
 
   // -- Handlers --
 
@@ -388,9 +389,8 @@ export default function ExamRunner({
                   alert("Failed to submit exam. Please try again.")
               }
           } else {
-              alert("Admin Preview: Submission disabled.")
-              setIsTransitioning(false)
-              router.push('/admin/exams/' + exam.id)
+              // Admin Preview: just exit back to exam page
+              handleExitPreview()
           }
       } else {
           // Move to next module - save progress to server first
@@ -459,15 +459,83 @@ export default function ExamRunner({
       setView('question')
   }
 
+  // Admin-only: Navigate directly to any module
+  const handleAdminModuleNavigate = (moduleIndex: number) => {
+      if (!isAdminPreview) return
+      setCurrentModuleIndex(moduleIndex)
+      setCurrentQuestionIndex(0)
+      setTimeLeft(modules[moduleIndex].duration)
+      setView('question')
+  }
+
+  // Admin-only: Exit preview
+  const handleExitPreview = () => {
+      if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {})
+      }
+      router.push('/admin/exams/' + exam.id)
+  }
+
   // -- Render --
 
   if (allQuestions.length === 0) {
     return <div className="p-10 text-center">No questions in this exam.</div>
   }
 
+  // Admin Preview Navigation Bar
+  const AdminPreviewNav = () => (
+    <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+      <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center gap-2">
+          <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider">Admin Preview</span>
+          <span className="text-sm opacity-90">Navigate freely between sections</span>
+        </div>
+        <button
+          onClick={handleExitPreview}
+          className="flex items-center gap-2 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Exit Preview
+        </button>
+      </div>
+      <div className="flex items-center gap-1 px-4 pb-2 overflow-x-auto">
+        {modules.map((mod, idx) => {
+          const isActive = idx === currentModuleIndex
+          const isBreak = mod.type === 'break'
+          const questionCount = mod.questions?.length || 0
+          return (
+            <button
+              key={mod.id}
+              onClick={() => handleAdminModuleNavigate(idx)}
+              className={`
+                flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                ${isActive 
+                  ? 'bg-white text-indigo-700 shadow-md' 
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+                }
+              `}
+            >
+              {isBreak ? '☕ Break' : mod.title.replace('Section ', 'S').replace(', Module ', ' M').replace('Reading and Writing', 'R&W')}
+              {!isBreak && <span className="ml-1 opacity-70">({questionCount})</span>}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+
   // 1. Break Screen
   if (currentModule.type === 'break') {
-      return <BreakScreen timeLeft={timeLeft} onResume={handleResumeFromBreak} isAdmin={isAdminPreview} />
+      return (
+        <>
+          {isAdminPreview && <AdminPreviewNav />}
+          <div className={isAdminPreview ? 'pt-20' : ''}>
+            <BreakScreen timeLeft={timeLeft} onResume={handleResumeFromBreak} isAdmin={isAdminPreview} />
+          </div>
+        </>
+      )
   }
 
   // 2. Exam Screen
@@ -475,7 +543,8 @@ export default function ExamRunner({
   const isMathSection = currentModule.type === 'math'
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)]">
+    <div className={`flex flex-col h-screen bg-[var(--sat-bg)] overflow-hidden font-sans text-[var(--sat-text)] ${isAdminPreview ? 'pt-[80px]' : ''}`}>
+      {isAdminPreview && <AdminPreviewNav />}
       <ExamHeader 
           title={currentModule.title} 
           timeLeft={timeLeft}
@@ -510,9 +579,12 @@ export default function ExamRunner({
                   currentQuestionIndex={currentQuestionIndex}
                   onNavigate={handleNavigate}
                   markedQuestions={markedQuestions}
-                  onSubmit={() => setShowSubmitConfirm(true)}
+                  onSubmit={() => isAdminPreview && currentModuleIndex >= modules.length - 1 ? handleExitPreview() : setShowSubmitConfirm(true)}
                   onBackToQuestion={() => setView('question')}
-                  actionLabel={currentModuleIndex >= modules.length - 1 ? "Submit Exam" : "Next Section"}
+                  actionLabel={isAdminPreview 
+                    ? (currentModuleIndex >= modules.length - 1 ? "Exit Preview" : "Next Section")
+                    : (currentModuleIndex >= modules.length - 1 ? "Submit Exam" : "Next Section")
+                  }
               />
           )}
       </main>
@@ -538,12 +610,18 @@ export default function ExamRunner({
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-200">
                   <h3 className="text-xl font-bold mb-4 text-gray-900">
-                      {currentModuleIndex >= modules.length - 1 ? "Finish Exam?" : "Finish This Section?"}
+                      {isAdminPreview 
+                        ? "Move to Next Section?"
+                        : (currentModuleIndex >= modules.length - 1 ? "Finish Exam?" : "Finish This Section?")
+                      }
                   </h3>
                   <p className="text-gray-600 mb-6">
-                      {currentModuleIndex >= modules.length - 1 
-                        ? "You are about to submit your exam. You will not be able to change your answers after this."
-                        : "You are about to finish this module. You will NOT be able to return to these questions once you move to the next section."
+                      {isAdminPreview
+                        ? "As admin, you can use the navigation bar above to jump to any section at any time."
+                        : (currentModuleIndex >= modules.length - 1 
+                          ? "You are about to submit your exam. You will not be able to change your answers after this."
+                          : "You are about to finish this module. You will NOT be able to return to these questions once you move to the next section."
+                        )
                       }
                   </p>
                   <div className="flex justify-end space-x-3">
@@ -557,7 +635,10 @@ export default function ExamRunner({
                           onClick={handleFinishModule}
                           className="px-4 py-2 rounded-lg bg-[var(--sat-primary)] text-white hover:bg-blue-700 font-medium"
                       >
-                          {currentModuleIndex >= modules.length - 1 ? "Submit Exam" : "Move to Next Section"}
+                          {isAdminPreview
+                            ? "Continue"
+                            : (currentModuleIndex >= modules.length - 1 ? "Submit Exam" : "Move to Next Section")
+                          }
                       </button>
                   </div>
               </div>
