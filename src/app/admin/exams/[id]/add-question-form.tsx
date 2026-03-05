@@ -79,18 +79,49 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
       const file = e.target.files?.[0]
       if (!file) return
 
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`
-      const filePath = `${fileName}`
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB')
+        return
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Only image files are allowed')
+        return
+      }
+
+      const fileExt = file.name.split('.').pop()?.toLowerCase()
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `questions/${fileName}`
 
       const supabase = createClient()
 
+      // Check if user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        setUploadError('You must be logged in to upload images. Please refresh the page and try again.')
+        return
+      }
+
       const { error: uploadErr } = await supabase.storage
         .from('exam-images')
-        .upload(filePath, file)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
       if (uploadErr) {
-        throw uploadErr
+        console.error('Supabase upload error:', uploadErr)
+        // Show detailed error message
+        if (uploadErr.message.includes('Bucket not found')) {
+          setUploadError('Storage bucket "exam-images" not found. Please contact administrator to create the bucket.')
+        } else if (uploadErr.message.includes('row-level security') || uploadErr.message.includes('policy')) {
+          setUploadError('Permission denied. Storage policies may not be configured correctly.')
+        } else {
+          setUploadError(`Upload failed: ${uploadErr.message}`)
+        }
+        return
       }
 
       const { data } = supabase.storage
@@ -100,7 +131,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
       setImageUrl(data.publicUrl)
     } catch (err: any) {
       console.error('Upload error:', err)
-      setUploadError('Error uploading image. Ensure the "exam-images" storage bucket exists and is public.')
+      setUploadError(`Unexpected error: ${err.message || 'Unknown error occurred'}`)
     } finally {
       setUploading(false)
     }

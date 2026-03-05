@@ -28,19 +28,50 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
             }
 
             const file = e.target.files[0]
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${Math.random()}.${fileExt}`
-            const filePath = `${fileName}`
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setError('File size must be less than 5MB')
+                return
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setError('Only image files are allowed')
+                return
+            }
+
+            const fileExt = file.name.split('.').pop()?.toLowerCase()
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
+            const filePath = `questions/${fileName}`
 
             const supabase = createClient()
+
+            // Check if user is authenticated
+            const { data: { user }, error: authError } = await supabase.auth.getUser()
+            if (authError || !user) {
+                setError('You must be logged in to upload images. Please refresh the page and try again.')
+                return
+            }
             
-            // Upload to Supabase Storage (assuming bucket 'exam-images' exists and is public)
+            // Upload to Supabase Storage
             const { error: uploadError } = await supabase.storage
                 .from('exam-images')
-                .upload(filePath, file)
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                })
 
             if (uploadError) {
-                throw uploadError
+                console.error('Supabase upload error:', uploadError)
+                if (uploadError.message.includes('Bucket not found')) {
+                    setError('Storage bucket "exam-images" not found. Please contact administrator.')
+                } else if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
+                    setError('Permission denied. Storage policies may not be configured correctly.')
+                } else {
+                    setError(`Upload failed: ${uploadError.message}`)
+                }
+                return
             }
 
             const { data } = supabase.storage
@@ -50,7 +81,7 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
             setImageUrl(data.publicUrl)
         } catch (err: any) {
             console.error('Upload error:', err)
-            setError('Error uploading image. Ensure "exam-images" bucket exists and is public.')
+            setError(`Unexpected error: ${err.message || 'Unknown error occurred'}`)
         } finally {
             setUploading(false)
         }
@@ -65,12 +96,14 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
             <input type="hidden" name="imageDescription" value={imageDescription} />
 
             <div className="flex flex-col gap-2">
-                <input
-                    type="text"
-                    placeholder="Image Description (optional)"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
-                    value={imageDescription}
-                    onChange={(e) => setImageDescription(e.target.value)}
+                <RichTextEditor
+                    id="imageDescriptionEditor"
+                    name="imageDescriptionEditor"
+                    label="Image Description (Optional)"
+                    defaultValue={imageDescription}
+                    onChange={setImageDescription}
+                    rows={2}
+                    enableMath={true}
                 />
                 <div className="flex items-center gap-4">
                     <input
