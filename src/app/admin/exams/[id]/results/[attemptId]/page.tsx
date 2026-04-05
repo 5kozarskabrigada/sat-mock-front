@@ -4,6 +4,22 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
 import DownloadReportButton from './download-button'
+import type { PdfBreakdownSection, PdfBreakdownQuestion } from './download-button'
+
+type AnswerRecord = {
+  question_id: string
+  is_correct: boolean | null
+  answer_value: string | null
+}
+
+type QuestionRecord = {
+  id: string
+  domain: string
+  correct_answer: string
+  section: 'reading_writing' | 'math'
+  module: number
+  content: unknown
+}
 
 export default async function ScoreReportPage({ params }: { params: { id: string, attemptId: string } }) {
   const supabase = await createClient()
@@ -42,23 +58,26 @@ export default async function ScoreReportPage({ params }: { params: { id: string
     .is('deleted_at', null)
     .order('created_at', { ascending: true })
 
+  const typedQuestions: QuestionRecord[] = (questions || []) as QuestionRecord[]
+  const typedAnswers: AnswerRecord[] = (answers || []) as AnswerRecord[]
+
   // Calculate stats
-  const domainStats = calculateDomainScores(questions || [], answers || [])
+  const domainStats = calculateDomainScores(typedQuestions, typedAnswers)
   
   // SAT Score Calculation using Albert.io conversion tables
-  const rwQuestions = questions?.filter(q => q.section === 'reading_writing') || []
-  const mathQuestions = questions?.filter(q => q.section === 'math') || []
+  const rwQuestions = typedQuestions.filter((question) => question.section === 'reading_writing')
+  const mathQuestions = typedQuestions.filter((question) => question.section === 'math')
   
   // Calculate module-level stats first (needed for Albert.io-style scoring)
-  const rwM1Questions = questions?.filter(q => q.section === 'reading_writing' && q.module === 1) || []
-  const rwM2Questions = questions?.filter(q => q.section === 'reading_writing' && q.module === 2) || []
-  const mathM1Questions = questions?.filter(q => q.section === 'math' && q.module === 1) || []
-  const mathM2Questions = questions?.filter(q => q.section === 'math' && q.module === 2) || []
+  const rwM1Questions = typedQuestions.filter((question) => question.section === 'reading_writing' && question.module === 1)
+  const rwM2Questions = typedQuestions.filter((question) => question.section === 'reading_writing' && question.module === 2)
+  const mathM1Questions = typedQuestions.filter((question) => question.section === 'math' && question.module === 1)
+  const mathM2Questions = typedQuestions.filter((question) => question.section === 'math' && question.module === 2)
   
-  const rwM1Correct = answers?.filter(a => a.is_correct && rwM1Questions.some(q => q.id === a.question_id)).length || 0
-  const rwM2Correct = answers?.filter(a => a.is_correct && rwM2Questions.some(q => q.id === a.question_id)).length || 0
-  const mathM1Correct = answers?.filter(a => a.is_correct && mathM1Questions.some(q => q.id === a.question_id)).length || 0
-  const mathM2Correct = answers?.filter(a => a.is_correct && mathM2Questions.some(q => q.id === a.question_id)).length || 0
+  const rwM1Correct = typedAnswers.filter((answer) => answer.is_correct && rwM1Questions.some((question) => question.id === answer.question_id)).length
+  const rwM2Correct = typedAnswers.filter((answer) => answer.is_correct && rwM2Questions.some((question) => question.id === answer.question_id)).length
+  const mathM1Correct = typedAnswers.filter((answer) => answer.is_correct && mathM1Questions.some((question) => question.id === answer.question_id)).length
+  const mathM2Correct = typedAnswers.filter((answer) => answer.is_correct && mathM2Questions.some((question) => question.id === answer.question_id)).length
 
   const rwCorrect = rwM1Correct + rwM2Correct
   const mathCorrect = mathM1Correct + mathM2Correct
@@ -67,6 +86,42 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   const rwScore = calculateRWScoreByModule(rwM1Correct, rwM2Correct)
   const mathScore = calculateMathScoreByModule(mathM1Correct, mathM2Correct)
   const totalScore = rwScore + mathScore
+  const moduleSummaries = [
+    { label: 'R&W Module 1', correct: rwM1Correct, total: rwM1Questions.length },
+    { label: 'R&W Module 2', correct: rwM2Correct, total: rwM2Questions.length },
+    { label: 'Math Module 1', correct: mathM1Correct, total: mathM1Questions.length },
+    { label: 'Math Module 2', correct: mathM2Correct, total: mathM2Questions.length },
+  ].filter((summary) => summary.total > 0)
+  const completedDate = new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  const breakdownSections: PdfBreakdownSection[] = MODULE_GROUPS.flatMap((group) => {
+    const moduleQuestions = typedQuestions.filter(
+      (question) => question.section === group.section && question.module === group.module,
+    )
+
+    if (moduleQuestions.length === 0) {
+      return []
+    }
+
+    const questions: PdfBreakdownQuestion[] = moduleQuestions.map((question, index) => {
+      const answer = typedAnswers.find((entry) => entry.question_id === question.id)
+      const result: PdfBreakdownQuestion['result'] = answer?.is_correct ? 'Correct' : answer ? 'Incorrect' : 'Skipped'
+
+      return {
+        number: index + 1,
+        domain: question.domain,
+        correctAnswer: question.correct_answer,
+        studentAnswer: answer?.answer_value || '(Skipped)',
+        result,
+      }
+    })
+
+    return [{
+      label: group.label,
+      correct: questions.filter((question) => question.result === 'Correct').length,
+      total: questions.length,
+      questions,
+    }]
+  })
 
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-8">
@@ -77,7 +132,23 @@ export default async function ScoreReportPage({ params }: { params: { id: string
         </Link>
         <DownloadReportButton 
             studentName={`${attempt.users.first_name} ${attempt.users.last_name}`}
+          username={attempt.users.username}
             examTitle={attempt.exams.title}
+          completedDate={completedDate}
+          totalScore={totalScore}
+          rwScore={rwScore}
+          mathScore={mathScore}
+          rwCorrect={rwCorrect}
+          rwTotal={rwQuestions.length}
+          mathCorrect={mathCorrect}
+          mathTotal={mathQuestions.length}
+          overallCorrect={rwCorrect + mathCorrect}
+          overallTotal={rwQuestions.length + mathQuestions.length}
+          violations={attempt.lockdown_violations}
+          readingWritingDomains={domainStats.filter((stat) => DOMAINS.reading_writing.includes(stat.name))}
+          mathDomains={domainStats.filter((stat) => DOMAINS.math.includes(stat.name))}
+          moduleSummaries={moduleSummaries}
+          breakdownSections={breakdownSections}
         />
       </div>
 
@@ -104,7 +175,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                   </div>
                   <div className="text-right">
                       <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Date</p>
-                      <p className="text-lg font-bold">{new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-lg font-bold">{completedDate}</p>
                   </div>
               </div>
           </div>
@@ -244,22 +315,15 @@ export default async function ScoreReportPage({ params }: { params: { id: string
         
           {/* Group questions by module */}
           {(() => {
-            const moduleGroups = [
-              { label: 'Section 1, Module 1: Reading and Writing', section: 'reading_writing', module: 1 },
-              { label: 'Section 1, Module 2: Reading and Writing', section: 'reading_writing', module: 2 },
-              { label: 'Section 2, Module 1: Math', section: 'math', module: 1 },
-              { label: 'Section 2, Module 2: Math', section: 'math', module: 2 },
-            ]
-            
-            return moduleGroups.map((group) => {
-              const moduleQuestions = questions?.filter(
-                q => q.section === group.section && q.module === group.module
-              ) || []
+            return MODULE_GROUPS.map((group) => {
+              const moduleQuestions = typedQuestions.filter(
+                (question) => question.section === group.section && question.module === group.module,
+              )
               
               if (moduleQuestions.length === 0) return null
               
-              const moduleCorrect = moduleQuestions.filter(q => {
-                const answer = answers?.find((a: any) => a.question_id === q.id)
+              const moduleCorrect = moduleQuestions.filter((question) => {
+                const answer = typedAnswers.find((entry) => entry.question_id === question.id)
                 return answer?.is_correct
               }).length
               
@@ -283,17 +347,17 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {moduleQuestions.map((q, idx) => {
-                          const answer = answers?.find((a: any) => a.question_id === q.id)
+                        {moduleQuestions.map((question, idx) => {
+                          const answer = typedAnswers.find((entry) => entry.question_id === question.id)
                           const isCorrect = answer?.is_correct
                           const studentAnswer = answer?.answer_value || '(Skipped)'
                           const isSkipped = !answer
                           
                           return (
-                            <tr key={q.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
+                            <tr key={question.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
                               <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-700">{idx + 1}</td>
-                              <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-50" title={q.domain}>{q.domain}</td>
-                              <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{q.correct_answer}</td>
+                              <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-50" title={question.domain}>{question.domain}</td>
+                              <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{question.correct_answer}</td>
                               <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
                                 {studentAnswer}
                               </td>
@@ -327,6 +391,13 @@ export default async function ScoreReportPage({ params }: { params: { id: string
     </div>
   )
 }
+
+const MODULE_GROUPS = [
+  { label: 'Section 1, Module 1: Reading and Writing', section: 'reading_writing', module: 1 },
+  { label: 'Section 1, Module 2: Reading and Writing', section: 'reading_writing', module: 2 },
+  { label: 'Section 2, Module 1: Math', section: 'math', module: 1 },
+  { label: 'Section 2, Module 2: Math', section: 'math', module: 2 },
+] as const
 
 const DOMAINS = {
   math: [
