@@ -57,10 +57,198 @@ const DARK = [17, 24, 39] as const
 const MUTED = [107, 114, 128] as const
 const BORDER = [229, 231, 235] as const
 const PANEL = [249, 250, 251] as const
+const WHITE = [255, 255, 255] as const
+const LIGHT_TEXT = [156, 163, 175] as const
 const BLUE = [37, 99, 235] as const
 const GREEN = [22, 163, 74] as const
 const AMBER = [217, 119, 6] as const
 const RED = [220, 38, 38] as const
+const LIGHT_GREEN = [220, 252, 231] as const
+const LIGHT_AMBER = [254, 243, 199] as const
+const LIGHT_RED = [254, 226, 226] as const
+
+function getScoreBarWidth(score: number) {
+  return Math.max(0, Math.min(100, (score - 200) / 6))
+}
+
+function getDomainAccent(percentage: number): readonly [number, number, number] {
+  if (percentage >= 70) {
+    return GREEN
+  }
+
+  if (percentage >= 40) {
+    return AMBER
+  }
+
+  return RED
+}
+
+function drawReportCover(
+  pdf: jsPDF,
+  examTitle: string,
+  totalScore: number,
+  studentName: string,
+  username: string,
+  completedDate: string,
+) {
+  const pageWidth = pdf.internal.pageSize.getWidth()
+
+  pdf.setFillColor(...DARK)
+  pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, pageWidth - PAGE_MARGIN * 2, 52, 4, 4, 'F')
+
+  pdf.setTextColor(...WHITE)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(20)
+  pdf.text('SAT Score Report', PAGE_MARGIN + 8, PAGE_MARGIN + 15)
+
+  pdf.setTextColor(...LIGHT_TEXT)
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(11)
+  pdf.text(examTitle, PAGE_MARGIN + 8, PAGE_MARGIN + 24)
+
+  pdf.setTextColor(...WHITE)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(28)
+  pdf.text(`${totalScore}`, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 18, { align: 'right' })
+
+  pdf.setTextColor(...LIGHT_TEXT)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(9)
+  pdf.text('TOTAL SCORE', pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 27, { align: 'right' })
+
+  pdf.setDrawColor(55, 65, 81)
+  pdf.line(PAGE_MARGIN + 8, PAGE_MARGIN + 36, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 36)
+
+  pdf.setTextColor(...LIGHT_TEXT)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(8)
+  pdf.text('STUDENT', PAGE_MARGIN + 8, PAGE_MARGIN + 44)
+  pdf.text('DATE', pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 44, { align: 'right' })
+
+  pdf.setTextColor(...WHITE)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(13)
+  pdf.text(studentName, PAGE_MARGIN + 8, PAGE_MARGIN + 50)
+  pdf.text(completedDate, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 50, { align: 'right' })
+
+  pdf.setTextColor(...LIGHT_TEXT)
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(9)
+  pdf.text(`@${username}`, PAGE_MARGIN + 8, PAGE_MARGIN + 56)
+
+  return PAGE_MARGIN + 64
+}
+
+function drawScoreSectionCard(
+  pdf: jsPDF,
+  x: number,
+  y: number,
+  width: number,
+  title: string,
+  score: number,
+  domains: PdfDomainStat[],
+) {
+  const height = 102
+
+  pdf.setFillColor(...PANEL)
+  pdf.setDrawColor(...BORDER)
+  pdf.roundedRect(x, y, width, height, 4, 4, 'FD')
+
+  pdf.setTextColor(...DARK)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(13)
+  pdf.text(title, x + 8, y + 12)
+  pdf.text(`${score}`, x + width - 8, y + 12, { align: 'right' })
+
+  const progressY = y + 22
+  const progressWidth = width - 16
+  pdf.setFillColor(...BORDER)
+  pdf.roundedRect(x + 8, progressY, progressWidth, 2.8, 1.4, 1.4, 'F')
+
+  pdf.setFillColor(...DARK)
+  pdf.roundedRect(x + 8, progressY, (progressWidth * getScoreBarWidth(score)) / 100, 2.8, 1.4, 1.4, 'F')
+
+  pdf.setTextColor(...MUTED)
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(8)
+  pdf.text('200-800', x + width - 8, progressY + 7, { align: 'right' })
+
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('KNOWLEDGE AND SKILLS', x + 8, progressY + 13)
+
+  let rowY = progressY + 20
+  domains.forEach((domain) => {
+    const labelWidth = width - 52
+    const wrappedLabel = pdf.splitTextToSize(domain.name, labelWidth)
+
+    pdf.setTextColor(...DARK)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(8.5)
+    pdf.text(wrappedLabel, x + 8, rowY)
+
+    const meterX = x + width - 34
+    const meterY = rowY - 2
+    const meterWidth = 18
+    pdf.setFillColor(...BORDER)
+    pdf.roundedRect(meterX, meterY, meterWidth, 2.2, 1.1, 1.1, 'F')
+    pdf.setFillColor(...getDomainAccent(domain.percentage))
+    pdf.roundedRect(meterX, meterY, (meterWidth * domain.percentage) / 100, 2.2, 1.1, 1.1, 'F')
+
+    pdf.setTextColor(...MUTED)
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(8)
+    pdf.text(`${domain.percentage}%`, x + width - 8, rowY, { align: 'right' })
+
+    rowY += Math.max(6, wrappedLabel.length * 4)
+  })
+}
+
+function drawSummaryMetricCard(
+  pdf: jsPDF,
+  x: number,
+  y: number,
+  width: number,
+  title: string,
+  value: string,
+  subtitle: string,
+  accent: readonly [number, number, number],
+  background: readonly [number, number, number],
+) {
+  pdf.setFillColor(...background)
+  pdf.setDrawColor(...BORDER)
+  pdf.roundedRect(x, y, width, 29, 3, 3, 'FD')
+
+  pdf.setTextColor(...MUTED)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(8)
+  pdf.text(title.toUpperCase(), x + 5, y + 8)
+
+  pdf.setTextColor(...accent)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(16)
+  pdf.text(value, x + 5, y + 18)
+
+  pdf.setTextColor(...MUTED)
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(7.5)
+  pdf.text(subtitle, x + 5, y + 25)
+}
+
+function drawModuleCard(pdf: jsPDF, x: number, y: number, width: number, summary: PdfModuleSummary) {
+  pdf.setFillColor(...WHITE)
+  pdf.setDrawColor(...BORDER)
+  pdf.roundedRect(x, y, width, 24, 3, 3, 'FD')
+
+  pdf.setTextColor(...MUTED)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(8)
+  pdf.text(summary.label, x + 5, y + 8)
+
+  pdf.setTextColor(...DARK)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(14)
+  pdf.text(`${summary.correct}/${summary.total}`, x + 5, y + 18)
+}
 
 function addPageHeader(pdf: jsPDF, title: string, subtitle: string) {
   const pageWidth = pdf.internal.pageSize.getWidth()
@@ -199,113 +387,56 @@ export default function DownloadReportButton({
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const contentWidth = pdfWidth - PAGE_MARGIN * 2
 
-      let cursorY = addPageHeader(pdf, 'SAT Score Report', examTitle)
+      let cursorY = drawReportCover(pdf, examTitle, totalScore, studentName, username, completedDate)
+
+      const sectionGap = 6
+      const sectionCardWidth = (contentWidth - sectionGap) / 2
+      drawScoreSectionCard(pdf, PAGE_MARGIN, cursorY, sectionCardWidth, 'Reading and Writing', rwScore, readingWritingDomains)
+      drawScoreSectionCard(pdf, PAGE_MARGIN + sectionCardWidth + sectionGap, cursorY, sectionCardWidth, 'Math', mathScore, mathDomains)
+
+      pdf.addPage()
+      pdf.setFillColor(...WHITE)
+      pdf.setDrawColor(...BORDER)
+      pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, contentWidth, 88, 4, 4, 'FD')
+
+      pdf.setFillColor(...PANEL)
+      pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, contentWidth, 16, 4, 4, 'F')
+
+      pdf.setTextColor(...MUTED)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(10)
+      pdf.text('TEACHER SUMMARY', PAGE_MARGIN + 8, PAGE_MARGIN + 10)
+
+      const teacherCardGap = 4
+      const teacherCardWidth = (contentWidth - teacherCardGap * 3) / 4
+      const teacherCardY = PAGE_MARGIN + 22
+      drawSummaryMetricCard(pdf, PAGE_MARGIN, teacherCardY, teacherCardWidth, 'Reading & Writing', `${rwCorrect}/${rwTotal}`, 'questions correct', DARK, PANEL)
+      drawSummaryMetricCard(pdf, PAGE_MARGIN + teacherCardWidth + teacherCardGap, teacherCardY, teacherCardWidth, 'Math', `${mathCorrect}/${mathTotal}`, 'questions correct', DARK, PANEL)
+      drawSummaryMetricCard(pdf, PAGE_MARGIN + (teacherCardWidth + teacherCardGap) * 2, teacherCardY, teacherCardWidth, 'Overall', `${overallCorrect}/${overallTotal}`, 'total correct', DARK, PANEL)
+      drawSummaryMetricCard(
+        pdf,
+        PAGE_MARGIN + (teacherCardWidth + teacherCardGap) * 3,
+        teacherCardY,
+        teacherCardWidth,
+        'Security',
+        violations > 0 ? `${violations}` : 'Clean',
+        violations > 0 ? 'violations detected' : 'no violations',
+        violations > 0 ? RED : GREEN,
+        violations > 0 ? LIGHT_RED : LIGHT_GREEN,
+      )
+
+      pdf.setDrawColor(...BORDER)
+      pdf.line(PAGE_MARGIN + 8, PAGE_MARGIN + 58, PAGE_MARGIN + contentWidth - 8, PAGE_MARGIN + 58)
 
       pdf.setTextColor(...MUTED)
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(9)
-      pdf.text('STUDENT', PAGE_MARGIN, cursorY)
-      pdf.text('DATE', pdfWidth - PAGE_MARGIN, cursorY, { align: 'right' })
+      pdf.text('MODULE BREAKDOWN', PAGE_MARGIN + 8, PAGE_MARGIN + 66)
 
-      cursorY += 7
-      pdf.setTextColor(...DARK)
-      pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(16)
-      pdf.text(studentName, PAGE_MARGIN, cursorY)
-      pdf.text(completedDate, pdfWidth - PAGE_MARGIN, cursorY, { align: 'right' })
-
-      cursorY += 6
-      pdf.setTextColor(...MUTED)
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(10)
-      pdf.text(`@${username}`, PAGE_MARGIN, cursorY)
-
-      cursorY += 12
-      const cardGap = 6
-      const summaryCardWidth = (contentWidth - cardGap * 2) / 3
-      drawStatCard(pdf, PAGE_MARGIN, cursorY, summaryCardWidth, 34, 'Total Score', `${totalScore}`, 'Combined SAT score', BLUE)
-      drawStatCard(pdf, PAGE_MARGIN + summaryCardWidth + cardGap, cursorY, summaryCardWidth, 34, 'Reading & Writing', `${rwScore}`, `${rwCorrect}/${rwTotal} correct`, GREEN)
-      drawStatCard(pdf, PAGE_MARGIN + (summaryCardWidth + cardGap) * 2, cursorY, summaryCardWidth, 34, 'Math', `${mathScore}`, `${mathCorrect}/${mathTotal} correct`, AMBER)
-
-      cursorY += 46
-      cursorY = addSectionHeading(pdf, 'Performance Overview', cursorY)
-      const overviewCardWidth = (contentWidth - 6) / 2
-      drawStatCard(pdf, PAGE_MARGIN, cursorY, overviewCardWidth, 28, 'Overall Accuracy', `${overallCorrect}/${overallTotal}`, 'Total correct answers', BLUE)
-      drawStatCard(
-        pdf,
-        PAGE_MARGIN + overviewCardWidth + 6,
-        cursorY,
-        overviewCardWidth,
-        28,
-        'Security',
-        violations > 0 ? `${violations}` : 'Clean',
-        violations > 0 ? 'Violations detected' : 'No violations',
-        violations > 0 ? RED : GREEN,
-      )
-
-      pdf.addPage()
-      cursorY = addPageHeader(pdf, 'Score Sections', `${studentName} · ${examTitle}`)
-
-      const sectionCardWidth = (contentWidth - 6) / 2
-      drawStatCard(pdf, PAGE_MARGIN, cursorY, sectionCardWidth, 38, 'Reading & Writing', `${rwScore}`, `${rwCorrect}/${rwTotal} questions correct`, GREEN)
-      drawStatCard(pdf, PAGE_MARGIN + sectionCardWidth + 6, cursorY, sectionCardWidth, 38, 'Math', `${mathScore}`, `${mathCorrect}/${mathTotal} questions correct`, AMBER)
-
-      let tableY = cursorY + 50
-      tableY = addDomainTable(pdf, 'Reading & Writing Domains', tableY, readingWritingDomains)
-      tableY += 10
-      addDomainTable(pdf, 'Math Domains', tableY, mathDomains)
-
-      pdf.addPage()
-      cursorY = addPageHeader(pdf, 'Teacher Summary', `${studentName} · ${examTitle}`)
-
-      const teacherCardGap = 4
-      const teacherCardWidth = (contentWidth - teacherCardGap * 3) / 4
-      drawStatCard(pdf, PAGE_MARGIN, cursorY, teacherCardWidth, 30, 'Reading & Writing', `${rwCorrect}/${rwTotal}`, 'Questions correct', GREEN)
-      drawStatCard(pdf, PAGE_MARGIN + teacherCardWidth + teacherCardGap, cursorY, teacherCardWidth, 30, 'Math', `${mathCorrect}/${mathTotal}`, 'Questions correct', AMBER)
-      drawStatCard(pdf, PAGE_MARGIN + (teacherCardWidth + teacherCardGap) * 2, cursorY, teacherCardWidth, 30, 'Overall', `${overallCorrect}/${overallTotal}`, 'Total correct', BLUE)
-      drawStatCard(
-        pdf,
-        PAGE_MARGIN + (teacherCardWidth + teacherCardGap) * 3,
-        cursorY,
-        teacherCardWidth,
-        30,
-        'Security',
-        violations > 0 ? `${violations}` : 'Clean',
-        violations > 0 ? 'Violations detected' : 'No violations',
-        violations > 0 ? RED : GREEN,
-      )
-
-      autoTable(pdf, {
-        startY: cursorY + 42,
-        head: [['Module', 'Correct', 'Total', 'Accuracy']],
-        body: moduleSummaries.map((summary) => [
-          summary.label,
-          `${summary.correct}`,
-          `${summary.total}`,
-          `${Math.round((summary.correct / Math.max(summary.total, 1)) * 100)}%`,
-        ]),
-        theme: 'grid',
-        margin: { left: PAGE_MARGIN, right: PAGE_MARGIN },
-        headStyles: {
-          fillColor: [...DARK],
-          textColor: 255,
-          fontSize: 10,
-          halign: 'left',
-        },
-        styles: {
-          fontSize: 10,
-          cellPadding: 4,
-          lineColor: [...BORDER],
-          lineWidth: 0.1,
-        },
-        columnStyles: {
-          1: { halign: 'right' },
-          2: { halign: 'right' },
-          3: { halign: 'right', fontStyle: 'bold' },
-        },
-        alternateRowStyles: {
-          fillColor: [250, 250, 250],
-        },
+      const moduleGap = 4
+      const moduleWidth = (contentWidth - moduleGap * 3) / 4
+      moduleSummaries.forEach((summary, index) => {
+        drawModuleCard(pdf, PAGE_MARGIN + (moduleWidth + moduleGap) * index, PAGE_MARGIN + 70, moduleWidth, summary)
       })
 
       breakdownSections.forEach((section) => {
