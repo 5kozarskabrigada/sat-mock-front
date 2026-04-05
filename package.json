@@ -29,6 +29,7 @@
     "@types/jquery": "^3.5.33",
     "@types/katex": "^0.16.8",
     "html-react-parser": "^5.2.11",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jquery": "^3.7.1",
     "jspdf": "^4.0.0",
