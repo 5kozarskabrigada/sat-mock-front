@@ -5,6 +5,89 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { useState } from 'react'
 
+const UNSUPPORTED_COLOR_FUNCTION = /\b(?:oklch|oklab|lab|lch|color)\(/i
+const COLOR_STYLE_PROPERTIES = [
+  'color',
+  'background-color',
+  'border-top-color',
+  'border-right-color',
+  'border-bottom-color',
+  'border-left-color',
+  'outline-color',
+  'text-decoration-color',
+  'caret-color',
+  'column-rule-color',
+  'fill',
+  'stroke',
+  '-webkit-text-fill-color',
+  '-webkit-text-stroke-color',
+] as const
+
+function resolveColorValue(value: string): string | null {
+  if (!value || value === 'none' || value === 'transparent') {
+    return value
+  }
+
+  const temp = document.createElement('span')
+  temp.style.color = value
+  temp.style.position = 'fixed'
+  temp.style.pointerEvents = 'none'
+  temp.style.opacity = '0'
+  document.body.appendChild(temp)
+
+  const resolvedColor = window.getComputedStyle(temp).color
+  temp.remove()
+
+  return resolvedColor || null
+}
+
+function sanitizeCloneStyles(sourceRoot: HTMLElement, clonedDocument: Document) {
+  const clonedRoot = clonedDocument.getElementById('submission-results-pdf')
+
+  if (!clonedRoot) {
+    return
+  }
+
+  const sourceElements = [sourceRoot, ...Array.from(sourceRoot.querySelectorAll('*'))]
+  const clonedElements = [clonedRoot, ...Array.from(clonedRoot.querySelectorAll('*'))]
+
+  sourceElements.forEach((sourceElement, index) => {
+    const clonedElement = clonedElements[index]
+
+    if (!(clonedElement instanceof HTMLElement || clonedElement instanceof SVGElement)) {
+      return
+    }
+
+    const computedStyle = window.getComputedStyle(sourceElement)
+
+    COLOR_STYLE_PROPERTIES.forEach((property) => {
+      const value = computedStyle.getPropertyValue(property)
+
+      if (!UNSUPPORTED_COLOR_FUNCTION.test(value)) {
+        return
+      }
+
+      const resolvedColor = resolveColorValue(value)
+
+      if (resolvedColor) {
+        clonedElement.style.setProperty(property, resolvedColor)
+      }
+    })
+
+    if (UNSUPPORTED_COLOR_FUNCTION.test(computedStyle.boxShadow)) {
+      clonedElement.style.boxShadow = 'none'
+    }
+
+    if (UNSUPPORTED_COLOR_FUNCTION.test(computedStyle.textShadow)) {
+      clonedElement.style.textShadow = 'none'
+    }
+
+    if (UNSUPPORTED_COLOR_FUNCTION.test(computedStyle.backgroundImage)) {
+      clonedElement.style.backgroundImage = 'none'
+    }
+  })
+}
+
 export default function DownloadReportButton({ studentName, examTitle }: { studentName: string, examTitle: string }) {
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -23,7 +106,10 @@ export default function DownloadReportButton({ studentName, examTitle }: { stude
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#f9fafb'
+        backgroundColor: '#f9fafb',
+        onclone: (clonedDocument) => {
+          sanitizeCloneStyles(resultsPage, clonedDocument)
+        }
       })
 
       const imgData = canvas.toDataURL('image/png')
