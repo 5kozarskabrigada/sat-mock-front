@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
 import DownloadReportButton from './download-button'
-import DownloadBreakdownButton from './download-breakdown-button'
 
 export default async function ScoreReportPage({ params }: { params: { id: string, attemptId: string } }) {
   const supabase = await createClient()
@@ -82,251 +81,248 @@ export default async function ScoreReportPage({ params }: { params: { id: string
         />
       </div>
 
-      <div id="score-report" className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100">
-        {/* Official-style Header */}
-        <div className="bg-gray-900 text-white p-8">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">SAT Score Report</h1>
-                    <p className="text-gray-400 mt-1">{attempt.exams.title}</p>
-                </div>
-                <div className="text-right">
-                    <div className="text-3xl font-bold">{totalScore}</div>
-                    <div className="text-sm text-gray-400 font-medium uppercase tracking-wider">Total Score</div>
-                </div>
-            </div>
-            
-            <div className="mt-8 grid grid-cols-2 gap-8 border-t border-gray-800 pt-8">
-                <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Student</p>
-                    <p className="text-lg font-bold">{attempt.users.first_name} {attempt.users.last_name}</p>
-                    <p className="text-sm text-gray-400">@{attempt.users.username}</p>
-                </div>
-                <div className="text-right">
-                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Date</p>
-                    <p className="text-lg font-bold">{new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-            </div>
-        </div>
-
-        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Reading and Writing Section */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <div className="flex justify-between items-baseline mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Reading and Writing</h3>
-                    <span className="text-2xl font-bold text-gray-900">{rwScore}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                    <div className="bg-gray-900 h-2 rounded-full" style={{ width: `${(rwScore - 200) / 6}%` }}></div>
-                </div>
-                <p className="text-xs text-gray-500 text-right">200–800</p>
-                
-                {domainStats.some(d => DOMAINS.reading_writing.includes(d.name)) && (
-                <div className="mt-6 space-y-3">
-                    <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
-                    {domainStats.filter(d => DOMAINS.reading_writing.includes(d.name)).map(stat => (
-                        <div key={stat.name} className="flex justify-between items-center text-sm">
-                            <span className="text-gray-700">{stat.name}</span>
-                            <div className="flex items-center space-x-2">
-                                <div className="w-24 bg-gray-200 rounded-full h-1.5">
-                                    <div className={`h-1.5 rounded-full ${stat.percentage >= 70 ? 'bg-green-500' : stat.percentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${stat.percentage}%` }}></div>
-                                </div>
-                                <span className="text-xs font-medium w-8 text-right">{stat.percentage}%</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                )}
-            </div>
-
-            {/* Math Section */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <div className="flex justify-between items-baseline mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Math</h3>
-                    <span className="text-2xl font-bold text-gray-900">{mathScore}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                    <div className="bg-gray-900 h-2 rounded-full" style={{ width: `${(mathScore - 200) / 6}%` }}></div>
-                </div>
-                <p className="text-xs text-gray-500 text-right">200–800</p>
-
-                {domainStats.some(d => DOMAINS.math.includes(d.name)) && (
-                <div className="mt-6 space-y-3">
-                    <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
-                    {domainStats.filter(d => DOMAINS.math.includes(d.name)).map(stat => (
-                        <div key={stat.name} className="flex justify-between items-center text-sm">
-                            <span className="text-gray-700">{stat.name}</span>
-                            <div className="flex items-center space-x-2">
-                                <div className="w-24 bg-gray-200 rounded-full h-1.5">
-                                    <div className={`h-1.5 rounded-full ${stat.percentage >= 70 ? 'bg-green-500' : stat.percentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${stat.percentage}%` }}></div>
-                                </div>
-                                <span className="text-xs font-medium w-8 text-right">{stat.percentage}%</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                )}
-            </div>
-        </div>
-      </div>
-
-      {/* Teacher Summary Section - Outside score-report for PDF exclusion */}
-      <div className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:hidden">
-        <div className="p-6 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-sm font-bold uppercase text-gray-500 tracking-wider">Teacher Summary</h3>
-        </div>
-        <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-xs text-gray-500 uppercase font-medium">Reading & Writing</p>
-                    <p className="text-xl font-bold text-gray-900">{rwCorrect}/{rwQuestions.length}</p>
-                    <p className="text-xs text-gray-400">questions correct</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-xs text-gray-500 uppercase font-medium">Math</p>
-                    <p className="text-xl font-bold text-gray-900">{mathCorrect}/{mathQuestions.length}</p>
-                    <p className="text-xs text-gray-400">questions correct</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-xs text-gray-500 uppercase font-medium">Overall</p>
-                    <p className="text-xl font-bold text-gray-900">{rwCorrect + mathCorrect}/{rwQuestions.length + mathQuestions.length}</p>
-                    <p className="text-xs text-gray-400">total correct</p>
-                </div>
-                <div className={`rounded-lg p-4 border ${attempt.lockdown_violations > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-                    <p className="text-xs text-gray-500 uppercase font-medium">Security</p>
-                    <p className={`text-xl font-bold ${attempt.lockdown_violations > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {attempt.lockdown_violations > 0 ? attempt.lockdown_violations : 'Clean'}
-                    </p>
-                    <p className="text-xs text-gray-400">{attempt.lockdown_violations > 0 ? 'violations detected' : 'no violations'}</p>
-                </div>
-            </div>
-            
-            {/* Module Breakdown */}
-            <div className="border-t border-gray-200 pt-6">
-                <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">Module Breakdown</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {rwM1Questions.length > 0 && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <p className="text-xs text-gray-500 font-medium">R&W Module 1</p>
-                        <p className="text-lg font-bold text-gray-900">{rwM1Correct}/{rwM1Questions.length}</p>
-                    </div>
-                    )}
-                    {rwM2Questions.length > 0 && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <p className="text-xs text-gray-500 font-medium">R&W Module 2</p>
-                        <p className="text-lg font-bold text-gray-900">{rwM2Correct}/{rwM2Questions.length}</p>
-                    </div>
-                    )}
-                    {mathM1Questions.length > 0 && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <p className="text-xs text-gray-500 font-medium">Math Module 1</p>
-                        <p className="text-lg font-bold text-gray-900">{mathM1Correct}/{mathM1Questions.length}</p>
-                    </div>
-                    )}
-                    {mathM2Questions.length > 0 && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <p className="text-xs text-gray-500 font-medium">Math Module 2</p>
-                        <p className="text-lg font-bold text-gray-900">{mathM2Correct}/{mathM2Questions.length}</p>
-                    </div>
-                    )}
-                </div>
-            </div>
-        </div>
-      </div>
-
-      {/* Detailed Question Breakdown */}
-      <div id="question-breakdown" className="bg-white shadow-xl rounded-xl overflow-hidden max-w-5xl mx-auto border border-gray-100 print:break-before-page">
-        <div className="bg-gray-900 text-white p-6 border-b border-gray-800 flex justify-between items-center">
-            <div>
-                <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
-                <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
-            </div>
-            <DownloadBreakdownButton 
-                studentName={`${attempt.users.first_name} ${attempt.users.last_name}`}
-                examTitle={attempt.exams.title}
-            />
-        </div>
-        
-        {/* Group questions by module */}
-        {(() => {
-          const moduleGroups = [
-            { label: 'Section 1, Module 1: Reading and Writing', section: 'reading_writing', module: 1 },
-            { label: 'Section 1, Module 2: Reading and Writing', section: 'reading_writing', module: 2 },
-            { label: 'Section 2, Module 1: Math', section: 'math', module: 1 },
-            { label: 'Section 2, Module 2: Math', section: 'math', module: 2 },
-          ]
-          
-          return moduleGroups.map((group) => {
-            const moduleQuestions = questions?.filter(
-              q => q.section === group.section && q.module === group.module
-            ) || []
-            
-            if (moduleQuestions.length === 0) return null
-            
-            const moduleCorrect = moduleQuestions.filter(q => {
-              const answer = answers?.find((a: any) => a.question_id === q.id)
-              return answer?.is_correct
-            }).length
-            
-            return (
-              <div key={`${group.section}-${group.module}`}>
-                <div className="bg-gray-50 px-6 py-3 border-b border-t border-gray-200 flex justify-between items-center">
-                  <h4 className="font-bold text-gray-800 text-sm">{group.label}</h4>
-                  <span className="text-xs font-medium text-gray-500">
-                    {moduleCorrect}/{moduleQuestions.length} correct
-                  </span>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50/50">
-                      <tr>
-                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
-                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
-                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
-                        <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Answer</th>
-                        <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {moduleQuestions.map((q, idx) => {
-                        const answer = answers?.find((a: any) => a.question_id === q.id)
-                        const isCorrect = answer?.is_correct
-                        const studentAnswer = answer?.answer_value || '(Skipped)'
-                        const isSkipped = !answer
-                        
-                        return (
-                          <tr key={q.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
-                            <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-700">{idx + 1}</td>
-                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]" title={q.domain}>{q.domain}</td>
-                            <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{q.correct_answer}</td>
-                            <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
-                              {studentAnswer}
-                            </td>
-                            <td className="px-6 py-3 whitespace-nowrap text-center">
-                              {isCorrect ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  Correct
-                                </span>
-                              ) : isSkipped ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  Skipped
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                  Incorrect
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+      <div id="submission-results-pdf" className="space-y-6 max-w-5xl mx-auto w-full">
+        <div id="score-report" className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+          {/* Official-style Header */}
+          <div className="bg-gray-900 text-white p-8">
+              <div className="flex justify-between items-start">
+                  <div>
+                      <h1 className="text-2xl font-bold tracking-tight">SAT Score Report</h1>
+                      <p className="text-gray-400 mt-1">{attempt.exams.title}</p>
+                  </div>
+                  <div className="text-right">
+                      <div className="text-3xl font-bold">{totalScore}</div>
+                      <div className="text-sm text-gray-400 font-medium uppercase tracking-wider">Total Score</div>
+                  </div>
               </div>
-            )
-          })
-        })()}
+              
+              <div className="mt-8 grid grid-cols-2 gap-8 border-t border-gray-800 pt-8">
+                  <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Student</p>
+                      <p className="text-lg font-bold">{attempt.users.first_name} {attempt.users.last_name}</p>
+                      <p className="text-sm text-gray-400">@{attempt.users.username}</p>
+                  </div>
+                  <div className="text-right">
+                      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Date</p>
+                      <p className="text-lg font-bold">{new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
+              </div>
+          </div>
+
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Reading and Writing Section */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <div className="flex justify-between items-baseline mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">Reading and Writing</h3>
+                      <span className="text-2xl font-bold text-gray-900">{rwScore}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                      <div className="bg-gray-900 h-2 rounded-full" style={{ width: `${(rwScore - 200) / 6}%` }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500 text-right">200–800</p>
+                  
+                  {domainStats.some(d => DOMAINS.reading_writing.includes(d.name)) && (
+                  <div className="mt-6 space-y-3">
+                      <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
+                      {domainStats.filter(d => DOMAINS.reading_writing.includes(d.name)).map(stat => (
+                          <div key={stat.name} className="flex justify-between items-center text-sm">
+                              <span className="text-gray-700">{stat.name}</span>
+                              <div className="flex items-center space-x-2">
+                                  <div className="w-24 bg-gray-200 rounded-full h-1.5">
+                                      <div className={`h-1.5 rounded-full ${stat.percentage >= 70 ? 'bg-green-500' : stat.percentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${stat.percentage}%` }}></div>
+                                  </div>
+                                  <span className="text-xs font-medium w-8 text-right">{stat.percentage}%</span>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+                  )}
+              </div>
+
+              {/* Math Section */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <div className="flex justify-between items-baseline mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">Math</h3>
+                      <span className="text-2xl font-bold text-gray-900">{mathScore}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                      <div className="bg-gray-900 h-2 rounded-full" style={{ width: `${(mathScore - 200) / 6}%` }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500 text-right">200–800</p>
+
+                  {domainStats.some(d => DOMAINS.math.includes(d.name)) && (
+                  <div className="mt-6 space-y-3">
+                      <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
+                      {domainStats.filter(d => DOMAINS.math.includes(d.name)).map(stat => (
+                          <div key={stat.name} className="flex justify-between items-center text-sm">
+                              <span className="text-gray-700">{stat.name}</span>
+                              <div className="flex items-center space-x-2">
+                                  <div className="w-24 bg-gray-200 rounded-full h-1.5">
+                                      <div className={`h-1.5 rounded-full ${stat.percentage >= 70 ? 'bg-green-500' : stat.percentage >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${stat.percentage}%` }}></div>
+                                  </div>
+                                  <span className="text-xs font-medium w-8 text-right">{stat.percentage}%</span>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+                  )}
+              </div>
+          </div>
+        </div>
+
+        <div className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+          <div className="p-6 bg-gray-50 border-b border-gray-200">
+              <h3 className="text-sm font-bold uppercase text-gray-500 tracking-wider">Teacher Summary</h3>
+          </div>
+          <div className="p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <p className="text-xs text-gray-500 uppercase font-medium">Reading & Writing</p>
+                      <p className="text-xl font-bold text-gray-900">{rwCorrect}/{rwQuestions.length}</p>
+                      <p className="text-xs text-gray-400">questions correct</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <p className="text-xs text-gray-500 uppercase font-medium">Math</p>
+                      <p className="text-xl font-bold text-gray-900">{mathCorrect}/{mathQuestions.length}</p>
+                      <p className="text-xs text-gray-400">questions correct</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <p className="text-xs text-gray-500 uppercase font-medium">Overall</p>
+                      <p className="text-xl font-bold text-gray-900">{rwCorrect + mathCorrect}/{rwQuestions.length + mathQuestions.length}</p>
+                      <p className="text-xs text-gray-400">total correct</p>
+                  </div>
+                  <div className={`rounded-lg p-4 border ${attempt.lockdown_violations > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                      <p className="text-xs text-gray-500 uppercase font-medium">Security</p>
+                      <p className={`text-xl font-bold ${attempt.lockdown_violations > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {attempt.lockdown_violations > 0 ? attempt.lockdown_violations : 'Clean'}
+                      </p>
+                      <p className="text-xs text-gray-400">{attempt.lockdown_violations > 0 ? 'violations detected' : 'no violations'}</p>
+                  </div>
+              </div>
+              
+              {/* Module Breakdown */}
+              <div className="border-t border-gray-200 pt-6">
+                  <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">Module Breakdown</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {rwM1Questions.length > 0 && (
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <p className="text-xs text-gray-500 font-medium">R&W Module 1</p>
+                          <p className="text-lg font-bold text-gray-900">{rwM1Correct}/{rwM1Questions.length}</p>
+                      </div>
+                      )}
+                      {rwM2Questions.length > 0 && (
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <p className="text-xs text-gray-500 font-medium">R&W Module 2</p>
+                          <p className="text-lg font-bold text-gray-900">{rwM2Correct}/{rwM2Questions.length}</p>
+                      </div>
+                      )}
+                      {mathM1Questions.length > 0 && (
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <p className="text-xs text-gray-500 font-medium">Math Module 1</p>
+                          <p className="text-lg font-bold text-gray-900">{mathM1Correct}/{mathM1Questions.length}</p>
+                      </div>
+                      )}
+                      {mathM2Questions.length > 0 && (
+                      <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <p className="text-xs text-gray-500 font-medium">Math Module 2</p>
+                          <p className="text-lg font-bold text-gray-900">{mathM2Correct}/{mathM2Questions.length}</p>
+                      </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+        </div>
+
+        {/* Detailed Question Breakdown */}
+        <div id="question-breakdown" className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100 print:break-before-page">
+          <div className="bg-gray-900 text-white p-6 border-b border-gray-800">
+              <div>
+                  <h3 className="text-xl font-bold">Detailed Question Breakdown</h3>
+                  <p className="text-gray-400 text-sm mt-1">Review student answers against correct keys</p>
+              </div>
+          </div>
+        
+          {/* Group questions by module */}
+          {(() => {
+            const moduleGroups = [
+              { label: 'Section 1, Module 1: Reading and Writing', section: 'reading_writing', module: 1 },
+              { label: 'Section 1, Module 2: Reading and Writing', section: 'reading_writing', module: 2 },
+              { label: 'Section 2, Module 1: Math', section: 'math', module: 1 },
+              { label: 'Section 2, Module 2: Math', section: 'math', module: 2 },
+            ]
+            
+            return moduleGroups.map((group) => {
+              const moduleQuestions = questions?.filter(
+                q => q.section === group.section && q.module === group.module
+              ) || []
+              
+              if (moduleQuestions.length === 0) return null
+              
+              const moduleCorrect = moduleQuestions.filter(q => {
+                const answer = answers?.find((a: any) => a.question_id === q.id)
+                return answer?.is_correct
+              }).length
+              
+              return (
+                <div key={`${group.section}-${group.module}`}>
+                  <div className="bg-gray-50 px-6 py-3 border-b border-t border-gray-200 flex justify-between items-center">
+                    <h4 className="font-bold text-gray-800 text-sm">{group.label}</h4>
+                    <span className="text-xs font-medium text-gray-500">
+                      {moduleCorrect}/{moduleQuestions.length} correct
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50/50">
+                        <tr>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Answer</th>
+                          <th className="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Result</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {moduleQuestions.map((q, idx) => {
+                          const answer = answers?.find((a: any) => a.question_id === q.id)
+                          const isCorrect = answer?.is_correct
+                          const studentAnswer = answer?.answer_value || '(Skipped)'
+                          const isSkipped = !answer
+                          
+                          return (
+                            <tr key={q.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
+                              <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-700">{idx + 1}</td>
+                              <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-50" title={q.domain}>{q.domain}</td>
+                              <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{q.correct_answer}</td>
+                              <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
+                                {studentAnswer}
+                              </td>
+                              <td className="px-6 py-3 whitespace-nowrap text-center">
+                                {isCorrect ? (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Correct
+                                  </span>
+                                ) : isSkipped ? (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Skipped
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Incorrect
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            })
+          })()}
+        </div>
       </div>
     </div>
   )

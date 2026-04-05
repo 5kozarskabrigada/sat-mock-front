@@ -9,9 +9,9 @@ export default function DownloadReportButton({ studentName, examTitle }: { stude
   const [isGenerating, setIsGenerating] = useState(false)
 
   const handleDownload = async () => {
-    const scoreReport = document.getElementById('score-report')
+    const resultsPage = document.getElementById('submission-results-pdf')
     
-    if (!scoreReport) return
+    if (!resultsPage) return
 
     setIsGenerating(true)
     try {
@@ -19,10 +19,11 @@ export default function DownloadReportButton({ studentName, examTitle }: { stude
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = pdf.internal.pageSize.getHeight()
       
-      const canvas = await html2canvas(scoreReport, {
+      const canvas = await html2canvas(resultsPage, {
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        backgroundColor: '#f9fafb'
       })
 
       const imgData = canvas.toDataURL('image/png')
@@ -49,7 +50,7 @@ export default function DownloadReportButton({ studentName, examTitle }: { stude
         heightLeft -= pdfHeight
       }
       
-      pdf.save(`${studentName} - ${examTitle} Score Report.pdf`)
+      pdf.save(`${studentName} - ${examTitle} Submission Results.pdf`)
     } catch (error) {
       console.error('Failed to generate PDF', error)
       alert('Failed to generate PDF')
@@ -64,7 +65,7 @@ export default function DownloadReportButton({ studentName, examTitle }: { stude
       disabled={isGenerating}
       className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
     >
-      {isGenerating ? 'Generating PDF...' : 'Download Report'}
+      {isGenerating ? 'Generating PDF...' : 'Download Full PDF'}
     </button>
   )
 }
