@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Better Auth handles sessions via cookies automatically
-  // No need for manual session refresh like Supabase
+  // Auth is handled in client layouts/pages via JWT in localStorage.
+  // This middleware currently only preserves route passthrough behavior.
   
   // Optional: Add route protection here if needed
   // For now, we'll let all requests through
-  // Better Auth will handle authentication at the route/component level
+  // Route guards are enforced in app components.
   
   return NextResponse.next({
     request,

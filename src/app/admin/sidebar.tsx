@@ -4,10 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import Logo from '@/components/Logo'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function AdminSidebar({ email }: { email: string }) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const { logout } = useAuth()
 
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + '/')
@@ -85,9 +87,9 @@ export default function AdminSidebar({ email }: { email: string }) {
               </div>
             </div>
           )}
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
+          <button
+              type="button"
+              onClick={logout}
               title={isCollapsed ? "Sign out" : undefined}
               className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ${isCollapsed ? 'px-2' : ''}`}
             >
@@ -97,7 +99,6 @@ export default function AdminSidebar({ email }: { email: string }) {
                 "Sign out"
               )}
             </button>
-          </form>
         </div>
       </div>
     </div>

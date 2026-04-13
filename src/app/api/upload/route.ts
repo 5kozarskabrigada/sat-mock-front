@@ -1,9 +1,22 @@
 'use server'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+const BUCKET = 'exam-images'
+
+function getStorageClient() {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+  }
+
+  return createClient(supabaseUrl, supabaseServiceRoleKey)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,13 +37,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 })
     }
 
-    // Convert to base64 data URL
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const base64 = buffer.toString('base64')
-    const dataUrl = `data:${file.type};base64,${base64}`
+    const supabase = getStorageClient()
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'bin'
+    const objectPath = `questions/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`
 
-    return NextResponse.json({ url: dataUrl })
+    const bytes = await file.arrayBuffer()
+    const fileBuffer = Buffer.from(bytes)
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(objectPath, fileBuffer, {
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError)
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    }
+
+    const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(objectPath)
+    const publicUrl = publicData?.publicUrl
+
+    if (!publicUrl) {
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    }
+
+    return NextResponse.json({ url: publicUrl })
   } catch (error: any) {
     console.error('Upload error:', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
