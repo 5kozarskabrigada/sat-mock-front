@@ -13,8 +13,8 @@ export default function StudentList({ students }: { students: any[] }) {
 
   const filteredStudents = students.filter(student => 
     student.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+    student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleUpdate = async (formData: FormData) => {
@@ -63,11 +63,11 @@ export default function StudentList({ students }: { students: any[] }) {
                         <form action={handleUpdate} className="flex gap-4 items-end">
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">First Name</label>
-                                <input type="text" name="firstName" defaultValue={student.first_name} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
+                                <input type="text" name="firstName" defaultValue={student.firstName} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">Last Name</label>
-                                <input type="text" name="lastName" defaultValue={student.last_name} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
+                                <input type="text" name="lastName" defaultValue={student.lastName} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">New Password (Optional)</label>
@@ -84,12 +84,12 @@ export default function StudentList({ students }: { students: any[] }) {
                                 <div className="flex text-sm">
                                 <p className="font-medium text-indigo-600 truncate group-hover:text-indigo-800">{student.username}</p>
                                 <p className="ml-1 shrink-0 font-normal text-gray-500 group-hover:text-gray-700">
-                                    {student.first_name} {student.last_name}
+                                    {student.firstName} {student.lastName}
                                 </p>
                                 </div>
                                 <div className="mt-2 flex">
                                 <div className="flex items-center text-sm text-gray-500">
-                                    Joined {new Date(student.created_at).toLocaleDateString()}
+                                    Joined {new Date(student.createdAt).toLocaleDateString()}
                                 </div>
                                 </div>
                             </Link>

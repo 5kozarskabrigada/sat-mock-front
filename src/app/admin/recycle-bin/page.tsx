@@ -1,25 +1,44 @@
 
-import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { RestoreExamButton, RestoreQuestionButton, PermanentDeleteExamButton, PermanentDeleteQuestionButton } from './buttons'
 import PreviewQuestion from './preview-question'
 import PreviewExam from './preview-exam'
 import LatexRenderer from '@/components/ui/latex-renderer'
+import { prisma } from '@/lib/prisma'
 
 export default async function RecycleBinPage() {
-  const supabase = await createClient()
+  // Fetch soft-deleted exams and questions
+  const deletedExams = await prisma.exam.findMany({
+    where: { deletedAt: { not: null } },
+    include: {
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+      _count: {
+        select: {
+          questions: true,
+        },
+      },
+    },
+    orderBy: { deletedAt: 'desc' },
+  })
 
-  const { data: deletedExams } = await supabase
-    .from('exams')
-    .select('*')
-    .not('deleted_at', 'is', null)
-    .order('deleted_at', { ascending: false })
-
-  const { data: deletedQuestions } = await supabase
-    .from('questions')
-    .select('*, exams(title)')
-    .not('deleted_at', 'is', null)
-    .order('deleted_at', { ascending: false })
+  const deletedQuestions = await prisma.question.findMany({
+    where: { deletedAt: { not: null } },
+    include: {
+      exam: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+    orderBy: { deletedAt: 'desc' },
+  })
 
   return (
     <div className="space-y-8">
@@ -46,7 +65,7 @@ export default async function RecycleBinPage() {
                                     <p className="text-sm font-medium text-indigo-600">{exam.title}</p>
                                     <PreviewExam exam={exam} />
                                 </div>
-                                <p className="text-xs text-gray-500">Deleted {new Date(exam.deleted_at).toLocaleString()}</p>
+                                <p className="text-xs text-gray-500">Deleted {exam.deletedAt ? new Date(exam.deletedAt).toLocaleString() : 'Unknown'}</p>
                             </div>
                             <div className="flex space-x-4">
                                 <RestoreExamButton examId={exam.id} />
@@ -74,12 +93,12 @@ export default async function RecycleBinPage() {
                             <div className="max-w-xl">
                                 <div className="flex items-center">
                                     <div className="text-sm font-medium text-gray-900 truncate max-w-md">
-                                        <LatexRenderer>{q.content.question}</LatexRenderer>
+                                        <LatexRenderer>{(q.content as any)?.question || 'No content'}</LatexRenderer>
                                     </div>
                                     <PreviewQuestion question={q} />
                                 </div>
                                 <p className="text-xs text-gray-500">
-                                    Exam: {q.exams?.title || 'Unknown'} | Deleted {new Date(q.deleted_at).toLocaleString()}
+                                    Exam: {q.exam?.title || 'Unknown'} | Deleted {q.deletedAt ? new Date(q.deletedAt).toLocaleString() : 'Unknown'}
                                 </p>
                             </div>
                             <div className="flex space-x-4">

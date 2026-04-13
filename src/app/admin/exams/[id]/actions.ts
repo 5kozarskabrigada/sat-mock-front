@@ -1,44 +1,44 @@
 
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export async function updateExamCode(examId: string, newCode: string) {
-  const supabase = await createClient()
-
   const code = newCode.trim().toUpperCase()
   if (!code || code.length < 4) {
     return { error: 'Code must be at least 4 characters.' }
   }
 
-  // Check for duplicates
-  const { data: existing } = await supabase
-    .from('exams')
-    .select('id')
-    .eq('code', code)
-    .neq('id', examId)
-    .single()
+  try {
+    // Check for duplicates (excluding deleted exams)
+    const existing = await prisma.exam.findFirst({
+      where: {
+        code,
+        deletedAt: null,
+        NOT: { id: examId },
+      },
+      select: { id: true },
+    })
 
-  if (existing) {
-    return { error: 'This code is already in use by another exam.' }
+    if (existing) {
+      return { error: 'This code is already in use by another exam.' }
+    }
+
+    await prisma.exam.update({
+      where: { id: examId },
+      data: { code },
+    })
+
+    revalidatePath(`/admin/exams/${examId}`)
+    return { success: true, code }
+  } catch (error: any) {
+    return { error: error.message }
   }
-
-  const { error } = await supabase
-    .from('exams')
-    .update({ code })
-    .eq('id', examId)
-
-  if (error) return { error: error.message }
-
-  revalidatePath(`/admin/exams/${examId}`)
-  return { success: true, code }
 }
 
 export async function addQuestion(examId: string, formData: FormData) {
-  const supabase = await createClient()
-
   const section = formData.get('section') as string
   const module = parseInt(formData.get('module') as string)
   const questionText = formData.get('questionText') as string
@@ -73,32 +73,29 @@ export async function addQuestion(examId: string, formData: FormData) {
     options: Object.keys(options).length > 0 ? options : null
   }
 
-  const { error } = await supabase
-    .from('questions')
-    .insert({
-      exam_id: examId,
-      section,
-      module,
-      content,
-      correct_answer: correctAnswer,
-      explanation,
-      domain: domain || null,
-      equation_latex: equationLatex || null
+  try {
+    await prisma.question.create({
+      data: {
+        examId,
+        section,
+        module,
+        content,
+        correctAnswer,
+        explanation,
+        domain: domain || null,
+        equationLatex: equationLatex || null,
+      },
     })
 
-  if (error) {
-    console.error("Error adding question:", error)
+    revalidatePath(`/admin/exams/${examId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error adding question:', error)
     return { error: error.message }
   }
-
-  revalidatePath(`/admin/exams/${examId}`)
-  // Redirect handled by client or we can just return success
-  return { success: true }
 }
 
 export async function updateQuestion(questionId: string, examId: string, prevState: any, formData: FormData) {
-  const supabase = await createClient()
-
   const section = formData.get('section') as string
   const module = parseInt(formData.get('module') as string)
   const questionText = formData.get('questionText') as string
@@ -133,116 +130,113 @@ export async function updateQuestion(questionId: string, examId: string, prevSta
     options: Object.keys(options).length > 0 ? options : null
   }
 
-  const { error } = await supabase
-    .from('questions')
-    .update({
-      section,
-      module,
-      content,
-      correct_answer: correctAnswer,
-      explanation,
-      domain: domain || null,
-      equation_latex: equationLatex || null
+  try {
+    await prisma.question.update({
+      where: { id: questionId },
+      data: {
+        section,
+        module,
+        content,
+        correctAnswer,
+        explanation,
+        domain: domain || null,
+        equationLatex: equationLatex || null,
+      },
     })
-    .eq('id', questionId)
 
-  if (error) {
+    revalidatePath(`/admin/exams/${examId}`)
+    return { success: true }
+  } catch (error: any) {
     return { error: error.message }
   }
-
-  revalidatePath(`/admin/exams/${examId}`)
-  redirect(`/admin/exams/${examId}`)
 }
 
 export async function deleteQuestion(questionId: string, examId: string) {
-  const supabase = await createClient()
+  try {
+    // Soft delete - set deletedAt timestamp
+    await prisma.question.update({
+      where: { id: questionId },
+      data: { deletedAt: new Date() },
+    })
 
-  const { error } = await supabase
-    .from('questions')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', questionId)
-
-  if (error) {
+    revalidatePath(`/admin/exams/${examId}`)
+    revalidatePath('/admin/recycle-bin')
+    return { success: true }
+  } catch (error: any) {
     return { error: error.message }
   }
-
-  revalidatePath(`/admin/exams/${examId}`)
-  return { success: true }
 }
 
 export async function deleteExam(examId: string) {
-    const supabase = await createClient()
-    const now = new Date().toISOString()
-    
-    // Soft-delete the exam
-    const { error } = await supabase
-        .from('exams')
-        .update({ deleted_at: now })
-        .eq('id', examId)
-
-    if (error) {
-        return { error: error.message }
-    }
-
-    // Also soft-delete all questions belonging to this exam
-    await supabase
-        .from('questions')
-        .update({ deleted_at: now })
-        .eq('exam_id', examId)
-        .is('deleted_at', null)
+  try {
+    // Soft delete - set deletedAt timestamp and cascade to child questions
+    await prisma.$transaction(async (tx) => {
+      // Soft delete all questions in this exam
+      await tx.question.updateMany({
+        where: { examId },
+        data: { deletedAt: new Date() },
+      })
+      
+      // Soft delete the exam itself
+      await tx.exam.update({
+        where: { id: examId },
+        data: { deletedAt: new Date() },
+      })
+    })
 
     revalidatePath('/admin/exams')
     revalidatePath('/admin/recycle-bin')
     return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
 }
 
 export async function validateExamQuestions(examId: string) {
-  const supabase = await createClient()
+  try {
+    // Fetch all questions for this exam (excluding deleted)
+    const questions = await prisma.question.findMany({
+      where: { examId, deletedAt: null },
+      select: {
+        id: true,
+        section: true,
+        module: true,
+      },
+    })
 
-  // Fetch all non-deleted questions for this exam in a single query
-  const { data: questions, error } = await supabase
-    .from('questions')
-    .select('id, section, module')
-    .eq('exam_id', examId)
-    .is('deleted_at', null)
+    const rwM1 = questions.filter(q => q.section === 'reading_writing' && q.module === 1).length
+    const rwM2 = questions.filter(q => q.section === 'reading_writing' && q.module === 2).length
+    const mathM1 = questions.filter(q => q.section === 'math' && q.module === 1).length
+    const mathM2 = questions.filter(q => q.section === 'math' && q.module === 2).length
 
-  if (error) {
+    const required = {
+        rwM1: 27,
+        rwM2: 27,
+        mathM1: 22,
+        mathM2: 22
+    }
+
+    const current = {
+        rwM1,
+        rwM2,
+        mathM1,
+        mathM2
+    }
+
+    const isValid = 
+        rwM1 === required.rwM1 && 
+        rwM2 === required.rwM2 && 
+        mathM1 === required.mathM1 && 
+        mathM2 === required.mathM2
+
+    return { isValid, current, required }
+  } catch (error) {
     console.error('Validation query error:', error)
+    return { isValid: false, current: { rwM1: 0, rwM2: 0, mathM1: 0, mathM2: 0 }, required: { rwM1: 27, rwM2: 27, mathM1: 22, mathM2: 22 } }
   }
-
-  const allQuestions = questions || []
-
-  const rwM1 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 1).length
-  const rwM2 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 2).length
-  const mathM1 = allQuestions.filter(q => q.section === 'math' && q.module === 1).length
-  const mathM2 = allQuestions.filter(q => q.section === 'math' && q.module === 2).length
-
-  const required = {
-      rwM1: 27,
-      rwM2: 27,
-      mathM1: 22,
-      mathM2: 22
-  }
-
-  const current = {
-      rwM1,
-      rwM2,
-      mathM1,
-      mathM2
-  }
-
-  const isValid = 
-      rwM1 === required.rwM1 && 
-      rwM2 === required.rwM2 && 
-      mathM1 === required.mathM1 && 
-      mathM2 === required.mathM2
-
-  return { isValid, current, required }
 }
 
 export async function toggleExamStatus(examId: string, currentStatus: string, classroomId: string | null, prevState: any) {
-  const supabase = await createClient()
-  
   if (currentStatus !== 'active') {
       const validation = await validateExamQuestions(examId)
       if (!validation.isValid) {
@@ -252,53 +246,38 @@ export async function toggleExamStatus(examId: string, currentStatus: string, cl
 
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'
 
-  const { error } = await supabase
-    .from('exams')
-    .update({ 
+  try {
+    await prisma.exam.update({
+      where: { id: examId },
+      data: {
         status: newStatus,
-        classroom_id: classroomId || null
+        classroomId: classroomId || null,
+      },
     })
-    .eq('id', examId)
 
-  if (error) {
+    revalidatePath(`/admin/exams/${examId}`)
+    revalidatePath('/admin/exams')
+    return { success: true }
+  } catch (error: any) {
     return { error: error.message }
   }
-
-  revalidatePath(`/admin/exams/${examId}`)
-  revalidatePath('/admin/exams')
-  return { success: true }
 }
 
 export async function updateLockdownPolicy(examId: string, policy: 'log' | 'disqualify') {
-  const supabase = await createClient()
-  
-  // Try using the RPC first as it might bypass schema cache issues
-  const { error: rpcError } = await supabase.rpc('update_lockdown_policy', {
-    exam_id: examId,
-    new_policy: policy
-  })
+  try {
+    await prisma.exam.update({
+      where: { id: examId },
+      data: { lockdownPolicy: policy },
+    })
 
-  if (!rpcError) {
     revalidatePath(`/admin/exams/${examId}`)
     return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
   }
-
-  console.warn("RPC update failed, falling back to direct update:", rpcError.message)
-
-  // Fallback to direct update if RPC fails
-  const { error } = await supabase
-    .from('exams')
-    .update({ lockdown_policy: policy })
-    .eq('id', examId)
-
-  if (error) return { error: error.message }
-  revalidatePath(`/admin/exams/${examId}`)
-  return { success: true }
 }
 
 export async function simpleToggleExamStatus(examId: string, currentStatus: string) {
-  const supabase = await createClient()
-  
   if (currentStatus !== 'active') {
       const validation = await validateExamQuestions(examId)
       if (!validation.isValid) {
@@ -308,12 +287,15 @@ export async function simpleToggleExamStatus(examId: string, currentStatus: stri
 
   const newStatus = currentStatus === 'active' ? 'ended' : 'active'
   
-  const { error } = await supabase
-    .from('exams')
-    .update({ status: newStatus })
-    .eq('id', examId)
+  try {
+    await prisma.exam.update({
+      where: { id: examId },
+      data: { status: newStatus },
+    })
 
-  if (error) return { error: error.message }
-  revalidatePath('/admin/exams')
-  return { success: true }
+    revalidatePath('/admin/exams')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
 }

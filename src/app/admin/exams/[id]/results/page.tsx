@@ -1,38 +1,32 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export default async function ExamResultsPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient()
   const { id } = await params
 
-  const { data: exam } = await supabase
-    .from('exams')
-    .select('title')
-    .eq('id', id)
-    .single()
+  const exam = await prisma.exam.findUnique({
+    where: { id },
+    select: { title: true },
+  })
 
   if (!exam) notFound()
 
   // Fetch all exam attempts for this exam
-  const { data: results } = await supabase
-    .from('student_exams')
-    .select(`
-      id,
-      started_at,
-      completed_at,
-      status,
-      score,
-      lockdown_violations,
-      users (
-        first_name,
-        last_name,
-        username
-      )
-    `)
-    .eq('exam_id', id)
-    .order('started_at', { ascending: false })
+  const results = await prisma.studentExam.findMany({
+    where: { examId: id },
+    include: {
+      student: {
+        select: {
+          firstName: true,
+          lastName: true,
+          username: true,
+        },
+      },
+    },
+    orderBy: { startedAt: 'desc' },
+  })
 
   return (
     <div className="space-y-6">
@@ -58,20 +52,20 @@ export default async function ExamResultsPage({ params }: { params: { id: string
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
-                                            {result.users?.first_name?.[0]}{result.users?.last_name?.[0]}
+                                            {result.student?.firstName?.[0]}{result.student?.lastName?.[0]}
                                         </div>
                                         <div className="ml-4">
                                             <div className="text-sm font-medium text-gray-900">
-                                                {result.users?.first_name} {result.users?.last_name}
+                                                {result.student?.firstName} {result.student?.lastName}
                                             </div>
-                                            <div className="text-sm text-gray-500">@{result.users?.username}</div>
+                                            <div className="text-sm text-gray-500">@{result.student?.username}</div>
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-6">
                                         <div className="text-right">
-                                            {result.lockdown_violations > 0 && (
+                                            {result.lockdownViolations > 0 && (
                                                 <div className="text-xs font-bold text-red-600 mb-1">
-                                                    {result.lockdown_violations} Security Violations
+                                                    {result.lockdownViolations} Security Violations
                                                 </div>
                                             )}
                                             <div className="text-sm text-gray-900 font-medium">
@@ -81,8 +75,8 @@ export default async function ExamResultsPage({ params }: { params: { id: string
                                             </div>
                                             <div className="text-xs text-gray-500">
                                                 {result.status === 'completed' 
-                                                  ? `Completed ${new Date(result.completed_at).toLocaleDateString()}`
-                                                  : `Started ${new Date(result.started_at).toLocaleDateString()}`
+                                                  ? `Completed ${new Date(result.completedAt).toLocaleDateString()}`
+                                                  : `Started ${new Date(result.startedAt).toLocaleDateString()}`
                                                 }
                                             </div>
                                         </div>

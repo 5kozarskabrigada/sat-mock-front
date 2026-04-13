@@ -3,7 +3,6 @@
 
 import { useState, ChangeEvent, useRef } from 'react'
 import { addQuestion } from './actions'
-import { createClient } from '@/utils/supabase/client'
 import RichTextEditor from '@/components/ui/rich-text-editor'
 import { EditorProvider } from '@/components/ui/editor-context'
 import UnifiedToolbar from '@/components/ui/unified-toolbar'
@@ -93,42 +92,20 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
 
       const fileExt = file.name.split('.').pop()?.toLowerCase()
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const filePath = `questions/${fileName}`
 
-      const supabase = createClient()
+      // Upload via server API route
+      const uploadData = new FormData()
+      uploadData.append('file', file)
 
-      // Check if user is authenticated
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (authError || !user) {
-        setUploadError('You must be logged in to upload images. Please refresh the page and try again.')
+      const res = await fetch('/api/upload', { method: 'POST', body: uploadData })
+      const result = await res.json()
+
+      if (!res.ok) {
+        setUploadError(result.error || 'Upload failed')
         return
       }
 
-      const { error: uploadErr } = await supabase.storage
-        .from('exam-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (uploadErr) {
-        console.error('Supabase upload error:', uploadErr)
-        // Show detailed error message
-        if (uploadErr.message.includes('Bucket not found')) {
-          setUploadError('Storage bucket "exam-images" not found. Please contact administrator to create the bucket.')
-        } else if (uploadErr.message.includes('row-level security') || uploadErr.message.includes('policy')) {
-          setUploadError('Permission denied. Storage policies may not be configured correctly.')
-        } else {
-          setUploadError(`Upload failed: ${uploadErr.message}`)
-        }
-        return
-      }
-
-      const { data } = supabase.storage
-        .from('exam-images')
-        .getPublicUrl(filePath)
-
-      setImageUrl(data.publicUrl)
+      setImageUrl(result.url)
     } catch (err: any) {
       console.error('Upload error:', err)
       setUploadError(`Unexpected error: ${err.message || 'Unknown error occurred'}`)

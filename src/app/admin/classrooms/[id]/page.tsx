@@ -1,29 +1,28 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import AddStudentToClassroomForm from './add-student-form'
 import RemoveStudentButton from './remove-student-button'
 import { notFound } from 'next/navigation'
 
 export default async function ClassroomDetailPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient()
   const { id } = await params
 
-  const { data: classroom } = await supabase
-    .from('classrooms')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const classroom = await prisma.classroom.findUnique({
+    where: { id },
+  })
 
   if (!classroom) {
     notFound()
   }
 
-  const { data: enrolledStudents } = await supabase
-    .from('student_classrooms')
-    .select('*, users(*)')
-    .eq('classroom_id', id)
-    .order('joined_at', { ascending: false })
+  const enrolledStudents = await prisma.studentClassroom.findMany({
+    where: { classroomId: id },
+    include: {
+      student: true,
+    },
+    orderBy: { joinedAt: 'desc' },
+  })
 
   return (
     <div className="space-y-8">
@@ -65,18 +64,18 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
                         <div className="px-8 py-6 flex items-center justify-between">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-16 w-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
-                                {enrollment.users.first_name?.[0]}{enrollment.users.last_name?.[0]}
+                                {enrollment.student.firstName?.[0]}{enrollment.student.lastName?.[0]}
                             </div>
                             <div className="ml-6">
-                                <div className="text-lg font-bold text-gray-900">{enrollment.users.first_name} {enrollment.users.last_name}</div>
-                                <div className="text-base text-gray-500">@{enrollment.users.username}</div>
+                                <div className="text-lg font-bold text-gray-900">{enrollment.student.firstName} {enrollment.student.lastName}</div>
+                                <div className="text-base text-gray-500">@{enrollment.student.username}</div>
                             </div>
                           </div>
                           <div className="flex items-center gap-6">
                               <span className="text-sm text-gray-400 hidden sm:inline-block">
-                                Joined {new Date(enrollment.joined_at).toLocaleDateString()}
+                                Joined {new Date(enrollment.joinedAt).toLocaleDateString()}
                               </span>
-                              <RemoveStudentButton classroomId={id} studentId={enrollment.student_id} />
+                              <RemoveStudentButton classroomId={id} studentId={enrollment.studentId} />
                           </div>
                         </div>
                       </li>

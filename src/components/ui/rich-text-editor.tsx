@@ -91,6 +91,7 @@ export default function RichTextEditor({
     const [isFocused, setIsFocused] = useState(false)
 
     const editor = useEditor({
+        immediatelyRender: false,
         extensions: [
             StarterKit,
             Underline,
@@ -148,7 +149,7 @@ export default function RichTextEditor({
     }, [defaultValue, editor])
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-2" suppressHydrationWarning>
             <div className="flex justify-between items-end">
                 <label htmlFor={id} className={`block text-sm font-medium transition-colors ${isFocused ? 'text-indigo-700' : 'text-gray-700'}`}>
                     {label}
@@ -183,6 +184,7 @@ export default function RichTextEditor({
                         ? 'border-indigo-500 ring-1 ring-indigo-500' 
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
+                suppressHydrationWarning
             >
                 <UnifiedToolbar editor={editor} showMath={enableMath} />
                 <EditorContent editor={editor} />

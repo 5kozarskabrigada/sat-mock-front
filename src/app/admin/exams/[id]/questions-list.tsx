@@ -16,7 +16,7 @@ interface Question {
     content: {
         question: string
     }
-    correct_answer: string
+    correctAnswer: string
 }
 
 function SectionGroup({ title, questions, router, examId, colorClass, ringClass }: { 
@@ -104,7 +104,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
                                             <div className="mt-2 flex items-center text-xs text-gray-500 gap-4">
                                                 <span className="flex items-center">
                                                     <span className="font-medium text-gray-700 mr-1">Answer:</span> 
-                                                    <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-900">{q.correct_answer}</span>
+                                                    <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-900">{q.correctAnswer}</span>
                                                 </span>
                                             </div>
                                         </div>

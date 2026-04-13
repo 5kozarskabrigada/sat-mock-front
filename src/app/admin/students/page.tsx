@@ -1,16 +1,13 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import CreateStudentModal from './create-student-modal'
 import StudentList from './student-list'
 
 export default async function StudentsPage() {
-  const supabase = await createClient()
-
-  const { data: students } = await supabase
-    .from('users')
-    .select('*')
-    .eq('role', 'student')
-    .order('created_at', { ascending: false })
+  const students = await prisma.user.findMany({
+    where: { role: 'student' },
+    orderBy: { createdAt: 'desc' },
+  })
 
   return (
     <div className="space-y-6">

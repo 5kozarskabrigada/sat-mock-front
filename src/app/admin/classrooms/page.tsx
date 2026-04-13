@@ -1,16 +1,18 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import CreateClassroomModal from './create-classroom-modal'
 import DeleteClassroomButton from './delete-classroom-button'
 
 export default async function ClassroomsPage() {
-  const supabase = await createClient()
-
-  const { data: classrooms } = await supabase
-    .from('classrooms')
-    .select('*, student_classrooms(count)')
-    .order('created_at', { ascending: false })
+  const classrooms = await prisma.classroom.findMany({
+    include: {
+      _count: {
+        select: { students: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
 
   return (
     <div className="space-y-8">
@@ -46,7 +48,7 @@ export default async function ClassroomsPage() {
                                 </svg>
                             </div>
                             <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                {classroom.student_classrooms[0].count} Students
+                                {classroom._count.students} Students
                             </span>
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
@@ -60,7 +62,7 @@ export default async function ClassroomsPage() {
                 
                 <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
                     <span className="text-xs text-gray-400">
-                        Created {new Date(classroom.created_at).toLocaleDateString()}
+                        Created {new Date(classroom.createdAt).toLocaleDateString()}
                     </span>
                     <DeleteClassroomButton classroomId={classroom.id} />
                 </div>

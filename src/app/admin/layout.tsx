@@ -1,5 +1,5 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { getCurrentUser } from '@/lib/get-current-user'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminSidebar from './sidebar'
@@ -9,23 +9,13 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
+  if (user.role !== 'admin') {
     redirect('/student')
   }
 

@@ -1,33 +1,41 @@
-import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import SubmissionsSearch from './submissions-search'
 import { Suspense } from 'react'
+import { prisma } from '@/lib/prisma'
 
 export default async function AdminSubmissionsPage({ searchParams }: { searchParams: { q?: string } }) {
-  const supabase = await createClient()
   const query = (await searchParams)?.q || ''
 
-  let dbQuery = supabase
-    .from('student_exams')
-    .select(`
-      *,
-      users!inner (
-        first_name,
-        last_name,
-        username
-      ),
-      exams (
-        title,
-        id
-      )
-    `)
-    .eq('status', 'completed')
-
-  if (query) {
-    dbQuery = dbQuery.or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`, { foreignTable: 'users' })
-  }
-
-  const { data: submissions } = await dbQuery.order('completed_at', { ascending: false })
+  const submissions = await prisma.studentExam.findMany({
+    where: {
+      status: 'completed',
+      ...(query ? {
+        student: {
+          OR: [
+            { username: { contains: query, mode: 'insensitive' } },
+            { firstName: { contains: query, mode: 'insensitive' } },
+            { lastName: { contains: query, mode: 'insensitive' } },
+          ]
+        }
+      } : {})
+    },
+    include: {
+      student: {
+        select: {
+          firstName: true,
+          lastName: true,
+          username: true,
+        }
+      },
+      exam: {
+        select: {
+          title: true,
+          id: true,
+        }
+      }
+    },
+    orderBy: { completedAt: 'desc' }
+  })
 
   return (
     <div className="space-y-6">
@@ -56,38 +64,38 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
             {submissions?.map((sub) => (
               <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {sub.completed_at ? new Date(sub.completed_at).toLocaleString() : 'N/A'}
+                  {sub.completedAt ? new Date(sub.completedAt).toLocaleString() : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
-                    {sub.users?.first_name} {sub.users?.last_name}
+                    {sub.student?.firstName} {sub.student?.lastName}
                   </div>
-                  <div className="text-xs text-gray-500">@{sub.users?.username}</div>
+                  <div className="text-xs text-gray-500">@{sub.student?.username}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sub.exams?.title}
+                  {sub.exam?.title}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col gap-1">
-                    {sub.lockdown_violations > 0 ? (
+                    {sub.lockdownViolations > 0 ? (
                         <span className="px-2 inline-flex text-[10px] leading-4 font-bold rounded-full bg-red-100 text-red-800 w-fit">
-                        {sub.lockdown_violations} Violations
+                        {sub.lockdownViolations} Violations
                         </span>
                     ) : (
                         <span className="px-2 inline-flex text-[10px] leading-4 font-bold rounded-full bg-green-100 text-green-800 w-fit">
                         Secure
                         </span>
                     )}
-                    {sub.score?.total !== undefined && (
+                    {(sub.score as any)?.total !== undefined && (
                         <span className="text-xs font-bold text-indigo-600">
-                            Score: {sub.score.total}
+                            Score: {(sub.score as any).total}
                         </span>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link 
-                    href={`/admin/exams/${sub.exams?.id}/results/${sub.id}`}
+                    href={`/admin/exams/${sub.exam?.id}/results/${sub.id}`}
                     className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md transition-colors"
                   >
                     View Report

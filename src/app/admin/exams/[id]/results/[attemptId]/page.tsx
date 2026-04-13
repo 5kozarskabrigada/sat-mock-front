@@ -1,5 +1,5 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
@@ -7,56 +7,55 @@ import DownloadReportButton from './download-button'
 import type { PdfBreakdownSection, PdfBreakdownQuestion } from './download-button'
 
 type AnswerRecord = {
-  question_id: string
-  is_correct: boolean | null
-  answer_value: string | null
+  questionId: string
+  isCorrect: boolean | null
+  answerValue: string | null
 }
 
 type QuestionRecord = {
   id: string
   domain: string
-  correct_answer: string
+  correctAnswer: string
   section: 'reading_writing' | 'math'
   module: number
   content: unknown
 }
 
 export default async function ScoreReportPage({ params }: { params: { id: string, attemptId: string } }) {
-  const supabase = await createClient()
   const { id, attemptId } = await params
 
   // Fetch attempt details
-  const { data: attempt } = await supabase
-    .from('student_exams')
-    .select(`
-      *,
-      users (
-        first_name,
-        last_name,
-        username
-      ),
-      exams (
-        title
-      )
-    `)
-    .eq('id', attemptId)
-    .single()
+  const attempt = await prisma.studentExam.findUnique({
+    where: { id: attemptId },
+    include: {
+      student: {
+        select: {
+          firstName: true,
+          lastName: true,
+          username: true,
+        },
+      },
+      exam: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  })
 
   if (!attempt) notFound()
 
   // Fetch answers
-  const { data: answers } = await supabase
-    .from('student_answers')
-    .select('*')
-    .eq('student_exam_id', attemptId)
+  const answers = await prisma.studentAnswer.findMany({
+    where: { studentExamId: attemptId },
+  })
 
   // Fetch questions for this exam to get domain info (exclude soft-deleted)
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('id, domain, content, correct_answer, section, module')
-    .eq('exam_id', id)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: true })
+  const questions = await prisma.question.findMany({
+    where: { examId: id, deletedAt: null },
+    select: { id: true, domain: true, content: true, correctAnswer: true, section: true, module: true },
+    orderBy: { createdAt: 'asc' },
+  })
 
   const typedQuestions: QuestionRecord[] = (questions || []) as QuestionRecord[]
   const typedAnswers: AnswerRecord[] = (answers || []) as AnswerRecord[]
@@ -74,10 +73,10 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   const mathM1Questions = typedQuestions.filter((question) => question.section === 'math' && question.module === 1)
   const mathM2Questions = typedQuestions.filter((question) => question.section === 'math' && question.module === 2)
   
-  const rwM1Correct = typedAnswers.filter((answer) => answer.is_correct && rwM1Questions.some((question) => question.id === answer.question_id)).length
-  const rwM2Correct = typedAnswers.filter((answer) => answer.is_correct && rwM2Questions.some((question) => question.id === answer.question_id)).length
-  const mathM1Correct = typedAnswers.filter((answer) => answer.is_correct && mathM1Questions.some((question) => question.id === answer.question_id)).length
-  const mathM2Correct = typedAnswers.filter((answer) => answer.is_correct && mathM2Questions.some((question) => question.id === answer.question_id)).length
+  const rwM1Correct = typedAnswers.filter((answer) => answer.isCorrect && rwM1Questions.some((question) => question.id === answer.questionId)).length
+  const rwM2Correct = typedAnswers.filter((answer) => answer.isCorrect && rwM2Questions.some((question) => question.id === answer.questionId)).length
+  const mathM1Correct = typedAnswers.filter((answer) => answer.isCorrect && mathM1Questions.some((question) => question.id === answer.questionId)).length
+  const mathM2Correct = typedAnswers.filter((answer) => answer.isCorrect && mathM2Questions.some((question) => question.id === answer.questionId)).length
 
   const rwCorrect = rwM1Correct + rwM2Correct
   const mathCorrect = mathM1Correct + mathM2Correct
@@ -92,7 +91,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
     { label: 'Math Module 1', correct: mathM1Correct, total: mathM1Questions.length },
     { label: 'Math Module 2', correct: mathM2Correct, total: mathM2Questions.length },
   ].filter((summary) => summary.total > 0)
-  const completedDate = new Date(attempt.completed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  const completedDate = attempt.completedAt ? new Date(attempt.completedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not completed'
   const breakdownSections: PdfBreakdownSection[] = MODULE_GROUPS.flatMap((group) => {
     const moduleQuestions = typedQuestions.filter(
       (question) => question.section === group.section && question.module === group.module,
@@ -103,14 +102,14 @@ export default async function ScoreReportPage({ params }: { params: { id: string
     }
 
     const questions: PdfBreakdownQuestion[] = moduleQuestions.map((question, index) => {
-      const answer = typedAnswers.find((entry) => entry.question_id === question.id)
-      const result: PdfBreakdownQuestion['result'] = answer?.is_correct ? 'Correct' : answer ? 'Incorrect' : 'Skipped'
+      const answer = typedAnswers.find((entry) => entry.questionId === question.id)
+      const result: PdfBreakdownQuestion['result'] = answer?.isCorrect ? 'Correct' : answer ? 'Incorrect' : 'Skipped'
 
       return {
         number: index + 1,
         domain: question.domain,
-        correctAnswer: question.correct_answer,
-        studentAnswer: answer?.answer_value || '(Skipped)',
+        correctAnswer: question.correctAnswer,
+        studentAnswer: answer?.answerValue || '(Skipped)',
         result,
       }
     })
@@ -131,9 +130,9 @@ export default async function ScoreReportPage({ params }: { params: { id: string
             Back to Results
         </Link>
         <DownloadReportButton 
-            studentName={`${attempt.users.first_name} ${attempt.users.last_name}`}
-          username={attempt.users.username}
-            examTitle={attempt.exams.title}
+            studentName={`${attempt.student.firstName} ${attempt.student.lastName}`}
+          username={attempt.student.username || ''}
+            examTitle={attempt.exam.title}
           completedDate={completedDate}
           totalScore={totalScore}
           rwScore={rwScore}
@@ -144,7 +143,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
           mathTotal={mathQuestions.length}
           overallCorrect={rwCorrect + mathCorrect}
           overallTotal={rwQuestions.length + mathQuestions.length}
-          violations={attempt.lockdown_violations}
+          violations={attempt.lockdownViolations}
           readingWritingDomains={domainStats.filter((stat) => DOMAINS.reading_writing.includes(stat.name))}
           mathDomains={domainStats.filter((stat) => DOMAINS.math.includes(stat.name))}
           moduleSummaries={moduleSummaries}
@@ -159,7 +158,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
               <div className="flex justify-between items-start">
                   <div>
                       <h1 className="text-2xl font-bold tracking-tight">SAT Score Report</h1>
-                      <p className="text-gray-400 mt-1">{attempt.exams.title}</p>
+                      <p className="text-gray-400 mt-1">{attempt.exam.title}</p>
                   </div>
                   <div className="text-right">
                       <div className="text-3xl font-bold">{totalScore}</div>
@@ -170,8 +169,8 @@ export default async function ScoreReportPage({ params }: { params: { id: string
               <div className="mt-8 grid grid-cols-2 gap-8 border-t border-gray-800 pt-8">
                   <div>
                       <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Student</p>
-                      <p className="text-lg font-bold">{attempt.users.first_name} {attempt.users.last_name}</p>
-                      <p className="text-sm text-gray-400">@{attempt.users.username}</p>
+                      <p className="text-lg font-bold">{attempt.student.firstName} {attempt.student.lastName}</p>
+                      <p className="text-sm text-gray-400">@{attempt.student.username}</p>
                   </div>
                   <div className="text-right">
                       <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Date</p>
@@ -262,12 +261,12 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                       <p className="text-xl font-bold text-gray-900">{rwCorrect + mathCorrect}/{rwQuestions.length + mathQuestions.length}</p>
                       <p className="text-xs text-gray-400">total correct</p>
                   </div>
-                  <div className={`rounded-lg p-4 border ${attempt.lockdown_violations > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                  <div className={`rounded-lg p-4 border ${attempt.lockdownViolations > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
                       <p className="text-xs text-gray-500 uppercase font-medium">Security</p>
-                      <p className={`text-xl font-bold ${attempt.lockdown_violations > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                          {attempt.lockdown_violations > 0 ? attempt.lockdown_violations : 'Clean'}
+                      <p className={`text-xl font-bold ${attempt.lockdownViolations > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {attempt.lockdownViolations > 0 ? attempt.lockdownViolations : 'Clean'}
                       </p>
-                      <p className="text-xs text-gray-400">{attempt.lockdown_violations > 0 ? 'violations detected' : 'no violations'}</p>
+                      <p className="text-xs text-gray-400">{attempt.lockdownViolations > 0 ? 'violations detected' : 'no violations'}</p>
                   </div>
               </div>
               
@@ -323,8 +322,8 @@ export default async function ScoreReportPage({ params }: { params: { id: string
               if (moduleQuestions.length === 0) return null
               
               const moduleCorrect = moduleQuestions.filter((question) => {
-                const answer = typedAnswers.find((entry) => entry.question_id === question.id)
-                return answer?.is_correct
+                const answer = typedAnswers.find((entry) => entry.questionId === question.id)
+                return answer?.isCorrect
               }).length
               
               return (
@@ -348,16 +347,16 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {moduleQuestions.map((question, idx) => {
-                          const answer = typedAnswers.find((entry) => entry.question_id === question.id)
-                          const isCorrect = answer?.is_correct
-                          const studentAnswer = answer?.answer_value || '(Skipped)'
+                          const answer = typedAnswers.find((entry) => entry.questionId === question.id)
+                          const isCorrect = answer?.isCorrect
+                          const studentAnswer = answer?.answerValue || '(Skipped)'
                           const isSkipped = !answer
                           
                           return (
                             <tr key={question.id} className={isCorrect ? 'bg-white' : 'bg-red-50/30'}>
                               <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-700">{idx + 1}</td>
                               <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-50" title={question.domain}>{question.domain}</td>
-                              <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{question.correct_answer}</td>
+                              <td className="px-6 py-3 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{question.correctAnswer}</td>
                               <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono ${isCorrect ? 'text-green-700 font-bold' : 'text-red-600'}`}>
                                 {studentAnswer}
                               </td>

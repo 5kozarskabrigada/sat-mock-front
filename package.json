@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.90.1",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-subscript": "^3.15.3",
     "@tiptap/extension-superscript": "^3.15.3",
@@ -28,6 +28,9 @@
     "@tiptap/starter-kit": "^3.15.3",
     "@types/jquery": "^3.5.33",
     "@types/katex": "^0.16.8",
+    "bcrypt": "^6.0.0",
+    "better-auth": "^1.6.2",
+    "dotenv": "^17.4.1",
     "html-react-parser": "^5.2.11",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
@@ -37,6 +40,8 @@
     "katex": "^0.16.27",
     "mathquill": "^0.10.1-a",
     "next": "^16.1.6",
+    "pg": "^8.20.0",
+    "prisma": "^7.7.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-katex": "^3.1.0",
@@ -44,6 +49,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -51,6 +57,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

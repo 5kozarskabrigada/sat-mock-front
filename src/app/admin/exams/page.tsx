@@ -1,16 +1,13 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import CreateExamModal from './create-exam-modal'
 import ExamListFilter from './exam-list-filter'
 
 export default async function ExamsPage() {
-  const supabase = await createClient()
-
-  const { data: exams } = await supabase
-    .from('exams')
-    .select('*')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
+  const exams = await prisma.exam.findMany({
+    where: { deletedAt: null },
+    orderBy: { createdAt: 'desc' },
+  })
 
   return (
     <div className="space-y-8">

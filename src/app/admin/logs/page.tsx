@@ -1,24 +1,31 @@
-import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
 export default async function AdminLogsPage() {
-  const supabase = await createClient()
-
-  const { data: logs, error: fetchError } = await supabase
-    .from('activity_logs')
-    .select(`
-      *,
-      users (
-        first_name,
-        last_name,
-        username
-      ),
-      exams (
-        title
-      )
-    `)
-    .order('created_at', { ascending: false })
-    .limit(100)
+  let logs, fetchError
+  
+  try {
+    logs = await prisma.activityLog.findMany({
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            username: true,
+          }
+        },
+        exam: {
+          select: {
+            title: true,
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100
+    })
+  } catch (error: any) {
+    fetchError = error
+  }
 
   if (fetchError) {
       return (
@@ -73,16 +80,16 @@ export default async function AdminLogsPage() {
             {logs?.map((log) => (
               <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(log.created_at).toLocaleString()}
+                  {new Date(log.createdAt).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
-                    {log.users?.first_name} {log.users?.last_name}
+                    {log.user?.firstName} {log.user?.lastName}
                   </div>
-                  <div className="text-xs text-gray-500">@{log.users?.username}</div>
+                  <div className="text-xs text-gray-500">@{log.user?.username}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {log.exams?.title}
+                  {log.exam?.title}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getLogTypeColor(log.type)}`}>

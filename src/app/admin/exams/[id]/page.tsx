@@ -1,5 +1,5 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import AddQuestionForm from './add-question-form'
@@ -13,53 +13,59 @@ export const dynamic = 'force-dynamic'
 
 export default async function ExamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
 
   // Run all queries in parallel for faster loading
-  const [examResult, questionsResult, classroomsResult, participationResult] = await Promise.all([
-    supabase.from('exams').select('*').eq('id', id).single(),
-    supabase.from('questions').select('*').eq('exam_id', id).is('deleted_at', null).order('created_at', { ascending: true }),
-    supabase.from('classrooms').select('*').order('name'),
-    supabase.from('student_exams').select('student_id, status, updated_at').eq('exam_id', id),
+  const [exam, questions, classrooms, participation] = await Promise.all([
+    prisma.exam.findUnique({ where: { id, deletedAt: null } }),
+    prisma.question.findMany({
+      where: { examId: id, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.classroom.findMany({ orderBy: { name: 'asc' } }),
+    prisma.studentExam.findMany({
+      where: { examId: id },
+      select: {
+        studentId: true,
+        status: true,
+        updatedAt: true,
+      },
+    }),
   ])
 
-  const exam = examResult.data
   if (!exam) {
     notFound()
   }
 
-  const questions = questionsResult.data
-  const classrooms = classroomsResult.data
-  const participation = participationResult.data
-
   // Fire and forget: Auto-cleanup abandoned sessions (non-blocking)
-  const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  supabase
-    .from('student_exams')
-    .update({ status: 'completed', completed_at: new Date().toISOString() })
-    .eq('exam_id', id)
-    .eq('status', 'in_progress')
-    .lt('updated_at', thirtyMinsAgo)
-    .then(() => {}) // Fire and forget
+  const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000)
+  prisma.studentExam.updateMany({
+    where: {
+      examId: id,
+      status: 'in_progress',
+      updatedAt: { lt: thirtyMinsAgo },
+    },
+    data: {
+      status: 'completed',
+      completedAt: new Date(),
+    },
+  }).then(() => {}) // Fire and forget
 
   const studentsJoinedCount = participation?.length || 0
   
   // Define "Active/Live" as in_progress AND updated within the last 60 seconds
   const activeThreshold = new Date(Date.now() - 60 * 1000).getTime()
   const studentsActiveCount = participation?.filter(p => {
-    if (p.status !== 'in_progress' || !p.updated_at) return false
-    const lastUpdate = new Date(p.updated_at).getTime()
+    if (p.status !== 'in_progress' || !p.updatedAt) return false
+    const lastUpdate = new Date(p.updatedAt).getTime()
     return lastUpdate > activeThreshold
   }).length || 0
   
   // Fetch total students in the exam's classroom (only if needed)
   let totalStudentsInClassroom = 0
-  if (exam.classroom_id) {
-    const { count } = await supabase
-      .from('student_classrooms')
-      .select('*', { count: 'exact', head: true })
-      .eq('classroom_id', exam.classroom_id)
-    totalStudentsInClassroom = count || 0
+  if (exam.classroomId) {
+    totalStudentsInClassroom = await prisma.studentClassroom.count({
+      where: { classroomId: exam.classroomId },
+    })
   }
 
   // Helper for status badge color
@@ -100,8 +106,8 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
                 examId={exam.id} 
                 status={exam.status} 
                 classrooms={classrooms || []} 
-                lockdownPolicy={exam.lockdown_policy}
-                currentClassroomId={exam.classroom_id || ''}
+                lockdownPolicy={exam.lockdownPolicy}
+                currentClassroomId={exam.classroomId || ''}
              />
              <DeleteExamButton examId={exam.id} />
         </div>
@@ -132,13 +138,13 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
             </dd>
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
-            <ExamCodeEditor examId={exam.id} currentCode={exam.code} />
+            <ExamCodeEditor examId={exam.id} currentCode={exam.code || ''} />
          </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <dt className="text-sm font-medium text-gray-500 truncate">Lockdown Policy</dt>
             <dd className="mt-2">
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${exam.lockdown_policy === 'disqualify' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
-                    {exam.lockdown_policy === 'disqualify' ? 'Strict (Disqualify)' : 'Standard (Log Only)'}
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${exam.lockdownPolicy === 'disqualify' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {exam.lockdownPolicy === 'disqualify' ? 'Strict (Disqualify)' : 'Standard (Log Only)'}
                 </span>
             </dd>
          </div>

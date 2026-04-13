@@ -1,7 +1,7 @@
 
 export function calculateDomainScores(questions: any[], answers: any[]) {
-  // Map answers by question_id for O(1) lookup
-  const answerMap = new Map(answers.map(a => [a.question_id, a]))
+  // Map answers by questionId for O(1) lookup
+  const answerMap = new Map(answers.map(a => [a.questionId, a]))
 
   // Group by domain
   const domainStats: Record<string, { total: number, correct: number }> = {}
@@ -13,7 +13,7 @@ export function calculateDomainScores(questions: any[], answers: any[]) {
     }
 
     const answer = answerMap.get(q.id)
-    const isCorrect = answer?.is_correct || false // Assuming backend or scoring sets this, or we compare here.
+    const isCorrect = answer?.isCorrect || false // Assuming backend or scoring sets this, or we compare here.
     // Let's assume student_answers has is_correct set. If not, we need to compare.
     // The schema says `is_correct boolean`.
     

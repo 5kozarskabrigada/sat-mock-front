@@ -1,8 +1,7 @@
 
 'use client'
 
-import { createClient } from '@/utils/supabase/client'
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useEffect } from 'react'
 import { useFormStatus } from 'react-dom'
 import { updateQuestion, deleteQuestion } from '../../actions'
 import ConfirmationModal from '@/components/confirmation-modal'
@@ -43,42 +42,20 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
 
             const fileExt = file.name.split('.').pop()?.toLowerCase()
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-            const filePath = `questions/${fileName}`
 
-            const supabase = createClient()
+            // Upload via server API route
+            const uploadData = new FormData()
+            uploadData.append('file', file)
 
-            // Check if user is authenticated
-            const { data: { user }, error: authError } = await supabase.auth.getUser()
-            if (authError || !user) {
-                setError('You must be logged in to upload images. Please refresh the page and try again.')
-                return
-            }
-            
-            // Upload to Supabase Storage
-            const { error: uploadError } = await supabase.storage
-                .from('exam-images')
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                })
+            const res = await fetch('/api/upload', { method: 'POST', body: uploadData })
+            const result = await res.json()
 
-            if (uploadError) {
-                console.error('Supabase upload error:', uploadError)
-                if (uploadError.message.includes('Bucket not found')) {
-                    setError('Storage bucket "exam-images" not found. Please contact administrator.')
-                } else if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
-                    setError('Permission denied. Storage policies may not be configured correctly.')
-                } else {
-                    setError(`Upload failed: ${uploadError.message}`)
-                }
+            if (!res.ok) {
+                setError(result.error || 'Upload failed')
                 return
             }
 
-            const { data } = supabase.storage
-                .from('exam-images')
-                .getPublicUrl(filePath)
-
-            setImageUrl(data.publicUrl)
+            setImageUrl(result.url)
         } catch (err: any) {
             console.error('Upload error:', err)
             setError(`Unexpected error: ${err.message || 'Unknown error occurred'}`)
@@ -205,6 +182,13 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
   const [questionType, setQuestionType] = useState<string>(
       question.content.options && question.content.options.A ? 'multiple_choice' : 'spr'
   )
+
+  // Handle successful update
+  useEffect(() => {
+    if (state?.success) {
+      window.location.href = `/admin/exams/${examId}`
+    }
+  }, [state, examId])
 
   // Determine if math is enabled
   const enableMath = selectedSection === 'math'
@@ -336,7 +320,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
 
                     <div className="sm:col-span-6">
                       <label htmlFor="correctAnswer" className="block text-sm font-medium text-gray-700">Correct Answer</label>
-                      <select id="correctAnswer" name="correctAnswer" defaultValue={question.correct_answer} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
+                      <select id="correctAnswer" name="correctAnswer" defaultValue={question.correctAnswer} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black">
                         <option value="A">Option A</option>
                         <option value="B">Option B</option>
                         <option value="C">Option C</option>
@@ -353,7 +337,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                             name="correctAnswer"
                             id="correctAnswer"
                             required
-                            defaultValue={question.correct_answer}
+                            defaultValue={question.correctAnswer}
                             placeholder="e.g. 3.5, 1/2, or 25"
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black"
                         />

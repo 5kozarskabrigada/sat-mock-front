@@ -1,20 +1,37 @@
 
-import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 
 export default async function AdminDashboard() {
-  const supabase = await createClient()
-
   // Fetch stats and recent activity in parallel
-  const [studentsResult, examsResult, recentStudents, recentExams] = await Promise.all([
-    supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'student'),
-    supabase.from('exams').select('id', { count: 'exact', head: true }).eq('status', 'active').is('deleted_at', null),
-    supabase.from('users').select('*').eq('role', 'student').order('created_at', { ascending: false }).limit(5),
-    supabase.from('exams').select('*').is('deleted_at', null).order('created_at', { ascending: false }).limit(5)
+  const [studentCount, activeExamCount, recentStudents, recentExams] = await Promise.all([
+    prisma.user.count({ where: { role: 'student' } }),
+    prisma.exam.count({ where: { status: 'active', deletedAt: null } }),
+    prisma.user.findMany({
+      where: { role: 'student' },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+      },
+    }),
+    prisma.exam.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        code: true,
+        createdAt: true,
+      },
+    }),
   ])
-
-  const studentCount = studentsResult.count || 0
-  const activeExamCount = examsResult.count || 0
 
   return (
     <div className="space-y-8">
@@ -96,25 +113,25 @@ export default async function AdminDashboard() {
               </div>
               <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
                   <ul role="list" className="divide-y divide-gray-200">
-                      {recentStudents?.data?.map((student: any) => (
+                      {recentStudents?.map((student) => (
                           <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
                               <div className="flex items-center space-x-3">
                                   <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                                      {student.first_name?.[0]}{student.last_name?.[0]}
+                                      {student.firstName?.[0]}{student.lastName?.[0]}
                                   </div>
                                   <div className="min-w-0 flex-1">
                                       <p className="text-sm font-medium text-gray-900 truncate">
-                                          {student.first_name} {student.last_name}
+                                          {student.firstName} {student.lastName}
                                       </p>
                                       <p className="text-xs text-gray-500 truncate">{student.email}</p>
                                   </div>
                                   <div className="flex-shrink-0 text-xs text-gray-400">
-                                      {new Date(student.created_at).toLocaleDateString()}
+                                      {new Date(student.createdAt).toLocaleDateString()}
                                   </div>
                               </div>
                           </li>
                       ))}
-                      {(!recentStudents?.data || recentStudents.data.length === 0) && (
+                      {(!recentStudents || recentStudents.length === 0) && (
                           <li className="p-4 text-center text-sm text-gray-500">No recent students</li>
                       )}
                   </ul>
@@ -129,7 +146,7 @@ export default async function AdminDashboard() {
               </div>
               <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
                   <ul role="list" className="divide-y divide-gray-200">
-                      {recentExams?.data?.map((exam: any) => (
+                      {recentExams?.map((exam) => (
                           <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
                               <Link href={`/admin/exams/${exam.id}`} className="block group">
                                   <div className="flex items-center justify-between">
@@ -143,9 +160,11 @@ export default async function AdminDashboard() {
                                               }`}>
                                                   {exam.status}
                                               </span>
-                                              <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 rounded">
-                                                  {exam.code}
-                                              </span>
+                                              {exam.code && (
+                                                <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 rounded">
+                                                    {exam.code}
+                                                </span>
+                                              )}
                                           </div>
                                       </div>
                                       <div className="flex-shrink-0">
@@ -157,7 +176,7 @@ export default async function AdminDashboard() {
                               </Link>
                           </li>
                       ))}
-                      {(!recentExams?.data || recentExams.data.length === 0) && (
+                      {(!recentExams || recentExams.length === 0) && (
                           <li className="p-4 text-center text-sm text-gray-500">No recent exams</li>
                       )}
                   </ul>

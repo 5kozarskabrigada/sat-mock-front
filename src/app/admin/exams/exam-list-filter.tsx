@@ -9,11 +9,10 @@ import ExamListActions from './exam-list-actions'
 interface Exam {
     id: string
     title: string
-    description: string
-    code: string
+    description: string | null
+    code: string | null
     status: string
-    type: string
-    created_at: string
+    createdAt: Date | string
 }
 
 export default function ExamListFilter({ exams }: { exams: Exam[] }) {
@@ -24,7 +23,7 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
     const filteredExams = exams.filter(exam => {
         const matchesSearch = 
             exam.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            exam.code.toLowerCase().includes(searchTerm.toLowerCase())
+            (exam.code || '').toLowerCase().includes(searchTerm.toLowerCase())
         
         const matchesStatus = statusFilter === 'all' || exam.status === statusFilter
 
@@ -103,14 +102,14 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
                             </div>
                             <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                                 <span className="capitalize px-2 py-1 bg-gray-50 rounded text-xs border border-gray-100">
-                                    {exam.type}
+                                    SAT
                                 </span>
                             </div>
                         </Link>
                         
                         <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
                             <span className="text-xs text-gray-400">
-                                {new Date(exam.created_at).toLocaleDateString()}
+                                {new Date(exam.createdAt).toLocaleDateString()}
                             </span>
                             <ExamListActions exam={exam} />
                         </div>

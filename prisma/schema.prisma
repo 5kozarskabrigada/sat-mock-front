@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email           String    @unique
+  passwordHash    String?   @map("password_hash")
+  username        String?   @unique
+  firstName       String?   @map("first_name")
+  lastName        String?   @map("last_name")
+  role            String    // 'admin' or 'student'
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  emailVerified   DateTime? @map("email_verified") @db.Timestamptz(6)
+
+  // Relations
+  createdExams        Exam[]              @relation("ExamCreator")
+  studentExams        StudentExam[]
+  studentClassrooms   StudentClassroom[]
+  activityLogs        ActivityLog[]
+  sessions            Session[]
+  accounts            Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  token     String   @unique
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  accountId         String   @map("account_id")
+  providerId        String   @map("provider_id")
+  accessToken       String?  @map("access_token")
+  refreshToken      String?  @map("refresh_token")
+  idToken           String?  @map("id_token")
+  expiresAt         DateTime? @map("expires_at") @db.Timestamptz(6)
+  password          String?
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([identifier, value])
+  @@map("verifications")
+}
+
+model Classroom {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  students StudentClassroom[]
+  exams    Exam[]
+
+  @@map("classrooms")
+}
+
+model StudentClassroom {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  studentId   String   @map("student_id") @db.Uuid
+  classroomId String   @map("classroom_id") @db.Uuid
+  joinedAt    DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  // Relations
+  student   User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, classroomId])
+  @@map("student_classrooms")
+}
+
+model Exam {
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title          String
+  description    String?
+  code           String?   @unique
+  status         String    @default("draft") // 'draft', 'active', 'ended'
+  classroomId    String?   @map("classroom_id") @db.Uuid
+  lockdownPolicy String    @default("log") @map("lockdown_policy") // 'log' or 'disqualify'
+  createdBy      String?   @map("created_by") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  // Relations
+  creator       User?         @relation("ExamCreator", fields: [createdBy], references: [id])
+  classroom     Classroom?    @relation(fields: [classroomId], references: [id])
+  questions     Question[]
+  studentExams  StudentExam[]
+  activityLogs  ActivityLog[]
+
+  @@map("exams")
+}
+
+model Question {
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  examId         String    @map("exam_id") @db.Uuid
+  section        String    // 'reading_writing' or 'math'
+  module         Int       // 1 or 2
+  content        Json      // Stores question text, images, options
+  correctAnswer  String    @map("correct_answer")
+  explanation    String?
+  domain         String?
+  equationLatex  String?   @map("equation_latex")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  // Relations
+  exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  studentAnswers StudentAnswer[]
+
+  @@map("questions")
+}
+
+model StudentExam {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  studentId           String    @map("student_id") @db.Uuid
+  examId              String    @map("exam_id") @db.Uuid
+  status              String    @default("in_progress") // 'in_progress' or 'completed'
+  startedAt           DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt         DateTime? @map("completed_at") @db.Timestamptz(6)
+  score               Json?     // Detailed score breakdown
+  lockdownViolations  Int       @default(0) @map("lockdown_violations")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  student        User            @relation(fields: [studentId], references: [id])
+  exam           Exam            @relation(fields: [examId], references: [id])
+  studentAnswers StudentAnswer[]
+  activityLogs   ActivityLog[]
+
+  @@map("student_exams")
+}
+
+model StudentAnswer {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  studentExamId String   @map("student_exam_id") @db.Uuid
+  questionId    String   @map("question_id") @db.Uuid
+  answerValue   String?  @map("answer_value")
+  isCorrect     Boolean? @map("is_correct")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  studentExam StudentExam @relation(fields: [studentExamId], references: [id], onDelete: Cascade)
+  question    Question    @relation(fields: [questionId], references: [id])
+
+  @@unique([studentExamId, questionId])
+  @@map("student_answers")
+}
+
+model ActivityLog {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  studentExamId String?  @map("student_exam_id") @db.Uuid
+  examId        String?  @map("exam_id") @db.Uuid
+  type          String   // 'exam_started', 'lockdown_violation', 'exam_completed'
+  details       String?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentExam StudentExam? @relation(fields: [studentExamId], references: [id], onDelete: Cascade)
+  exam        Exam?        @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+

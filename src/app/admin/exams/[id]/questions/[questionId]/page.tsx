@@ -1,18 +1,15 @@
 
-import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import EditQuestionForm from './edit-question-form'
+import { prisma } from '@/lib/prisma'
 
 export default async function EditQuestionPage({ params }: { params: { id: string, questionId: string } }) {
-  const supabase = await createClient()
   const { id, questionId } = await params
 
-  const { data: question } = await supabase
-    .from('questions')
-    .select('*')
-    .eq('id', questionId)
-    .single()
+  const question = await prisma.question.findUnique({
+    where: { id: questionId, deletedAt: null }
+  })
 
   if (!question) {
     notFound()

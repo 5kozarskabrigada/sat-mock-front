@@ -95,7 +95,7 @@ export default function AddStudentToClassroomForm({ classroomId }: { classroomId
                     >
                       <span className="block truncate font-bold text-lg">{student.username}</span>
                       <span className="block truncate text-sm opacity-70 mt-1">
-                         {student.first_name} {student.last_name}
+                         {student.firstName} {student.lastName}
                       </span>
                     </li>
                   ))}

@@ -1,19 +1,26 @@
 'use server'
 
-import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/get-current-user'
 
 // Save answers periodically during exam (at module transitions) to prevent data loss
 export async function saveAnswersProgress(studentExamId: string, answers: Record<string, any>) {
-  const supabase = await createClient()
-  const serviceClient = createServiceClient()
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Unauthorized' }
 
   // Verify the student owns this exam attempt
-  const { data: studentExam } = await supabase
-    .from('student_exams')
-    .select('exam_id, student_id, status')
-    .eq('id', studentExamId)
-    .single()
+  const studentExam = await prisma.studentExam.findFirst({
+    where: {
+      id: studentExamId,
+      studentId: user.id,
+    },
+    select: {
+      examId: true,
+      studentId: true,
+      status: true,
+    },
+  })
       
   if (!studentExam) {
     return { error: 'Student exam not found' }
@@ -25,11 +32,17 @@ export async function saveAnswersProgress(studentExamId: string, answers: Record
   }
 
   // Fetch all questions for this exam (excluding soft-deleted)
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('id, correct_answer, section')
-    .eq('exam_id', studentExam.exam_id)
-    .is('deleted_at', null)
+  const questions = await prisma.question.findMany({
+    where: {
+      examId: studentExam.examId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      correctAnswer: true,
+      section: true,
+    },
+  })
 
   const questionMap = new Map(questions?.map(q => [q.id, q]))
 
@@ -41,30 +54,41 @@ export async function saveAnswersProgress(studentExamId: string, answers: Record
       let isCorrect = false
       const answerStr = value?.toString().trim() || ''
 
-      if (question && question.correct_answer) {
-        const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
+      if (question && question.correctAnswer) {
+        const correctAnswers = question.correctAnswer.split('|').map((a: string) => a.trim())
         isCorrect = correctAnswers.includes(answerStr)
       }
 
       return {
-        student_exam_id: studentExamId,
-        question_id: questionId,
-        answer_value: answerStr,
-        is_correct: isCorrect
+        studentExamId,
+        questionId,
+        answerValue: answerStr,
+        isCorrect,
       }
     })
 
   if (answerUpserts.length > 0) {
     // Use upsert to update existing answers or insert new ones
-    const { error: upsertError } = await serviceClient
-      .from('student_answers')
-      .upsert(answerUpserts, { 
-        onConflict: 'student_exam_id,question_id',
-        ignoreDuplicates: false 
-      })
-
-    if (upsertError) {
-      console.error('Failed to save answer progress:', upsertError)
+    try {
+      await prisma.$transaction(
+        answerUpserts.map((answer) =>
+          prisma.studentAnswer.upsert({
+            where: {
+              studentExamId_questionId: {
+                studentExamId: answer.studentExamId,
+                questionId: answer.questionId,
+              },
+            },
+            update: {
+              answerValue: answer.answerValue,
+              isCorrect: answer.isCorrect,
+            },
+            create: answer,
+          })
+        )
+      )
+    } catch (error: any) {
+      console.error('Failed to save answer progress:', error)
       return { error: 'Failed to save progress' }
     }
   }
@@ -73,27 +97,38 @@ export async function saveAnswersProgress(studentExamId: string, answers: Record
 }
 
 export async function submitExam(studentExamId: string, answers: Record<string, any>) {
-  const supabase = await createClient()
-  // Use service client for writes to bypass RLS — this is a trusted server action
-  const serviceClient = createServiceClient()
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Unauthorized' }
 
   // 0. Verify the student owns this exam attempt
-  const { data: studentExam } = await supabase
-    .from('student_exams')
-    .select('exam_id, student_id, status')
-    .eq('id', studentExamId)
-    .single()
+  const studentExam = await prisma.studentExam.findFirst({
+    where: {
+      id: studentExamId,
+      studentId: user.id,
+    },
+    select: {
+      examId: true,
+      studentId: true,
+      status: true,
+    },
+  })
       
   if (!studentExam) {
       return { error: 'Student exam not found' }
   }
 
   // Fetch all questions for this exam (excluding soft-deleted)
-  const { data: questions } = await supabase
-      .from('questions')
-      .select('id, correct_answer, section')
-      .eq('exam_id', studentExam.exam_id)
-      .is('deleted_at', null)
+  const questions = await prisma.question.findMany({
+    where: {
+      examId: studentExam.examId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      correctAnswer: true,
+      section: true,
+    },
+  })
 
   const questionMap = new Map(questions?.map(q => [q.id, q]))
 
@@ -105,201 +140,203 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
       let isCorrect = false
       const answerStr = value?.toString().trim() || ''
 
-      if (question && question.correct_answer) {
-          const correctAnswers = question.correct_answer.split('|').map((a: string) => a.trim())
+      if (question && question.correctAnswer) {
+          const correctAnswers = question.correctAnswer.split('|').map((a: string) => a.trim())
           isCorrect = correctAnswers.includes(answerStr)
       }
 
       return {
-          student_exam_id: studentExamId,
-          question_id: questionId,
-          answer_value: answerStr,
-          is_correct: isCorrect
+          studentExamId,
+          questionId,
+          answerValue: answerStr,
+          isCorrect,
       }
     })
 
   // 2. Delete old answers + insert new ones, then update status
   // We do this sequentially to ensure answers are saved before marking as completed
   
-  // First, clear any partial answers from previous failed attempts
-  const { error: deleteError } = await serviceClient
-    .from('student_answers')
-    .delete()
-    .eq('student_exam_id', studentExamId)
-
-  if (deleteError) {
-    console.error('Failed to clear old answers:', deleteError)
-    // Continue anyway - there might not be any old answers
-  }
-
-  // Insert graded answers
-  if (answerInserts.length > 0) {
-    const { error: answerError } = await serviceClient.from('student_answers').insert(answerInserts)
-    
-    if (answerError) {
-      console.error('Failed to save answers:', answerError)
-      return { error: 'Failed to save your answers. Please try again.' }
-    }
-  }
-
-  // Only mark as completed AFTER answers are successfully saved
-  const { error: statusError } = await serviceClient
-    .from('student_exams')
-    .update({ 
-      status: 'completed',
-      completed_at: new Date().toISOString()
+  try {
+    // First, clear any partial answers from previous failed attempts
+    await prisma.studentAnswer.deleteMany({
+      where: { studentExamId },
     })
-    .eq('id', studentExamId)
 
-  if (statusError) {
-    console.error('Failed to update exam status:', statusError)
-    // Answers were saved successfully, status update failed - this is less critical
+    // Insert graded answers
+    if (answerInserts.length > 0) {
+      await prisma.studentAnswer.createMany({
+        data: answerInserts,
+      })
+    }
+
+    // Only mark as completed AFTER answers are successfully saved
+    await prisma.studentExam.update({
+      where: { id: studentExamId },
+      data: {
+        status: 'completed',
+        completedAt: new Date(),
+      },
+    })
+
+    // 3. Log activity (non-critical, fire and forget)
+    prisma.activityLog.create({
+      data: {
+        userId: studentExam.studentId,
+        studentExamId,
+        examId: studentExam.examId,
+        type: 'exam_completed',
+        details: 'Student submitted the exam',
+      },
+    }).catch((error) => {
+      console.error('Failed to log exam completion:', error)
+    })
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to submit exam:', error)
+    return { error: 'Failed to save your answers. Please try again.' }
   }
-
-  // 3. Log activity (non-critical, fire and forget)
-  serviceClient.from('activity_logs').insert({
-    user_id: studentExam.student_id,
-    student_exam_id: studentExamId,
-    exam_id: studentExam.exam_id,
-    type: 'exam_completed',
-    details: 'Student submitted the exam'
-  }).then(({ error }) => {
-    if (error) console.error('Failed to log exam completion:', error)
-  })
-
-  return { success: true }
 }
 
 export async function logLockdownViolation(studentExamId: string, details?: string) {
-  const supabase = await createClient()
-  
   // 1. Log the activity
-  const { data: studentExam, error: fetchError } = await supabase
-    .from('student_exams')
-    .select('exam_id, student_id')
-    .eq('id', studentExamId)
-    .single()
-
-  if (fetchError) {
-    console.error('Error fetching student exam for logging:', fetchError)
-  }
-
-  if (studentExam) {
-    const isDisqualification = details?.toLowerCase().includes('disqualified')
-    const { error: logError } = await supabase.from('activity_logs').insert({
-      user_id: studentExam.student_id,
-      student_exam_id: studentExamId,
-      exam_id: studentExam.exam_id,
-      type: isDisqualification ? 'exam_disqualified' : 'lockdown_violation',
-      details: details || 'Student attempted to leave the exam environment'
-    })
-    if (logError) console.error('Failed to log lockdown violation:', logError)
-  }
-
-  // 2. Increment violation count
-  const { error: rpcError } = await supabase.rpc('increment_lockdown_violations', {
-    exam_id: studentExamId
+  const studentExam = await prisma.studentExam.findUnique({
+    where: { id: studentExamId },
+    select: {
+      examId: true,
+      studentId: true,
+      lockdownViolations: true,
+    },
   })
 
-  if (rpcError) {
-    console.warn('RPC increment_lockdown_violations failed, falling back to manual update:', rpcError)
-    const { data: current } = await supabase
-      .from('student_exams')
-      .select('lockdown_violations')
-      .eq('id', studentExamId)
-      .single()
+  if (!studentExam) {
+    console.error('Error fetching student exam for logging')
+    return { error: 'Exam not found' }
+  }
 
-    await supabase
-      .from('student_exams')
-      .update({ 
-        lockdown_violations: (current?.lockdown_violations || 0) + 1 
-      })
-      .eq('id', studentExamId)
+  const isDisqualification = details?.toLowerCase().includes('disqualified')
+  
+  try {
+    // Log activity and increment violations
+    await prisma.$transaction([
+      prisma.activityLog.create({
+        data: {
+          userId: studentExam.studentId,
+          studentExamId,
+          examId: studentExam.examId,
+          type: isDisqualification ? 'exam_disqualified' : 'lockdown_violation',
+          details: details || 'Student attempted to leave the exam environment',
+        },
+      }),
+      prisma.studentExam.update({
+        where: { id: studentExamId },
+        data: {
+          lockdownViolations: (studentExam.lockdownViolations || 0) + 1,
+        },
+      }),
+    ])
+  } catch (error) {
+    console.error('Failed to log lockdown violation:', error)
   }
 
   return { success: true }
 }
 
 export async function logExamStarted(studentExamId: string) {
-  const supabase = await createClient()
-  const { data: studentExam, error: fetchError } = await supabase
-    .from('student_exams')
-    .select('exam_id, student_id')
-    .eq('id', studentExamId)
-    .single()
+  const studentExam = await prisma.studentExam.findUnique({
+    where: { id: studentExamId },
+    select: {
+      examId: true,
+      studentId: true,
+    },
+  })
 
-  if (fetchError) {
-    console.error('Error fetching student exam for starting log:', fetchError)
+  if (!studentExam) {
+    console.error('Error fetching student exam for starting log')
+    return { error: 'Exam not found' }
   }
 
-  if (studentExam) {
-    const { error: logError } = await supabase.from('activity_logs').insert({
-      user_id: studentExam.student_id,
-      student_exam_id: studentExamId,
-      exam_id: studentExam.exam_id,
-      type: 'exam_started',
-      details: 'Student started the mock exam'
+  try {
+    await prisma.activityLog.create({
+      data: {
+        userId: studentExam.studentId,
+        studentExamId,
+        examId: studentExam.examId,
+        type: 'exam_started',
+        details: 'Student started the mock exam',
+      },
     })
-    if (logError) console.error('Failed to log exam started:', logError)
+  } catch (error) {
+    console.error('Failed to log exam started:', error)
   }
+  
   return { success: true }
 }
 
 export async function heartbeat(studentExamId: string) {
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('student_exams')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', studentExamId)
-    .eq('status', 'in_progress')
-  
-  if (error) console.error('Heartbeat failed:', error)
-  return { success: !error }
+  try {
+    await prisma.studentExam.update({
+      where: {
+        id: studentExamId,
+        status: 'in_progress',
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    })
+    return { success: true }
+  } catch (error) {
+    console.error('Heartbeat failed:', error)
+    return { success: false }
+  }
 }
 
 export async function disqualifyStudent(studentExamId: string, details: string) {
-  const supabase = await createClient()
-  
   // 1. Fetch exam info
-  const { data: studentExam } = await supabase
-    .from('student_exams')
-    .select('exam_id, student_id')
-    .eq('id', studentExamId)
-    .single()
+  const studentExam = await prisma.studentExam.findUnique({
+    where: { id: studentExamId },
+    select: {
+      examId: true,
+      studentId: true,
+      lockdownViolations: true,
+    },
+  })
 
   if (!studentExam) return { error: 'Not found' }
 
   // 2. Atomic update: status = completed, increment violations, log activity
-  const now = new Date().toISOString()
+  const now = new Date()
   
-  const results = await Promise.all([
-    // Update status to completed (disqualified)
-    supabase
-      .from('student_exams')
-      .update({ 
-        status: 'completed',
-        completed_at: now
-      })
-      .eq('id', studentExamId),
+  try {
+    await prisma.$transaction([
+      // Update status to completed (disqualified) and increment violations
+      prisma.studentExam.update({
+        where: { id: studentExamId },
+        data: {
+          status: 'completed',
+          completedAt: now,
+          lockdownViolations: (studentExam.lockdownViolations || 0) + 1,
+        },
+      }),
+      
+      // Log the disqualification
+      prisma.activityLog.create({
+        data: {
+          userId: studentExam.studentId,
+          studentExamId,
+          examId: studentExam.examId,
+          type: 'exam_disqualified',
+          details,
+        },
+      }),
+    ])
     
-    // Log the disqualification
-    supabase.from('activity_logs').insert({
-      user_id: studentExam.student_id,
-      student_exam_id: studentExamId,
-      exam_id: studentExam.exam_id,
-      type: 'exam_disqualified',
-      details: details
-    })
-  ])
-
-  // Fallback for increment_lockdown_violations if RPC inside update doesn't work as expected 
-  // (PostgREST doesn't support RPC inside update like that easily, better to just increment manually or separate call)
-  
-  // Separate call for violation increment to be safe
-  await supabase.rpc('increment_lockdown_violations', { exam_id: studentExamId })
-
-  revalidatePath('/admin/exams/' + studentExam.exam_id)
-  revalidatePath('/student')
-  
-  return { success: true }
+    revalidatePath('/admin/exams/' + studentExam.examId)
+    revalidatePath('/student')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to disqualify student:', error)
+    return { error: 'Failed to disqualify student' }
+  }
 }
