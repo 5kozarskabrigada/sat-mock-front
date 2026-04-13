@@ -14,7 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -49,8 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
-    const response = await authAPI.login(email, password);
+  const login = async (identifier: string, password: string) => {
+    const response = await authAPI.login(identifier, password);
     const { access_token, user: userData } = response.data;
     
     localStorage.setItem('jwt_token', access_token);

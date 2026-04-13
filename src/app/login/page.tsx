@@ -8,7 +8,7 @@ import Logo from '@/components/Logo';
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(email, password);
+      await login(identifier, password);
       
       // Get user data from localStorage to determine redirect
       const userData = localStorage.getItem('user');
@@ -76,20 +76,20 @@ export default function LoginPage() {
             <div className="space-y-4">
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="identifier"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Email
+                  Username or Email
                 </label>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
+                  id="identifier"
+                  name="identifier"
+                  type="text"
                   required
                   className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 transition-colors text-black"
-                  placeholder="admin@test.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="username or email"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                 />
               </div>
 
@@ -189,11 +189,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              Test credentials: admin@test.com/admin123 or student@test.com/student123
-            </p>
-          </div>
         </div>
       </div>
     </div>

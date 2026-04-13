@@ -40,8 +40,8 @@ apiClient.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (email: string, password: string) =>
-    apiClient.post('/auth/login', { email, password }),
+  login: (identifier: string, password: string) =>
+    apiClient.post('/auth/login', { identifier, password }),
   
   register: (email: string, password: string, role?: string) =>
     apiClient.post('/auth/register', { email, password, role }),
