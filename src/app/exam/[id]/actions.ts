@@ -50,7 +50,7 @@ export async function saveAnswersProgress(studentExamId: string, answers: Record
   const answerUpserts = Object.entries(answers)
     .filter(([questionId]) => questionMap.has(questionId))
     .map(([questionId, value]) => {
-      const question = questionMap.get(questionId)
+      const question: any = questionMap.get(questionId)
       let isCorrect = false
       const answerStr = value?.toString().trim() || ''
 
@@ -136,7 +136,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
   const answerInserts = Object.entries(answers)
     .filter(([questionId]) => questionMap.has(questionId)) // Only include answers for valid questions
     .map(([questionId, value]) => {
-      const question = questionMap.get(questionId)
+      const question: any = questionMap.get(questionId)
       let isCorrect = false
       const answerStr = value?.toString().trim() || ''
 
