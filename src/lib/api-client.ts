@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+function withApiPrefix(url: string): string {
+  const trimmed = url.replace(/\/+$/, '');
+  if (trimmed.endsWith('/api')) {
+    return trimmed;
+  }
+  return `${trimmed}/api`;
+}
+
+const API_BASE_URL = withApiPrefix(RAW_API_URL);
 
 // Create axios instance with defaults
 export const apiClient = axios.create({
