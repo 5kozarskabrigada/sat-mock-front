@@ -170,7 +170,7 @@ export async function deleteQuestion(questionId: string, examId: string) {
 export async function deleteExam(examId: string) {
   try {
     // Soft delete - set deletedAt timestamp and cascade to child questions
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // Soft delete all questions in this exam
       await tx.question.updateMany({
         where: { examId },

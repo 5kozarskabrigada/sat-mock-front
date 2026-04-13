@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 export async function restoreExam(examId: string) {
   try {
     // Restore exam and all its questions by clearing deletedAt
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // Restore all questions in this exam
       await tx.question.updateMany({
         where: { examId },
