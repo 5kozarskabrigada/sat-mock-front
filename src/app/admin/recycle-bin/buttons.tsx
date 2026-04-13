@@ -1,96 +1,104 @@
-
 'use client'
 
-import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
-import { restoreExam, restoreQuestion, permanentlyDeleteExam, permanentlyDeleteQuestion } from './actions'
 import { useState } from 'react'
+import { restoreExam, restoreQuestion, permanentlyDeleteExam, permanentlyDeleteQuestion } from './actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 
-function ActionButton({ label, loadingLabel, color = 'indigo', onClick }: { label: string, loadingLabel: string, color?: string, onClick?: () => void }) {
-  const { pending } = useFormStatus()
+function ActionButton({ label, loadingLabel, color = 'indigo', onClick, loading }: { label: string, loadingLabel: string, color?: string, onClick?: () => void, loading?: boolean }) {
   return (
     <button
-      type={onClick ? 'button' : 'submit'}
+      type="button"
       onClick={onClick}
-      disabled={pending}
-      className={`text-sm font-medium text-${color}-600 hover:text-${color}-900 disabled:opacity-50`}
+      disabled={loading}
+      className={
+        color === 'red'
+          ? 'text-sm font-medium text-red-600 hover:text-red-900 disabled:opacity-50'
+          : 'text-sm font-medium text-indigo-600 hover:text-indigo-900 disabled:opacity-50'
+      }
     >
-      {pending ? loadingLabel : label}
+      {loading ? loadingLabel : label}
     </button>
   )
 }
 
-export function RestoreExamButton({ examId }: { examId: string }) {
-  const restore = restoreExam.bind(null, examId)
-  const [state, formAction] = useActionState(restore, null)
-  return <form action={formAction}><ActionButton label="Restore" loadingLabel="Restoring..." /></form>
+export function RestoreExamButton({ examId, onChanged }: { examId: string, onChanged?: () => void }) {
+  const [loading, setLoading] = useState(false)
+
+  const handle = async () => {
+    setLoading(true)
+    const result = await restoreExam(examId)
+    setLoading(false)
+    if (!result.error) onChanged?.()
+  }
+
+  return <ActionButton label="Restore" loadingLabel="Restoring..." onClick={handle} loading={loading} />
 }
 
-export function RestoreQuestionButton({ questionId }: { questionId: string }) {
-  const restore = restoreQuestion.bind(null, questionId)
-  const [state, formAction] = useActionState(restore, null)
-  return <form action={formAction}><ActionButton label="Restore" loadingLabel="Restoring..." /></form>
+export function RestoreQuestionButton({ questionId, onChanged }: { questionId: string, onChanged?: () => void }) {
+  const [loading, setLoading] = useState(false)
+
+  const handle = async () => {
+    setLoading(true)
+    const result = await restoreQuestion(questionId)
+    setLoading(false)
+    if (!result.error) onChanged?.()
+  }
+
+  return <ActionButton label="Restore" loadingLabel="Restoring..." onClick={handle} loading={loading} />
 }
 
-export function PermanentDeleteExamButton({ examId }: { examId: string }) {
-  const del = permanentlyDeleteExam.bind(null, examId)
-  const [state, formAction] = useActionState(del, null)
+export function PermanentDeleteExamButton({ examId, onChanged }: { examId: string, onChanged?: () => void }) {
+  const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handle = async () => {
+    setLoading(true)
+    const result = await permanentlyDeleteExam(examId)
+    setLoading(false)
+    setIsModalOpen(false)
+    if (!result.error) onChanged?.()
+  }
 
   return (
     <>
-        <form id={`perm-delete-exam-${examId}`} action={formAction}>
-            <ActionButton 
-                label="Delete Forever" 
-                loadingLabel="Deleting..." 
-                color="red" 
-                onClick={() => setIsModalOpen(true)}
-            />
-        </form>
-        <ConfirmationModal 
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onConfirm={() => {
-                const form = document.getElementById(`perm-delete-exam-${examId}`) as HTMLFormElement
-                if (form) form.requestSubmit()
-            }}
-            title="Permanently Delete Exam"
-            message="Are you sure you want to permanently delete this exam? This action CANNOT be undone."
-            confirmText="Delete Forever"
-            isDangerous={true}
-        />
+      <ActionButton label="Delete Forever" loadingLabel="Deleting..." color="red" onClick={() => setIsModalOpen(true)} loading={loading} />
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handle}
+        title="Permanently Delete Exam"
+        message="Are you sure you want to permanently delete this exam? This action CANNOT be undone."
+        confirmText="Delete Forever"
+        isDangerous={true}
+      />
     </>
   )
 }
 
-export function PermanentDeleteQuestionButton({ questionId }: { questionId: string }) {
-  const del = permanentlyDeleteQuestion.bind(null, questionId)
-  const [state, formAction] = useActionState(del, null)
+export function PermanentDeleteQuestionButton({ questionId, onChanged }: { questionId: string, onChanged?: () => void }) {
+  const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handle = async () => {
+    setLoading(true)
+    const result = await permanentlyDeleteQuestion(questionId)
+    setLoading(false)
+    setIsModalOpen(false)
+    if (!result.error) onChanged?.()
+  }
 
   return (
     <>
-        <form id={`perm-delete-q-${questionId}`} action={formAction}>
-            <ActionButton 
-                label="Delete Forever" 
-                loadingLabel="Deleting..." 
-                color="red" 
-                onClick={() => setIsModalOpen(true)}
-            />
-        </form>
-        <ConfirmationModal 
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onConfirm={() => {
-                const form = document.getElementById(`perm-delete-q-${questionId}`) as HTMLFormElement
-                if (form) form.requestSubmit()
-            }}
-            title="Permanently Delete Question"
-            message="Are you sure you want to permanently delete this question? This action CANNOT be undone."
-            confirmText="Delete Forever"
-            isDangerous={true}
-        />
+      <ActionButton label="Delete Forever" loadingLabel="Deleting..." color="red" onClick={() => setIsModalOpen(true)} loading={loading} />
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handle}
+        title="Permanently Delete Question"
+        message="Are you sure you want to permanently delete this question? This action CANNOT be undone."
+        confirmText="Delete Forever"
+        isDangerous={true}
+      />
     </>
   )
 }

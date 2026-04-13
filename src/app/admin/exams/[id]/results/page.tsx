@@ -1,32 +1,65 @@
 
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
+'use client';
 
-export default async function ExamResultsPage({ params }: { params: { id: string } }) {
-  const { id } = await params
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { examsAPI, studentExamsAPI } from '@/lib/api-client';
+import Link from 'next/link';
 
-  const exam = await prisma.exam.findUnique({
-    where: { id },
-    select: { title: true },
-  })
+export default function ExamResultsPage() {
+  const router = useRouter();
+  const params = useParams();
+  const { user, loading: authLoading } = useAuth();
+  const [exam, setExam] = useState<any>(null);
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!exam) notFound()
+  const id = params?.id as string;
 
-  // Fetch all exam attempts for this exam
-  const results = await prisma.studentExam.findMany({
-    where: { examId: id },
-    include: {
-      student: {
-        select: {
-          firstName: true,
-          lastName: true,
-          username: true,
-        },
-      },
-    },
-    orderBy: { startedAt: 'desc' },
-  })
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user || user.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+
+    async function loadData() {
+      try {
+        const [examResponse, resultsResponse] = await Promise.all([
+          examsAPI.getById(id),
+          studentExamsAPI.getExamResults(id),
+        ]);
+
+        if (!examResponse.data) {
+          router.push('/admin/exams');
+          return;
+        }
+
+        setExam(examResponse.data);
+        setResults(resultsResponse.data);
+      } catch (error) {
+        console.error('Failed to load results:', error);
+        router.push('/admin/exams');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [user, authLoading, router, id]);
+
+  if (authLoading || loading || !exam) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading results...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -51,21 +84,21 @@ export default async function ExamResultsPage({ params }: { params: { id: string
                             <Link href={`/admin/exams/${id}/results/${result.id}`} className="block px-4 py-4 sm:px-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
-                                        <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
-                                            {result.student?.firstName?.[0]}{result.student?.lastName?.[0]}
+                                        <div className="shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                                        {result.first_name?.[0]}{result.last_name?.[0]}
                                         </div>
                                         <div className="ml-4">
                                             <div className="text-sm font-medium text-gray-900">
-                                                {result.student?.firstName} {result.student?.lastName}
+                                          {result.first_name} {result.last_name}
                                             </div>
-                                            <div className="text-sm text-gray-500">@{result.student?.username}</div>
+                                        <div className="text-sm text-gray-500">{result.student_email}</div>
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-6">
                                         <div className="text-right">
-                                            {result.lockdownViolations > 0 && (
+                                            {result.lockdown_violations > 0 && (
                                                 <div className="text-xs font-bold text-red-600 mb-1">
-                                                    {result.lockdownViolations} Security Violations
+                                                    {result.lockdown_violations} Security Violations
                                                 </div>
                                             )}
                                             <div className="text-sm text-gray-900 font-medium">
@@ -75,8 +108,8 @@ export default async function ExamResultsPage({ params }: { params: { id: string
                                             </div>
                                             <div className="text-xs text-gray-500">
                                                 {result.status === 'completed' 
-                                                  ? `Completed ${new Date(result.completedAt).toLocaleDateString()}`
-                                                  : `Started ${new Date(result.startedAt).toLocaleDateString()}`
+                                                  ? `Completed ${new Date(result.completed_at).toLocaleDateString()}`
+                                                  : `Started ${new Date(result.started_at).toLocaleDateString()}`
                                                 }
                                             </div>
                                         </div>

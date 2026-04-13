@@ -1,71 +1,37 @@
-
-'use server'
-
-import { revalidatePath } from 'next/cache'
-import { prisma } from '@/lib/prisma'
+import { examsAPI, questionsAPI } from '@/lib/api-client'
 
 export async function restoreExam(examId: string) {
   try {
-    // Restore exam and all its questions by clearing deletedAt
-    await prisma.$transaction(async (tx: any) => {
-      // Restore all questions in this exam
-      await tx.question.updateMany({
-        where: { examId },
-        data: { deletedAt: null },
-      })
-      
-      // Restore the exam itself
-      await tx.exam.update({
-        where: { id: examId },
-        data: { deletedAt: null },
-      })
-    })
-    
-    revalidatePath('/admin/recycle-bin')
-    revalidatePath('/admin/exams')
+    await examsAPI.restore(examId)
     return { success: true }
   } catch (error: any) {
-    return { error: error.message }
+    return { error: error.response?.data?.message || error.message || 'Failed to restore exam' }
   }
 }
 
 export async function restoreQuestion(questionId: string) {
   try {
-    // Restore question by clearing deletedAt
-    await prisma.question.update({
-      where: { id: questionId },
-      data: { deletedAt: null },
-    })
-    
-    revalidatePath('/admin/recycle-bin')
+    await questionsAPI.restore(questionId)
     return { success: true }
   } catch (error: any) {
-    return { error: error.message }
+    return { error: error.response?.data?.message || error.message || 'Failed to restore question' }
   }
 }
 
 export async function permanentlyDeleteExam(examId: string) {
   try {
-    await prisma.exam.delete({
-      where: { id: examId }
-    })
-    
-    revalidatePath('/admin/recycle-bin')
+    await examsAPI.permanentDelete(examId)
     return { success: true }
   } catch (error: any) {
-    return { error: error.message }
+    return { error: error.response?.data?.message || error.message || 'Failed to permanently delete exam' }
   }
 }
 
 export async function permanentlyDeleteQuestion(questionId: string) {
   try {
-    await prisma.question.delete({
-      where: { id: questionId }
-    })
-    
-    revalidatePath('/admin/recycle-bin')
+    await questionsAPI.permanentDelete(questionId)
     return { success: true }
   } catch (error: any) {
-    return { error: error.message }
+    return { error: error.response?.data?.message || error.message || 'Failed to permanently delete question' }
   }
 }

@@ -1,14 +1,14 @@
 
-'use client'
+'use client';
 
-import { useState, useActionState, useEffect } from 'react'
-import { useFormStatus } from 'react-dom'
-import { updateQuestion, deleteQuestion } from '../../actions'
-import ConfirmationModal from '@/components/confirmation-modal'
-import RichTextEditor from '@/components/ui/rich-text-editor'
-import { useRef } from 'react'
-import { EditorProvider } from '@/components/ui/editor-context'
-import UnifiedToolbar from '@/components/ui/unified-toolbar'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { updateQuestion, deleteQuestion } from '../../actions';
+import ConfirmationModal from '@/components/confirmation-modal';
+import RichTextEditor from '@/components/ui/rich-text-editor';
+import { useRef } from 'react';
+import { EditorProvider } from '@/components/ui/editor-context';
+import UnifiedToolbar from '@/components/ui/unified-toolbar';
 
 // Helper component for file upload
 function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string, defaultDescription?: string }) {
@@ -126,31 +126,6 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
     )
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-    >
-      {pending ? 'Saving...' : 'Save Changes'}
-    </button>
-  )
-}
-
-function DeleteButton({ onClick }: { onClick: () => void }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-red-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        >
-            Delete Question
-        </button>
-    )
-}
-
 const DOMAINS = {
   math: [
     "Algebra",
@@ -175,32 +150,44 @@ export default function EditQuestionForm({ question, examId }: { question: any, 
 }
 
 function EditQuestionContent({ question, examId }: { question: any, examId: string }) {
-  const updateQuestionWithId = updateQuestion.bind(null, question.id, examId)
-  const [state, formAction] = useActionState(updateQuestionWithId, null)
-  const [selectedSection, setSelectedSection] = useState<string>(question.section)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string>(question.section);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [questionType, setQuestionType] = useState<string>(
       question.content.options && question.content.options.A ? 'multiple_choice' : 'spr'
-  )
-
-  // Handle successful update
-  useEffect(() => {
-    if (state?.success) {
-      window.location.href = `/admin/exams/${examId}`
-    }
-  }, [state, examId])
+  );
 
   // Determine if math is enabled
-  const enableMath = selectedSection === 'math'
+  const enableMath = selectedSection === 'math';
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await updateQuestion(question.id, examId, formData);
+
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+    } else {
+      // Success - navigate back to exam detail page
+      router.push(`/admin/exams/${examId}`);
+    }
+  };
 
   const handleDelete = async () => {
-    await deleteQuestion(question.id, examId)
-  }
+    await deleteQuestion(question.id, examId);
+    router.push(`/admin/exams/${examId}`);
+  };
 
   return (
     <div className="bg-white shadow sm:rounded-lg border border-gray-200 relative">
       <div className="px-4 py-5 sm:p-6">
-        <form action={formAction} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             
             <div className="sm:col-span-3">
@@ -360,13 +347,25 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
             </div>
           </div>
           
-          {state?.error && (
-             <div className="text-sm text-red-600">{state.error}</div>
+          {error && (
+             <div className="text-sm text-red-600">{error}</div>
           )}
 
           <div className="flex justify-between">
-            <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
-            <SubmitButton />
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-red-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              Delete Question
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
         </form>
 

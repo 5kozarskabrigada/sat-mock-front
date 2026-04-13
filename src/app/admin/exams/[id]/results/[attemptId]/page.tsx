@@ -1,7 +1,11 @@
 
-import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
+"use client"
+
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
+import { examsAPI, studentExamsAPI, usersAPI, questionsAPI } from '@/lib/api-client'
 import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
 import DownloadReportButton from './download-button'
 import type { PdfBreakdownSection, PdfBreakdownQuestion } from './download-button'
@@ -21,44 +25,103 @@ type QuestionRecord = {
   content: unknown
 }
 
-export default async function ScoreReportPage({ params }: { params: { id: string, attemptId: string } }) {
-  const { id, attemptId } = await params
+export default function ScoreReportPage() {
+  const router = useRouter()
+  const params = useParams()
+  const { user, loading: authLoading } = useAuth()
+  const [attempt, setAttempt] = useState<any | null>(null)
+  const [typedQuestions, setTypedQuestions] = useState<QuestionRecord[]>([])
+  const [typedAnswers, setTypedAnswers] = useState<AnswerRecord[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Fetch attempt details
-  const attempt = await prisma.studentExam.findUnique({
-    where: { id: attemptId },
-    include: {
-      student: {
-        select: {
-          firstName: true,
-          lastName: true,
-          username: true,
-        },
-      },
-      exam: {
-        select: {
-          title: true,
-        },
-      },
-    },
-  })
+  const id = params?.id as string
+  const attemptId = params?.attemptId as string
 
-  if (!attempt) notFound()
+  useEffect(() => {
+    if (authLoading) return
 
-  // Fetch answers
-  const answers = await prisma.studentAnswer.findMany({
-    where: { studentExamId: attemptId },
-  })
+    if (!user || user.role !== 'admin') {
+      router.push('/login')
+      return
+    }
 
-  // Fetch questions for this exam to get domain info (exclude soft-deleted)
-  const questions = await prisma.question.findMany({
-    where: { examId: id, deletedAt: null },
-    select: { id: true, domain: true, content: true, correctAnswer: true, section: true, module: true },
-    orderBy: { createdAt: 'asc' },
-  })
+    const loadReport = async () => {
+      try {
+        const [attemptRes, answersRes, examRes] = await Promise.all([
+          studentExamsAPI.getById(attemptId),
+          studentExamsAPI.getAnswers(attemptId),
+          examsAPI.getById(id),
+        ])
 
-  const typedQuestions: QuestionRecord[] = (questions || []) as QuestionRecord[]
-  const typedAnswers: AnswerRecord[] = (answers || []) as AnswerRecord[]
+        const attemptData = attemptRes.data
+        const answersData = Array.isArray(answersRes.data) ? answersRes.data : []
+        const examData = examRes.data
+
+        if (!attemptData || !examData) {
+          router.push(`/admin/exams/${id}/results`)
+          return
+        }
+
+        const [studentRes, questionsRes] = await Promise.all([
+          usersAPI.getById(attemptData.student_id),
+          questionsAPI.getByExam(id),
+        ])
+
+        const mappedAttempt = {
+          ...attemptData,
+          completedAt: attemptData.completed_at,
+          lockdownViolations: attemptData.lockdown_violations || 0,
+          student: {
+            firstName: studentRes.data.first_name,
+            lastName: studentRes.data.last_name,
+            username: studentRes.data.username,
+          },
+          exam: {
+            title: examData.title,
+          },
+        }
+
+        const mappedAnswers: AnswerRecord[] = answersData.map((answer: any) => ({
+          questionId: answer.question_id,
+          isCorrect: answer.is_correct,
+          answerValue: answer.answer_value,
+        }))
+
+        const mappedQuestions: QuestionRecord[] = (Array.isArray(questionsRes.data) ? questionsRes.data : [])
+          .filter((question: any) => !question.deleted_at)
+          .map((question: any) => ({
+            id: question.id,
+            domain: question.domain,
+            correctAnswer: question.correct_answer,
+            section: question.section,
+            module: question.module,
+            content: question.content,
+          }))
+
+        setAttempt(mappedAttempt)
+        setTypedAnswers(mappedAnswers)
+        setTypedQuestions(mappedQuestions)
+      } catch (error) {
+        console.error('Failed to load score report:', error)
+        router.push(`/admin/exams/${id}/results`)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadReport()
+  }, [authLoading, user, router, id, attemptId])
+
+  if (authLoading || loading || !attempt) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading score report...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Calculate stats
   const domainStats = calculateDomainScores(typedQuestions, typedAnswers)

@@ -1,28 +1,75 @@
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { examsAPI, studentExamsAPI, usersAPI } from '@/lib/api-client'
 
-export default async function StudentProfilePage({ params }: { params: { id: string } }) {
-  const { id } = await params
+export default function StudentProfilePage() {
+  const router = useRouter()
+  const params = useParams()
+  const { user, loading: authLoading } = useAuth()
+  const [student, setStudent] = useState<any | null>(null)
+  const [submissions, setSubmissions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const student = await prisma.user.findUnique({
-    where: { id },
-  })
+  const id = params?.id as string
 
-  if (!student) notFound()
+  useEffect(() => {
+    if (authLoading) return
 
-  const submissions = await prisma.studentExam.findMany({
-    where: { studentId: id },
-    include: {
-      exam: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
-    },
-    orderBy: { completedAt: 'desc' },
-  })
+    if (!user || user.role !== 'admin') {
+      router.push('/login')
+      return
+    }
+
+    const loadData = async () => {
+      try {
+        const [studentRes, examsRes] = await Promise.all([
+          usersAPI.getById(id),
+          examsAPI.getAll(),
+        ])
+
+        if (!studentRes.data) {
+          router.push('/admin/students')
+          return
+        }
+
+        const examRows = Array.isArray(examsRes.data) ? examsRes.data : []
+        const allResults = await Promise.all(
+          examRows.map((exam: any) => studentExamsAPI.getExamResults(exam.id).then((res) => ({ exam, rows: res.data || [] }))),
+        )
+
+        const studentSubmissions = allResults
+          .flatMap((entry: any) => entry.rows.map((row: any) => ({ ...row, exam: { id: entry.exam.id, title: entry.exam.title } })))
+          .filter((row: any) => row.student_id === id)
+          .sort((a: any, b: any) => {
+            const aDate = new Date(a.completed_at || a.started_at).getTime()
+            const bDate = new Date(b.completed_at || b.started_at).getTime()
+            return bDate - aDate
+          })
+
+        setStudent({
+          ...studentRes.data,
+          firstName: studentRes.data.first_name,
+          lastName: studentRes.data.last_name,
+        })
+        setSubmissions(studentSubmissions)
+      } catch (error) {
+        console.error('Failed to load student profile:', error)
+        router.push('/admin/students')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [authLoading, user, router, id])
+
+  if (authLoading || loading || !student) {
+    return <div className="text-center py-12 text-gray-500">Loading student profile...</div>
+  }
 
   return (
     <div className="space-y-6">
@@ -38,7 +85,7 @@ export default async function StudentProfilePage({ params }: { params: { id: str
         </div>
         <div className="border-t border-gray-200">
           <ul role="list" className="divide-y divide-gray-200">
-            {!submissions || submissions.length === 0 ? (
+            {submissions.length === 0 ? (
               <li className="px-4 py-5 sm:px-6 text-gray-500">No submissions yet.</li>
             ) : (
               submissions.map((sub: any) => (
@@ -47,19 +94,19 @@ export default async function StudentProfilePage({ params }: { params: { id: str
                     <div>
                       <p className="text-sm font-medium text-indigo-600 truncate">{sub.exam?.title}</p>
                       <p className="text-xs text-gray-500">
-                        {sub.status === 'completed' 
-                          ? `Completed on ${new Date(sub.completedAt!).toLocaleString()}`
-                          : `Started on ${new Date(sub.startedAt).toLocaleString()} (In Progress)`}
+                        {sub.status === 'completed'
+                          ? `Completed on ${new Date(sub.completed_at).toLocaleString()}`
+                          : `Started on ${new Date(sub.started_at).toLocaleString()} (In Progress)`}
                       </p>
                     </div>
                     <div className="flex items-center space-x-4">
-                      {sub.lockdownViolations > 0 && (
+                      {(sub.lockdown_violations || 0) > 0 && (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                          {sub.lockdownViolations} Violations
+                          {sub.lockdown_violations} Violations
                         </span>
                       )}
                       {sub.status === 'completed' && (
-                        <Link 
+                        <Link
                           href={`/admin/exams/${sub.exam?.id}/results/${sub.id}`}
                           className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
                         >

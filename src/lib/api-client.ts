@@ -82,6 +82,8 @@ export const examsAPI = {
   update: (id: string, data: any) => apiClient.put(`/exams/${id}`, data),
   
   delete: (id: string) => apiClient.delete(`/exams/${id}`),
+
+  permanentDelete: (id: string) => apiClient.delete(`/exams/${id}/permanent`),
   
   restore: (id: string) => apiClient.post(`/exams/${id}/restore`),
   
@@ -102,6 +104,12 @@ export const questionsAPI = {
   update: (id: string, data: any) => apiClient.put(`/questions/${id}`, data),
   
   delete: (id: string) => apiClient.delete(`/questions/${id}`),
+
+  restore: (id: string) => apiClient.post(`/questions/${id}/restore`),
+
+  permanentDelete: (id: string) => apiClient.delete(`/questions/${id}/permanent`),
+
+  getDeleted: () => apiClient.get('/questions/deleted'),
 };
 
 // Student Exams API

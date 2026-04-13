@@ -1,18 +1,11 @@
 'use server'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/get-current-user'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
 
 export async function POST(request: NextRequest) {
-  // Auth check
-  const user = await getCurrentUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null

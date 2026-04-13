@@ -1,33 +1,30 @@
-
 'use client'
 
-import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
+import { useState } from 'react'
 import { createClassroom } from './actions'
-import { useState, useEffect } from 'react'
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-    >
-      {pending ? 'Creating...' : 'Create Classroom'}
-    </button>
-  )
-}
+export default function CreateClassroomForm({ onSuccess }: { onSuccess?: () => void }) {
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-export default function CreateClassroomForm() {
-  const [state, formAction] = useActionState(createClassroom, null)
-  const [isExpanded, setIsExpanded] = useState(false)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
-  useEffect(() => {
-    if (state?.success) {
-      setIsExpanded(false)
+    const formData = new FormData(e.currentTarget)
+    const result = await createClassroom(formData)
+
+    if (result.error) {
+      setError(result.error)
+      setLoading(false)
+      return
     }
-  }, [state])
+
+    e.currentTarget.reset()
+    setLoading(false)
+    onSuccess?.()
+  }
 
   return (
     <div className="w-full">
@@ -37,9 +34,9 @@ export default function CreateClassroomForm() {
           Organize students into groups for easier management.
         </p>
       </div>
-      
+
       <div>
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Classroom Name
@@ -69,17 +66,18 @@ export default function CreateClassroomForm() {
               />
             </div>
           </div>
-          
-          {state?.error && (
-             <div className="rounded-md bg-red-50 p-2 text-sm text-red-600">{state.error}</div>
+
+          {error && (
+            <div className="rounded-md bg-red-50 p-2 text-sm text-red-600">{error}</div>
           )}
 
           <div className="pt-2">
             <button
-                type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
             >
-                Create Classroom
+              {loading ? 'Creating...' : 'Create Classroom'}
             </button>
           </div>
         </form>

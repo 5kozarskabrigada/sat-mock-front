@@ -84,7 +84,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
                             >
                                 <div className="px-6 py-5">
                                     <div className="flex justify-between items-start gap-4">
-                                        <div className="flex-shrink-0 min-w-[3rem]">
+                                        <div className="shrink-0 min-w-12">
                                             <span className={`inline-flex items-center justify-center h-8 w-8 rounded-full text-sm font-bold ring-1 ${ringClass}`}>
                                                 {index + 1}
                                             </span>
@@ -93,7 +93,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                                 {q.domain && (
-                                                    <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 truncate max-w-[200px]">
+                                                    <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 truncate max-w-50">
                                                         {q.domain}
                                                     </span>
                                                 )}
@@ -111,7 +111,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
                                             </div>
                                         </div>
 
-                                        <div className="flex-shrink-0 self-center flex items-center gap-2">
+                                        <div className="shrink-0 self-center flex items-center gap-2">
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation()
@@ -149,7 +149,7 @@ export default function QuestionsList({ questions, examId, onUpdate }: { questio
 
     if (questions.length === 0) {
         return (
-            <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden px-6 py-12 text-center text-gray-500 bg-gray-50">
+            <div className="bg-gray-50 shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden px-6 py-12 text-center text-gray-500">
                 <p className="text-sm">No questions added yet.</p>
                 <p className="text-xs mt-1 text-gray-400">Use the form below to add your first question.</p>
             </div>

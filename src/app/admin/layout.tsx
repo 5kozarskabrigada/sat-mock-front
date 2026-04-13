@@ -1,22 +1,38 @@
 
-import { getCurrentUser } from '@/lib/get-current-user'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 import AdminSidebar from './sidebar'
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const user = await getCurrentUser()
+  const router = useRouter()
+  const { user, loading } = useAuth()
 
-  if (!user) {
-    redirect('/login')
-  }
+  useEffect(() => {
+    if (loading) return
 
-  if (user.role !== 'admin') {
-    redirect('/student')
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    if (user.role !== 'admin') {
+      router.push('/student')
+    }
+  }, [loading, user, router])
+
+  if (loading || !user || user.role !== 'admin') {
+    return (
+      <div className="h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-500">Loading admin area...</div>
+      </div>
+    )
   }
 
   return (

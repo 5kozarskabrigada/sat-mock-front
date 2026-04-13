@@ -95,7 +95,7 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
                                     <h3 className="text-lg font-medium text-gray-900 truncate" title={exam.title}>
                                         {exam.title}
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-500 line-clamp-2 min-h-[40px]">
+                                    <p className="mt-1 text-sm text-gray-500 line-clamp-2 min-h-10">
                                         {exam.description || 'No description provided.'}
                                     </p>
                                 </div>

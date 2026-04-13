@@ -1,48 +1,43 @@
-
 'use client'
 
-import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
-import { removeStudentFromClassroom } from '../actions'
 import { useState } from 'react'
+import { removeStudentFromClassroom } from '../actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 
-function RemoveButton({ onClick }: { onClick: () => void }) {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="button"
-      disabled={pending}
-      onClick={onClick}
-      className="text-red-600 hover:text-red-900 font-medium disabled:opacity-50"
-    >
-      {pending ? 'Removing...' : 'Remove'}
-    </button>
-  )
-}
-
-export default function RemoveStudentButton({ classroomId, studentId }: { classroomId: string, studentId: string }) {
-  const removeAction = removeStudentFromClassroom.bind(null, classroomId, studentId)
-  const [state, formAction] = useActionState(removeAction, null)
+export default function RemoveStudentButton({ classroomId, studentId, onRemoved }: { classroomId: string, studentId: string, onRemoved?: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const handleRemove = async () => {
+    setLoading(true)
+    const result = await removeStudentFromClassroom(classroomId, studentId)
+    setLoading(false)
+    setIsModalOpen(false)
+
+    if (!result.error) {
+      onRemoved?.()
+    }
+  }
 
   return (
     <>
-        <form id={`remove-student-${studentId}`} action={formAction}>
-            <RemoveButton onClick={() => setIsModalOpen(true)} />
-        </form>
-        <ConfirmationModal 
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onConfirm={() => {
-                const form = document.getElementById(`remove-student-${studentId}`) as HTMLFormElement
-                if (form) form.requestSubmit()
-            }}
-            title="Remove Student"
-            message="Are you sure you want to remove this student from the classroom?"
-            confirmText="Remove"
-            isDangerous={true}
-        />
+      <button
+        type="button"
+        disabled={loading}
+        onClick={() => setIsModalOpen(true)}
+        className="text-red-600 hover:text-red-900 font-medium disabled:opacity-50"
+      >
+        {loading ? 'Removing...' : 'Remove'}
+      </button>
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleRemove}
+        title="Remove Student"
+        message="Are you sure you want to remove this student from the classroom?"
+        confirmText="Remove"
+        isDangerous={true}
+      />
     </>
   )
 }

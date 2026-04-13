@@ -89,7 +89,7 @@ export default function ExamStatusToggle({
                 {isLive ? 'Assigned Classroom' : 'Assign Classroom'}
             </label>
             <select 
-                className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-[180px] bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
+                className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-45 bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                 value={selectedClassroom}
                 onChange={(e) => setSelectedClassroom(e.target.value)}
                 disabled={isLive}
@@ -104,7 +104,7 @@ export default function ExamStatusToggle({
         <div className="flex flex-col items-start">
             <label className="text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Security Policy</label>
             <select 
-                className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-[180px] bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                className="text-sm border-gray-300 rounded-lg shadow-sm p-2 text-black min-w-45 bg-white focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 value={policy}
                 onChange={(e) => handlePolicyChange(e.target.value)}
             >
