@@ -23,7 +23,7 @@ const DOMAINS = {
   ]
 }
 
-export default function AddQuestionForm({ examId }: { examId: string }) {
+export default function AddQuestionForm({ examId, onSuccess }: { examId: string, onSuccess?: () => void }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   if (!isExpanded) {
@@ -40,15 +40,16 @@ export default function AddQuestionForm({ examId }: { examId: string }) {
   return (
     <EditorProvider>
         <AddQuestionContent 
-            examId={examId} 
-            isExpanded={isExpanded} 
-            setIsExpanded={setIsExpanded} 
+            examId={examId}
+            onSuccess={onSuccess}
+            isExpanded={isExpanded}
+            setIsExpanded={setIsExpanded}
         />
     </EditorProvider>
   )
 }
 
-function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: string, isExpanded: boolean, setIsExpanded: (v: boolean) => void }) {
+function AddQuestionContent({ examId, onSuccess, isExpanded, setIsExpanded }: { examId: string, onSuccess?: () => void, isExpanded: boolean, setIsExpanded: (v: boolean) => void }) {
   const [imageUrl, setImageUrl] = useState<string>('')
   const [imageDescription, setImageDescription] = useState<string>('')
   const [uploading, setUploading] = useState(false)
@@ -130,6 +131,7 @@ function AddQuestionContent({ examId, isExpanded, setIsExpanded }: { examId: str
       alert(result.error)
     } else {
       resetForm()
+      onSuccess?.()
     }
   }
 

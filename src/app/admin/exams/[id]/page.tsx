@@ -196,20 +196,3 @@ export default function ExamDetailsPage() {
     </div>
   );
 }
-
-      <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Questions ({questions?.length || 0})</h2>
-            <span className="text-sm text-gray-500">
-                Sorted by creation order
-            </span>
-        </div>
-        
-        {/* List Questions */}
-        <QuestionsList questions={questions || []} examId={exam.id} />
-
-        <AddQuestionForm examId={exam.id} />
-      </div>
-    </div>
-  )
-}

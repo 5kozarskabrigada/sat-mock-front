@@ -47,7 +47,7 @@ export default function ExamPage() {
         setQuestions(questionsResponse.data || []);
 
         // Admin preview bypass
-        if (isAdminPreview && user.role === 'admin') {
+        if (isAdminPreview && user?.role === 'admin') {
           setLoading(false);
           return;
         }
@@ -128,7 +128,6 @@ export default function ExamPage() {
       questions={questions}
       studentExamId={studentExamIdToUse}
       studentName={isAdminPreview ? `${studentName} (Admin Preview)` : studentName}
-      isAdminPreview={isAdminPreview}
     />
   );
 }
