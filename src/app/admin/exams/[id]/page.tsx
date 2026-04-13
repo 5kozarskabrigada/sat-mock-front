@@ -54,7 +54,7 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
   
   // Define "Active/Live" as in_progress AND updated within the last 60 seconds
   const activeThreshold = new Date(Date.now() - 60 * 1000).getTime()
-  const studentsActiveCount = participation?.filter(p => {
+  const studentsActiveCount = participation?.filter((p: any) => {
     if (p.status !== 'in_progress' || !p.updatedAt) return false
     const lastUpdate = new Date(p.updatedAt).getTime()
     return lastUpdate > activeThreshold

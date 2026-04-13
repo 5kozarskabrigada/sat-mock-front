@@ -11,7 +11,7 @@ export default function StudentList({ students }: { students: any[] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = students.filter((student: any) => 
     student.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.lastName.toLowerCase().includes(searchTerm.toLowerCase())

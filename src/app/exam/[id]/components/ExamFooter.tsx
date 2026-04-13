@@ -46,7 +46,7 @@ export default function ExamFooter({
 
   // Calculate Module Progress
   const currentModule = questions[currentQuestionIndex]?.module || 1
-  const moduleQuestions = questions.filter(q => (q.module || 1) == currentModule)
+  const moduleQuestions = questions.filter((q: any) => (q.module || 1) == currentModule)
   const currentQuestionInModule = moduleQuestions.findIndex(q => q.id === currentQuestionId) + 1
   const sectionTitle = `Section 1, Module ${currentModule}: Reading and Writing Questions` // Dynamic based on subject later
 

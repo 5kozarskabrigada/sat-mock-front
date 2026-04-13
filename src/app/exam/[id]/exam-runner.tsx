@@ -297,8 +297,8 @@ export default function ExamRunner({
       // We assume questions have 'section' and 'module' properties
       // If not, we might need to distribute them if the DB doesn't have it (fallback)
       
-      const rw1 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 1)
-      const rw2 = allQuestions.filter(q => q.section === 'reading_writing' && q.module === 2)
+      const rw1 = allQuestions.filter((q: any) => q.section === 'reading_writing' && q.module === 1)
+      const rw2 = allQuestions.filter((q: any) => q.section === 'reading_writing' && q.module === 2)
 
       // Math section specific filter: Remove passage-based MCQ questions
       const mathFilter = (q: any) => {
@@ -308,8 +308,8 @@ export default function ExamRunner({
           return true
       }
 
-      const m1 = allQuestions.filter(q => q.section === 'math' && q.module === 1).filter(mathFilter)
-      const m2 = allQuestions.filter(q => q.section === 'math' && q.module === 2).filter(mathFilter)
+      const m1 = allQuestions.filter((q: any) => q.section === 'math' && q.module === 1).filter(mathFilter)
+      const m2 = allQuestions.filter((q: any) => q.section === 'math' && q.module === 2).filter(mathFilter)
       
       return [
           { ...MODULE_CONFIG[0], questions: rw1 },
@@ -714,7 +714,7 @@ export default function ExamRunner({
                   {Object.entries(allHighlights).some(([_, h]) => h.length > 0) ? (
                       Object.entries(allHighlights).map(([qId, highlights]) => {
                           if (highlights.length === 0) return null
-                          const question = allQuestions.find(q => q.id === qId)
+                          const question = allQuestions.find((q: any) => q.id === qId)
                           const qIdx = currentModuleQuestions.findIndex(q => q.id === qId)
                           
                           return (

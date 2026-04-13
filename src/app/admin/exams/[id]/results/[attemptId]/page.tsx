@@ -191,10 +191,10 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                   </div>
                   <p className="text-xs text-gray-500 text-right">200–800</p>
                   
-                  {domainStats.some(d => DOMAINS.reading_writing.includes(d.name)) && (
+                  {domainStats.some((d: any) => DOMAINS.reading_writing.includes(d.name)) && (
                   <div className="mt-6 space-y-3">
                       <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
-                      {domainStats.filter(d => DOMAINS.reading_writing.includes(d.name)).map(stat => (
+                      {domainStats.filter((d: any) => DOMAINS.reading_writing.includes(d.name)).map((stat: any) => (
                           <div key={stat.name} className="flex justify-between items-center text-sm">
                               <span className="text-gray-700">{stat.name}</span>
                               <div className="flex items-center space-x-2">
@@ -220,10 +220,10 @@ export default async function ScoreReportPage({ params }: { params: { id: string
                   </div>
                   <p className="text-xs text-gray-500 text-right">200–800</p>
 
-                  {domainStats.some(d => DOMAINS.math.includes(d.name)) && (
+                  {domainStats.some((d: any) => DOMAINS.math.includes(d.name)) && (
                   <div className="mt-6 space-y-3">
                       <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Knowledge and Skills</h4>
-                      {domainStats.filter(d => DOMAINS.math.includes(d.name)).map(stat => (
+                      {domainStats.filter((d: any) => DOMAINS.math.includes(d.name)).map((stat: any) => (
                           <div key={stat.name} className="flex justify-between items-center text-sm">
                               <span className="text-gray-700">{stat.name}</span>
                               <div className="flex items-center space-x-2">

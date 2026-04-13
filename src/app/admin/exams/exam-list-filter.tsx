@@ -20,7 +20,7 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
     const [statusFilter, setStatusFilter] = useState('all')
     const router = useRouter()
 
-    const filteredExams = exams.filter(exam => {
+    const filteredExams = exams.filter((exam: any) => {
         const matchesSearch = 
             exam.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
             (exam.code || '').toLowerCase().includes(searchTerm.toLowerCase())

@@ -204,10 +204,10 @@ export async function validateExamQuestions(examId: string) {
       },
     })
 
-    const rwM1 = questions.filter(q => q.section === 'reading_writing' && q.module === 1).length
-    const rwM2 = questions.filter(q => q.section === 'reading_writing' && q.module === 2).length
-    const mathM1 = questions.filter(q => q.section === 'math' && q.module === 1).length
-    const mathM2 = questions.filter(q => q.section === 'math' && q.module === 2).length
+    const rwM1 = questions.filter((q: any) => q.section === 'reading_writing' && q.module === 1).length
+    const rwM2 = questions.filter((q: any) => q.section === 'reading_writing' && q.module === 2).length
+    const mathM1 = questions.filter((q: any) => q.section === 'math' && q.module === 1).length
+    const mathM2 = questions.filter((q: any) => q.section === 'math' && q.module === 2).length
 
     const required = {
         rwM1: 27,

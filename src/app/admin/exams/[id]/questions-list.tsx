@@ -155,10 +155,10 @@ export default function QuestionsList({ questions, examId }: { questions: any[],
     }
 
     // Filter and sort questions
-    const rwM1 = questions.filter(q => q.section === 'reading_writing' && q.module === 1)
-    const rwM2 = questions.filter(q => q.section === 'reading_writing' && q.module === 2)
-    const mathM1 = questions.filter(q => q.section === 'math' && q.module === 1)
-    const mathM2 = questions.filter(q => q.section === 'math' && q.module === 2)
+    const rwM1 = questions.filter((q: any) => q.section === 'reading_writing' && q.module === 1)
+    const rwM2 = questions.filter((q: any) => q.section === 'reading_writing' && q.module === 2)
+    const mathM1 = questions.filter((q: any) => q.section === 'math' && q.module === 1)
+    const mathM2 = questions.filter((q: any) => q.section === 'math' && q.module === 2)
 
     return (
         <div className="space-y-4">
