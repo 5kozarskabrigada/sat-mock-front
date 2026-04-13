@@ -59,7 +59,7 @@ export default async function ClassroomDetailPage({ params }: { params: { id: st
                         <p className="text-xs mt-1">Use the form to add students to this class.</p>
                     </li>
                   ) : (
-                    enrolledStudents?.map((enrollment) => (
+                    enrolledStudents?.map((enrollment: any) => (
                       <li key={enrollment.id} className="hover:bg-gray-50 transition-colors">
                         <div className="px-8 py-6 flex items-center justify-between">
                           <div className="flex items-center">
