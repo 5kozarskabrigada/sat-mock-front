@@ -113,7 +113,7 @@ export default async function AdminDashboard() {
               </div>
               <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
                   <ul role="list" className="divide-y divide-gray-200">
-                      {recentStudents?.map((student) => (
+                      {recentStudents?.map((student: any) => (
                           <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
                               <div className="flex items-center space-x-3">
                                   <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
@@ -146,7 +146,7 @@ export default async function AdminDashboard() {
               </div>
               <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
                   <ul role="list" className="divide-y divide-gray-200">
-                      {recentExams?.map((exam) => (
+                      {recentExams?.map((exam: any) => (
                           <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
                               <Link href={`/admin/exams/${exam.id}`} className="block group">
                                   <div className="flex items-center justify-between">

@@ -61,7 +61,7 @@ export default async function AdminSubmissionsPage({ searchParams }: { searchPar
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {submissions?.map((sub) => (
+            {submissions?.map((sub: any) => (
               <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {sub.completedAt ? new Date(sub.completedAt).toLocaleString() : 'N/A'}

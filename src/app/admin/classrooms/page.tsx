@@ -34,7 +34,7 @@ export default async function ClassroomsPage() {
                 <p className="mt-1 text-sm text-gray-500">Get started by creating a new classroom.</p>
             </div>
           ) : (
-            classrooms?.map((classroom) => (
+            classrooms?.map((classroom: any) => (
               <div 
                 key={classroom.id} 
                 className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md group"
