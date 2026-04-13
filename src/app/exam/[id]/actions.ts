@@ -44,7 +44,7 @@ export async function saveAnswersProgress(studentExamId: string, answers: Record
     },
   })
 
-  const questionMap = new Map(questions?.map(q => [q.id, q]))
+  const questionMap = new Map(questions?.map((q: any) => [q.id, q]))
 
   // Grade answers - only for valid questions in the exam
   const answerUpserts = Object.entries(answers)
@@ -130,7 +130,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
     },
   })
 
-  const questionMap = new Map(questions?.map(q => [q.id, q]))
+  const questionMap = new Map(questions?.map((q: any) => [q.id, q]))
 
   // 1. Grade answers - only for valid questions in the exam
   const answerInserts = Object.entries(answers)
