@@ -87,7 +87,7 @@ export default function AddStudentToClassroomForm({ classroomId }: { classroomId
               />
               {showSuggestions && suggestions.length > 0 && (
                 <ul className="absolute z-10 mt-2 max-h-80 w-full overflow-auto rounded-lg bg-white py-2 text-lg shadow-2xl ring-1 ring-black ring-opacity-10 focus:outline-none">
-                  {suggestions.map((student) => (
+                  {suggestions.map((student: any) => (
                     <li
                       key={student.id}
                       onClick={() => selectStudent(student)}

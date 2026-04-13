@@ -58,7 +58,7 @@ export default async function RecycleBinPage() {
                 {!deletedExams || deletedExams.length === 0 ? (
                     <li className="px-4 py-5 sm:px-6 text-gray-500">No deleted exams found.</li>
                 ) : (
-                    deletedExams.map((exam) => (
+                    deletedExams.map((exam: any) => (
                         <li key={exam.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50 flex justify-between items-center">
                             <div>
                                 <div className="flex items-center">
@@ -88,7 +88,7 @@ export default async function RecycleBinPage() {
                 {!deletedQuestions || deletedQuestions.length === 0 ? (
                     <li className="px-4 py-5 sm:px-6 text-gray-500">No deleted questions found.</li>
                 ) : (
-                    deletedQuestions.map((q) => (
+                    deletedQuestions.map((q: any) => (
                         <li key={q.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50 flex justify-between items-center">
                             <div className="max-w-xl">
                                 <div className="flex items-center">

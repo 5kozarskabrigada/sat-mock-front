@@ -41,7 +41,7 @@ export default async function StudentProfilePage({ params }: { params: { id: str
             {!submissions || submissions.length === 0 ? (
               <li className="px-4 py-5 sm:px-6 text-gray-500">No submissions yet.</li>
             ) : (
-              submissions.map((sub) => (
+              submissions.map((sub: any) => (
                 <li key={sub.id} className="hover:bg-gray-50">
                   <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
                     <div>

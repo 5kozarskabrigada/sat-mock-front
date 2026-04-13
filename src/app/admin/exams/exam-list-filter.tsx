@@ -69,7 +69,7 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
 
             {/* Results Grid */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredExams.map((exam) => (
+                {filteredExams.map((exam: any) => (
                     <div 
                         key={exam.id} 
                         className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md"

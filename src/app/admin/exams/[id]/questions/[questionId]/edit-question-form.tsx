@@ -302,7 +302,7 @@ function EditQuestionContent({ question, examId }: { question: any, examId: stri
                     <div className="sm:col-span-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            {['A', 'B', 'C', 'D'].map((opt) => (
+                            {['A', 'B', 'C', 'D'].map((opt: any) => (
                                 <div key={opt}>
                                     <RichTextEditor 
                                         id={`option${opt}`} 

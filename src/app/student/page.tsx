@@ -53,7 +53,7 @@ export default async function StudentDashboard() {
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Resume Active Exams</h3>
             <div className="space-y-4">
-              {activeExams.map((attempt) => (
+              {activeExams.map((attempt: any) => (
                 <div key={attempt.id} className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg border border-indigo-100">
                   <div>
                     <h4 className="font-bold text-indigo-900">{attempt.exam?.title || 'Untitled Exam'}</h4>

@@ -332,7 +332,7 @@ function addDomainTable(pdf: jsPDF, title: string, startY: number, rows: PdfDoma
   autoTable(pdf, {
     startY,
     head: [[title, 'Mastery']],
-    body: rows.map((row) => [row.name, `${row.percentage}%`]),
+    body: rows.map((row: any) => [row.name, `${row.percentage}%`]),
     theme: 'grid',
     margin: { left: PAGE_MARGIN, right: PAGE_MARGIN },
     headStyles: {
@@ -446,7 +446,7 @@ export default function DownloadReportButton({
         autoTable(pdf, {
           startY,
           head: [['#', 'Domain', 'Correct Answer', 'Student Answer', 'Result']],
-          body: section.questions.map((question) => [
+          body: section.questions.map((question: any) => [
             `${question.number}`,
             question.domain,
             question.correctAnswer,

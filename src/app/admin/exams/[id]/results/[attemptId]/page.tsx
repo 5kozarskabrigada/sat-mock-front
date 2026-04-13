@@ -64,19 +64,19 @@ export default async function ScoreReportPage({ params }: { params: { id: string
   const domainStats = calculateDomainScores(typedQuestions, typedAnswers)
   
   // SAT Score Calculation using Albert.io conversion tables
-  const rwQuestions = typedQuestions.filter((question) => question.section === 'reading_writing')
-  const mathQuestions = typedQuestions.filter((question) => question.section === 'math')
+  const rwQuestions = typedQuestions.filter((question: any) => question.section === 'reading_writing')
+  const mathQuestions = typedQuestions.filter((question: any) => question.section === 'math')
   
   // Calculate module-level stats first (needed for Albert.io-style scoring)
-  const rwM1Questions = typedQuestions.filter((question) => question.section === 'reading_writing' && question.module === 1)
-  const rwM2Questions = typedQuestions.filter((question) => question.section === 'reading_writing' && question.module === 2)
-  const mathM1Questions = typedQuestions.filter((question) => question.section === 'math' && question.module === 1)
-  const mathM2Questions = typedQuestions.filter((question) => question.section === 'math' && question.module === 2)
+  const rwM1Questions = typedQuestions.filter((question: any) => question.section === 'reading_writing' && question.module === 1)
+  const rwM2Questions = typedQuestions.filter((question: any) => question.section === 'reading_writing' && question.module === 2)
+  const mathM1Questions = typedQuestions.filter((question: any) => question.section === 'math' && question.module === 1)
+  const mathM2Questions = typedQuestions.filter((question: any) => question.section === 'math' && question.module === 2)
   
-  const rwM1Correct = typedAnswers.filter((answer) => answer.isCorrect && rwM1Questions.some((question) => question.id === answer.questionId)).length
-  const rwM2Correct = typedAnswers.filter((answer) => answer.isCorrect && rwM2Questions.some((question) => question.id === answer.questionId)).length
-  const mathM1Correct = typedAnswers.filter((answer) => answer.isCorrect && mathM1Questions.some((question) => question.id === answer.questionId)).length
-  const mathM2Correct = typedAnswers.filter((answer) => answer.isCorrect && mathM2Questions.some((question) => question.id === answer.questionId)).length
+  const rwM1Correct = typedAnswers.filter((answer: any) => answer.isCorrect && rwM1Questions.some((question: any) => question.id === answer.questionId)).length
+  const rwM2Correct = typedAnswers.filter((answer: any) => answer.isCorrect && rwM2Questions.some((question: any) => question.id === answer.questionId)).length
+  const mathM1Correct = typedAnswers.filter((answer: any) => answer.isCorrect && mathM1Questions.some((question: any) => question.id === answer.questionId)).length
+  const mathM2Correct = typedAnswers.filter((answer: any) => answer.isCorrect && mathM2Questions.some((question: any) => question.id === answer.questionId)).length
 
   const rwCorrect = rwM1Correct + rwM2Correct
   const mathCorrect = mathM1Correct + mathM2Correct
@@ -90,7 +90,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
     { label: 'R&W Module 2', correct: rwM2Correct, total: rwM2Questions.length },
     { label: 'Math Module 1', correct: mathM1Correct, total: mathM1Questions.length },
     { label: 'Math Module 2', correct: mathM2Correct, total: mathM2Questions.length },
-  ].filter((summary) => summary.total > 0)
+  ].filter((summary: any) => summary.total > 0)
   const completedDate = attempt.completedAt ? new Date(attempt.completedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not completed'
   const breakdownSections: PdfBreakdownSection[] = MODULE_GROUPS.flatMap((group) => {
     const moduleQuestions = typedQuestions.filter(
@@ -116,7 +116,7 @@ export default async function ScoreReportPage({ params }: { params: { id: string
 
     return [{
       label: group.label,
-      correct: questions.filter((question) => question.result === 'Correct').length,
+      correct: questions.filter((question: any) => question.result === 'Correct').length,
       total: questions.length,
       questions,
     }]
@@ -144,8 +144,8 @@ export default async function ScoreReportPage({ params }: { params: { id: string
           overallCorrect={rwCorrect + mathCorrect}
           overallTotal={rwQuestions.length + mathQuestions.length}
           violations={attempt.lockdownViolations}
-          readingWritingDomains={domainStats.filter((stat) => DOMAINS.reading_writing.includes(stat.name))}
-          mathDomains={domainStats.filter((stat) => DOMAINS.math.includes(stat.name))}
+          readingWritingDomains={domainStats.filter((stat: any) => DOMAINS.reading_writing.includes(stat.name))}
+          mathDomains={domainStats.filter((stat: any) => DOMAINS.math.includes(stat.name))}
           moduleSummaries={moduleSummaries}
           breakdownSections={breakdownSections}
         />
@@ -314,14 +314,14 @@ export default async function ScoreReportPage({ params }: { params: { id: string
         
           {/* Group questions by module */}
           {(() => {
-            return MODULE_GROUPS.map((group) => {
+            return MODULE_GROUPS.map((group: any) => {
               const moduleQuestions = typedQuestions.filter(
                 (question) => question.section === group.section && question.module === group.module,
               )
               
               if (moduleQuestions.length === 0) return null
               
-              const moduleCorrect = moduleQuestions.filter((question) => {
+              const moduleCorrect = moduleQuestions.filter((question: any) => {
                 const answer = typedAnswers.find((entry) => entry.questionId === question.id)
                 return answer?.isCorrect
               }).length

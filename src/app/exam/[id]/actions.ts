@@ -71,7 +71,7 @@ export async function saveAnswersProgress(studentExamId: string, answers: Record
     // Use upsert to update existing answers or insert new ones
     try {
       await prisma.$transaction(
-        answerUpserts.map((answer) =>
+        answerUpserts.map((answer: any) =>
           prisma.studentAnswer.upsert({
             where: {
               studentExamId_questionId: {

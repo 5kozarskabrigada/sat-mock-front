@@ -17,7 +17,7 @@ export default function Loading() {
 
       {/* Stats Cards skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-        {[1, 2, 3, 4, 5].map((i) => (
+        {[1, 2, 3, 4, 5].map((i: any) => (
           <div key={i} className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <div className="h-4 w-20 bg-gray-200 rounded mb-3"></div>
             <div className="h-6 w-16 bg-gray-200 rounded"></div>
@@ -33,7 +33,7 @@ export default function Loading() {
         </div>
         
         <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3].map((i: any) => (
             <div key={i} className="bg-white p-4 rounded-lg border border-gray-200">
               <div className="h-5 w-3/4 bg-gray-200 rounded mb-2"></div>
               <div className="h-4 w-1/2 bg-gray-200 rounded"></div>

@@ -57,7 +57,7 @@ export default function StudentList({ students }: { students: any[] }) {
             {filteredStudents.length === 0 ? (
                 <li className="px-4 py-4 sm:px-6 text-gray-500">No students found.</li>
             ) : (
-                filteredStudents.map((student) => (
+                filteredStudents.map((student: any) => (
                 <li key={student.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                     {editingId === student.id ? (
                         <form action={handleUpdate} className="flex gap-4 items-end">

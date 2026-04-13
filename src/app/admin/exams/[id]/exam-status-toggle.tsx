@@ -96,7 +96,7 @@ export default function ExamStatusToggle({
                 disabled={isLive}
             >
                 <option value="">All Students (Public)</option>
-                {classrooms.map((c) => (
+                {classrooms.map((c: any) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
             </select>
