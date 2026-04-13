@@ -1,38 +1,43 @@
 
 'use client'
 
-import { useState, useEffect, useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
+import { useState } from 'react'
 import { createStudent } from './actions'
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
-    >
-      {pending ? 'Adding...' : 'Add Student'}
-    </button>
-  )
+interface AddStudentFormProps {
+  onSuccess?: () => void;
 }
 
-export default function AddStudentForm() {
-  const [state, formAction] = useActionState(createStudent, null)
+export default function AddStudentForm({ onSuccess }: AddStudentFormProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [lastCreated, setLastCreated] = useState<any>(null)
   const [copied, setCopied] = useState(false)
 
-  // Use useEffect to handle side effects of state changes
-  useEffect(() => {
-    if (state?.success && state.credentials) {
-      // Only update if it's a new student
-      if (!lastCreated || lastCreated.username !== state.credentials.username) {
-        setLastCreated(state.credentials)
-        setCopied(false)
-      }
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const firstName = formData.get('firstName') as string
+    const lastName = formData.get('lastName') as string
+
+    const result = await createStudent(firstName, lastName)
+
+    if (result.error) {
+      setError(result.error)
+      setLoading(false)
+    } else if (result.success && result.credentials) {
+      setLastCreated(result.credentials)
+      setCopied(false)
+      setLoading(false)
+      // Clear form
+      e.currentTarget.reset()
+      // Notify parent to refresh
+      if (onSuccess) onSuccess()
     }
-  }, [state, lastCreated])
+  }
 
   const handleCopy = async () => {
     if (!lastCreated) return
@@ -54,7 +59,6 @@ Password: ${lastCreated.password}`
   const copyField = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
-      // We could add individual field feedback if needed
     } catch (err) {
       console.error('Failed to copy field: ', err)
     }
@@ -70,7 +74,7 @@ Password: ${lastCreated.password}`
       </div>
       
       <div>
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
               First Name
@@ -101,20 +105,21 @@ Password: ${lastCreated.password}`
           <div className="pt-2">
              <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
              >
-                Add Student
+                {loading ? 'Adding...' : 'Add Student'}
              </button>
           </div>
         </form>
         
-        {state?.error && (
+        {error && (
           <div className="mt-4 rounded-md bg-red-50 p-4">
             <div className="flex">
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">Error</h3>
                 <div className="mt-2 text-sm text-red-700">
-                  <p>{state.error}</p>
+                  <p>{error}</p>
                 </div>
               </div>
             </div>
@@ -148,6 +153,54 @@ Password: ${lastCreated.password}`
                             <>
                                 <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                Copy All
+                            </>
+                        )}
+                    </button>
+                </div>
+                <div className="mt-2 space-y-1 text-sm text-green-700">
+                    <div className="flex items-center justify-between group">
+                        <span className="font-medium">Username:</span>
+                        <div className="flex items-center space-x-2">
+                            <code className="bg-green-100 px-2 py-0.5 rounded font-mono text-xs">{lastCreated.username}</code>
+                            <button
+                                onClick={() => copyField(lastCreated.username)}
+                                className="opacity-0 group-hover:opacity-100 text-indigo-600 hover:text-indigo-700 transition-opacity"
+                                aria-label="Copy username"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between group">
+                        <span className="font-medium">Password:</span>
+                        <div className="flex items-center space-x-2">
+                            <code className="bg-green-100 px-2 py-0.5 rounded font-mono text-xs">{lastCreated.password}</code>
+                            <button
+                                onClick={() => copyField(lastCreated.password)}
+                                className="opacity-0 group-hover:opacity-100 text-indigo-600 hover:text-indigo-700 transition-opacity"
+                                aria-label="Copy password"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p className="mt-3 text-xs text-green-600">
+                    ⚠️ Save these credentials - they won't be shown again.
+                </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
                                 </svg>
                                 Copy All
                             </>

@@ -6,28 +6,64 @@ import Link from 'next/link'
 import { deleteStudent, updateStudent } from './actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 
-export default function StudentList({ students }: { students: any[] }) {
+interface StudentListProps {
+  students: any[];
+  onUpdate?: () => void;
+}
+
+export default function StudentList({ students, onUpdate }: StudentListProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const filteredStudents = students.filter((student: any) => 
-    student.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredStudents = students.filter((student: any) => {
+    const lowerSearch = searchTerm.toLowerCase();
+    return (
+      (student.username || '').toLowerCase().includes(lowerSearch) ||
+      (student.first_name || '').toLowerCase().includes(lowerSearch) ||
+      (student.last_name || '').toLowerCase().includes(lowerSearch)
+    );
+  });
 
-  const handleUpdate = async (formData: FormData) => {
-      if (editingId) {
-          await updateStudent(editingId, formData)
-          setEditingId(null)
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!editingId) return;
+
+      setLoading(true);
+      const formData = new FormData(e.currentTarget);
+      const firstName = formData.get('firstName') as string;
+      const lastName = formData.get('lastName') as string;
+      const password = formData.get('password') as string;
+
+      const data: any = { firstName, lastName };
+      if (password && password.trim()) {
+        data.password = password;
+      }
+
+      const result = await updateStudent(editingId, data);
+      setLoading(false);
+
+      if (result.success) {
+        setEditingId(null);
+        if (onUpdate) onUpdate();
+      } else if (result.error) {
+        alert(result.error);
       }
   }
 
   const handleDelete = async () => {
-      if (deleteId) {
-          await deleteStudent(deleteId)
-          setDeleteId(null)
+      if (!deleteId) return;
+
+      setLoading(true);
+      const result = await deleteStudent(deleteId);
+      setLoading(false);
+      setDeleteId(null);
+
+      if (result.success) {
+        if (onUpdate) onUpdate();
+      } else if (result.error) {
+        alert(result.error);
       }
   }
 
@@ -43,7 +79,7 @@ export default function StudentList({ students }: { students: any[] }) {
             isDangerous={true}
         />
 
-        <div className="mb-4">
+        <div className="mb-4 px-4 pt-4">
             <input 
                 type="text" 
                 placeholder="Search students..." 
@@ -60,21 +96,21 @@ export default function StudentList({ students }: { students: any[] }) {
                 filteredStudents.map((student: any) => (
                 <li key={student.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                     {editingId === student.id ? (
-                        <form action={handleUpdate} className="flex gap-4 items-end">
+                        <form onSubmit={handleUpdate} className="flex gap-4 items-end">
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">First Name</label>
-                                <input type="text" name="firstName" defaultValue={student.firstName} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
+                                <input type="text" name="firstName" defaultValue={student.first_name} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">Last Name</label>
-                                <input type="text" name="lastName" defaultValue={student.lastName} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
+                                <input type="text" name="lastName" defaultValue={student.last_name} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">New Password (Optional)</label>
                                 <input type="text" name="password" placeholder="Leave empty to keep" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-1 border text-black" />
                             </div>
                             <div className="flex space-x-2">
-                                <button type="submit" className="text-green-600 hover:text-green-900 text-sm font-medium">Save</button>
+                                <button type="submit" disabled={loading} className="text-green-600 hover:text-green-900 text-sm font-medium disabled:opacity-50">Save</button>
                                 <button type="button" onClick={() => setEditingId(null)} className="text-gray-600 hover:text-gray-900 text-sm font-medium">Cancel</button>
                             </div>
                         </form>
@@ -82,14 +118,14 @@ export default function StudentList({ students }: { students: any[] }) {
                         <div className="flex items-center justify-between">
                             <Link href={`/admin/students/${student.id}`} className="truncate group">
                                 <div className="flex text-sm">
-                                <p className="font-medium text-indigo-600 truncate group-hover:text-indigo-800">{student.username}</p>
+                                <p className="font-medium text-indigo-600 truncate group-hover:text-indigo-800">{student.username || 'No username'}</p>
                                 <p className="ml-1 shrink-0 font-normal text-gray-500 group-hover:text-gray-700">
-                                    {student.firstName} {student.lastName}
+                                    {student.first_name} {student.last_name}
                                 </p>
                                 </div>
                                 <div className="mt-2 flex">
                                 <div className="flex items-center text-sm text-gray-500">
-                                    Joined {new Date(student.createdAt).toLocaleDateString()}
+                                    Joined {new Date(student.created_at).toLocaleDateString()}
                                 </div>
                                 </div>
                             </Link>

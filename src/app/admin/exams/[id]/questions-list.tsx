@@ -19,13 +19,14 @@ interface Question {
     correctAnswer: string
 }
 
-function SectionGroup({ title, questions, router, examId, colorClass, ringClass }: { 
+function SectionGroup({ title, questions, router, examId, colorClass, ringClass, onUpdate }: { 
     title: string, 
     questions: Question[], 
     router: any, 
     examId: string,
     colorClass: string,
-    ringClass: string
+    ringClass: string,
+    onUpdate?: () => void
 }) {
     const [isExpanded, setIsExpanded] = useState(true)
     const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -34,6 +35,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
         if (deletingId) {
             await deleteQuestion(deletingId, examId)
             setDeletingId(null)
+            onUpdate?.() // Call the refresh callback
         }
     }
 
@@ -137,7 +139,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass 
     )
 }
 
-export default function QuestionsList({ questions, examId }: { questions: any[], examId: string }) {
+export default function QuestionsList({ questions, examId, onUpdate }: { questions: any[], examId: string, onUpdate?: () => void }) {
     const router = useRouter()
 
     const handleViewAsStudent = () => {
@@ -181,6 +183,7 @@ export default function QuestionsList({ questions, examId }: { questions: any[],
                 examId={examId}
                 colorClass="bg-blue-50"
                 ringClass="bg-blue-50 text-blue-700 ring-blue-200"
+                onUpdate={onUpdate}
             />
             <SectionGroup 
                 title="Reading & Writing - Module 2" 
@@ -189,6 +192,7 @@ export default function QuestionsList({ questions, examId }: { questions: any[],
                 examId={examId}
                 colorClass="bg-blue-50"
                 ringClass="bg-blue-50 text-blue-700 ring-blue-200"
+                onUpdate={onUpdate}
             />
             <SectionGroup 
                 title="Math - Module 1" 
@@ -197,6 +201,7 @@ export default function QuestionsList({ questions, examId }: { questions: any[],
                 examId={examId}
                 colorClass="bg-orange-50"
                 ringClass="bg-orange-50 text-orange-700 ring-orange-200"
+                onUpdate={onUpdate}
             />
             <SectionGroup 
                 title="Math - Module 2" 
@@ -205,6 +210,7 @@ export default function QuestionsList({ questions, examId }: { questions: any[],
                 examId={examId}
                 colorClass="bg-orange-50"
                 ringClass="bg-orange-50 text-orange-700 ring-orange-200"
+                onUpdate={onUpdate}
             />
         </div>
     )

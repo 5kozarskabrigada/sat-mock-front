@@ -1,104 +1,86 @@
 
-'use server'
+import { studentExamsAPI, examsAPI, classroomsAPI, activityLogsAPI } from '@/lib/api-client';
 
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/get-current-user'
-
-export async function joinExam(prevState: any, formData: FormData) {
-  const code = (formData.get('code') as string).trim().toUpperCase()
-
-  // 1. Find the exam by code
-  const exam = await prisma.exam.findFirst({
-    where: {
-      code,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      status: true,
-      classroomId: true,
-    },
-  })
-
-  if (!exam) {
-    return { error: 'Invalid exam code' }
-  }
-
-  // 2. Get authenticated user
-  const user = await getCurrentUser()
-  
-  if (!user) {
-    redirect('/login')
-  }
-
-  // 3. Check Classroom Access
-  if (exam.classroomId) {
-    const enrollment = await prisma.studentClassroom.findFirst({
-      where: {
-        studentId: user.id,
-        classroomId: exam.classroomId,
-      },
-    })
-      
-    if (!enrollment) {
-      return { error: 'You are not enrolled in the classroom assigned to this exam.' }
-    }
-  }
-
-  if (exam.status !== 'active') {
-    return { error: 'This exam has not been started by the instructor yet.' }
-  }
-
-  // 4. Check if already started
-  const existingAttempt = await prisma.studentExam.findFirst({
-    where: {
-      studentId: user.id,
-      examId: exam.id,
-    },
-    select: {
-      id: true,
-      status: true,
-    },
-  })
-
-  if (existingAttempt) {
-    if (existingAttempt.status === 'completed') {
-      return { error: 'You have already submitted this exam or have been disqualified.' }
-    }
-    // Strict Join Policy: Cannot use code again if already started.
-    return { error: 'You have already joined this exam. Please resume it from your dashboard.' }
-  }
+export async function joinExam(code: string) {
+  const trimmedCode = code.trim().toUpperCase();
 
   try {
-    // Create new student exam attempt
-    const newAttempt = await prisma.studentExam.create({
-      data: {
-        studentId: user.id,
-        examId: exam.id,
-        status: 'in_progress',
-      },
-      select: {
-        id: true,
-      },
-    })
+    // Get authenticated user from localStorage
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      return { error: 'Please log in first', redirect: '/login' };
+    }
     
-    // 5. Log joining activity
-    await prisma.activityLog.create({
-      data: {
+    const user = JSON.parse(userStr);
+
+    // 1. Find the exam by code
+    const examsResponse = await examsAPI.getAll();
+    const exam = examsResponse.data.find(
+      (e: any) => e.code?.toUpperCase() === trimmedCode && !e.deleted_at
+    );
+
+    if (!exam) {
+      return { error: 'Invalid exam code' };
+    }
+
+    // 2. Check if exam is active
+    if (exam.status !== 'active') {
+      return { error: 'This exam has not been started by the instructor yet.' };
+    }
+
+    // 3. Check Classroom Access (if exam is assigned to a classroom)
+    if (exam.classroom_id) {
+      try {
+        const classroomResponse = await classroomsAPI.getStudents(exam.classroom_id);
+        const isEnrolled = classroomResponse.data.some(
+          (student: any) => student.id === user.id
+        );
+
+        if (!isEnrolled) {
+          return { error: 'You are not enrolled in the classroom assigned to this exam.' };
+        }
+      } catch (error) {
+        return { error: 'Unable to verify classroom enrollment.' };
+      }
+    }
+
+    // 4. Check if already started
+    const myExamsResponse = await studentExamsAPI.getMyExams();
+    const existingAttempt = myExamsResponse.data.find(
+      (se: any) => se.exam_id === exam.id
+    );
+
+    if (existingAttempt) {
+      if (existingAttempt.status === 'completed' || existingAttempt.status === 'disqualified') {
+        return { error: 'You have already submitted this exam or have been disqualified.' };
+      }
+      // Strict Join Policy: Cannot use code again if already started.
+      return { error: 'You have already joined this exam. Please resume it from your dashboard.' };
+    }
+
+    // 5. Create new student exam attempt
+    const newAttemptResponse = await studentExamsAPI.start(exam.id);
+    const newAttempt = newAttemptResponse.data;
+
+    // 6. Log joining activity
+    try {
+      await activityLogsAPI.create({
         userId: user.id,
         examId: exam.id,
         studentExamId: newAttempt.id,
         type: 'exam_joined',
-        details: `Student joined the exam using code: ${code}`,
-      },
-    }).catch((error: any) => {
-      console.error('Failed to log exam joined:', error)
-    })
+        details: `Student joined the exam using code: ${trimmedCode}`,
+      });
+    } catch (error) {
+      console.error('Failed to log exam joined:', error);
+      // Non-critical, continue anyway
+    }
 
-    redirect(`/exam/${exam.id}`)
+    // Return success with exam ID for redirect
+    return { success: true, examId: exam.id };
+    
   } catch (error: any) {
-    console.error('Join exam error:', error)
-    return { error: `Failed to join exam: ${error.message}` }
+    console.error('Error joining exam:', error);
+    return { error: error.response?.data?.message || 'Failed to join exam. Please try again.' };
   }
 }

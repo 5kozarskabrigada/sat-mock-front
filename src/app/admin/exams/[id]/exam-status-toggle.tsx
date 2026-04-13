@@ -1,46 +1,31 @@
 
 'use client'
 
-import { useActionState } from 'react'
-import { useFormStatus } from 'react-dom'
 import { toggleExamStatus, updateLockdownPolicy } from './actions'
 import { useState, useEffect } from 'react'
 import ActivationErrorModal from '@/components/activation-error-modal'
-
-function SubmitButton({ status }: { status: string }) {
-  const { pending } = useFormStatus()
-  
-  // Logic: if active, button says "End Exam" or "Deactivate"
-  // If draft or ended, button says "Activate"
-  const isLive = status === 'active'
-  const label = isLive ? 'End Exam' : 'Activate'
-
-  return (
-    <button 
-      type="submit" 
-      disabled={pending}
-      className={`text-sm font-medium px-4 py-2 rounded-lg text-white shadow-sm transition-all ${isLive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} disabled:opacity-50`}
-    >
-      {pending ? 'Updating...' : label}
-    </button>
-  )
-}
 
 export default function ExamStatusToggle({ 
   examId, 
   status, 
   classrooms,
   lockdownPolicy = 'log',
-  currentClassroomId = ''
+  currentClassroomId = '',
+  onUpdate
 }: { 
   examId: string, 
   status: string, 
   classrooms: any[],
   lockdownPolicy?: string,
-  currentClassroomId?: string
+  currentClassroomId?: string,
+  onUpdate?: () => void
 }) {
   const [selectedClassroom, setSelectedClassroom] = useState<string>(currentClassroomId)
   const [policy, setPolicy] = useState(lockdownPolicy)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<any>(null)
+  const [showValidationModal, setShowValidationModal] = useState(false)
 
   // Sync state with props in case of external updates or revalidation
   useEffect(() => {
@@ -51,16 +36,29 @@ export default function ExamStatusToggle({
     setSelectedClassroom(currentClassroomId)
   }, [currentClassroomId])
 
-  // Bind the arguments to the action
-  const toggleAction = toggleExamStatus.bind(null, examId, status, selectedClassroom || null)
-  const [state, formAction] = useActionState(toggleAction, null)
-  const [showValidationModal, setShowValidationModal] = useState(false)
-
   useEffect(() => {
-    if (state?.validationError) {
+    if (validationError) {
       setShowValidationModal(true)
     }
-  }, [state])
+  }, [validationError])
+
+  const handleToggleStatus = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setValidationError(null)
+
+    const result = await toggleExamStatus(examId, status, selectedClassroom || null)
+    setLoading(false)
+
+    if (result.validationError) {
+      setValidationError(result.validationError)
+    } else if (result.error) {
+      setError(result.error)
+    } else if (result.success) {
+      if (onUpdate) onUpdate()
+    }
+  }
 
   const handlePolicyChange = async (newPolicy: string) => {
     // Optimistic update
@@ -81,6 +79,7 @@ export default function ExamStatusToggle({
   }
 
   const isLive = status === 'active'
+  const label = isLive ? 'End Exam' : 'Activate'
 
   return (
     <>
@@ -115,10 +114,16 @@ export default function ExamStatusToggle({
         </div>
 
         <div className="flex flex-col items-end pt-5">
-            <form action={formAction} className="inline-block">
-                <SubmitButton status={status} />
-                {state?.error && (
-                    <p className="mt-1 text-xs text-red-600">{state.error}</p>
+            <form onSubmit={handleToggleStatus} className="inline-block">
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className={`text-sm font-medium px-4 py-2 rounded-lg text-white shadow-sm transition-all ${isLive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} disabled:opacity-50`}
+                >
+                  {loading ? 'Updating...' : label}
+                </button>
+                {error && (
+                    <p className="mt-1 text-xs text-red-600">{error}</p>
                 )}
             </form>
         </div>
@@ -127,7 +132,7 @@ export default function ExamStatusToggle({
     <ActivationErrorModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
-        validation={state?.validationError || null}
+        validation={validationError || null}
         examId={examId}
         context="details"
     />

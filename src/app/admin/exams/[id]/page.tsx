@@ -1,81 +1,110 @@
 
-import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import AddQuestionForm from './add-question-form'
-import { toggleExamStatus } from './actions'
-import ExamStatusToggle from './exam-status-toggle'
-import DeleteExamButton from './delete-exam-button'
-import QuestionsList from './questions-list'
-import ExamCodeEditor from './exam-code-editor'
+'use client';
 
-export const dynamic = 'force-dynamic'
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { examsAPI, questionsAPI, classroomsAPI, studentExamsAPI } from '@/lib/api-client';
+import Link from 'next/link';
+import AddQuestionForm from './add-question-form';
+import ExamStatusToggle from './exam-status-toggle';
+import DeleteExamButton from './delete-exam-button';
+import QuestionsList from './questions-list';
+import ExamCodeEditor from './exam-code-editor';
 
-export default async function ExamDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default function ExamDetailsPage() {
+  const router = useRouter();
+  const params = useParams();
+  const { user, loading: authLoading } = useAuth();
+  const [exam, setExam] = useState<any>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [participation, setParticipation] = useState<any[]>([]);
+  const [totalStudentsInClassroom, setTotalStudentsInClassroom] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Run all queries in parallel for faster loading
-  const [exam, questions, classrooms, participation] = await Promise.all([
-    prisma.exam.findUnique({ where: { id, deletedAt: null } }),
-    prisma.question.findMany({
-      where: { examId: id, deletedAt: null },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.classroom.findMany({ orderBy: { name: 'asc' } }),
-    prisma.studentExam.findMany({
-      where: { examId: id },
-      select: {
-        studentId: true,
-        status: true,
-        updatedAt: true,
-      },
-    }),
-  ])
+  const id = params?.id as string;
 
-  if (!exam) {
-    notFound()
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user || user.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+
+    async function loadExamData() {
+      try {
+        // Run all queries in parallel for faster loading
+        const [examResponse, questionsResponse, classroomsResponse, participationResponse] = await Promise.all([
+          examsAPI.getById(id),
+          questionsAPI.getByExam(id),
+          classroomsAPI.getAll(),
+          studentExamsAPI.getExamParticipation(id),
+        ]);
+
+        const examData = examResponse.data;
+        if (!examData || examData.deleted_at) {
+          router.push('/admin/exams');
+          return;
+        }
+
+        setExam(examData);
+        setQuestions(questionsResponse.data.filter((q: any) => !q.deleted_at));
+        setClassrooms(classroomsResponse.data);
+        setParticipation(participationResponse.data);
+
+        // Fetch total students in the exam's classroom (if any)
+        if (examData.classroom_id) {
+          const studentsResponse = await classroomsAPI.getStudents(examData.classroom_id);
+          setTotalStudentsInClassroom(studentsResponse.data.length);
+        } else {
+          setTotalStudentsInClassroom(0);
+        }
+
+      } catch (error) {
+        console.error('Failed to load exam data:', error);
+        router.push('/admin/exams');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadExamData();
+  }, [user, authLoading, router, id, refreshKey]);
+
+  const handleRefresh = () => setRefreshKey(prev => prev + 1);
+
+  if (authLoading || loading || !exam) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading exam...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Fire and forget: Auto-cleanup abandoned sessions (non-blocking)
-  const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000)
-  prisma.studentExam.updateMany({
-    where: {
-      examId: id,
-      status: 'in_progress',
-      updatedAt: { lt: thirtyMinsAgo },
-    },
-    data: {
-      status: 'completed',
-      completedAt: new Date(),
-    },
-  }).then(() => {}) // Fire and forget
-
-  const studentsJoinedCount = participation?.length || 0
+  const studentsJoinedCount = participation?.length || 0;
   
   // Define "Active/Live" as in_progress AND updated within the last 60 seconds
-  const activeThreshold = new Date(Date.now() - 60 * 1000).getTime()
+  const activeThreshold = new Date(Date.now() - 60 * 1000).getTime();
   const studentsActiveCount = participation?.filter((p: any) => {
-    if (p.status !== 'in_progress' || !p.updatedAt) return false
-    const lastUpdate = new Date(p.updatedAt).getTime()
-    return lastUpdate > activeThreshold
-  }).length || 0
-  
-  // Fetch total students in the exam's classroom (only if needed)
-  let totalStudentsInClassroom = 0
-  if (exam.classroomId) {
-    totalStudentsInClassroom = await prisma.studentClassroom.count({
-      where: { classroomId: exam.classroomId },
-    })
-  }
+    if (p.status !== 'in_progress' || !p.updated_at) return false;
+    const lastUpdate = new Date(p.updated_at).getTime();
+    return lastUpdate > activeThreshold;
+  }).length || 0;
 
   // Helper for status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'ended': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'ended': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -106,8 +135,9 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
                 examId={exam.id} 
                 status={exam.status} 
                 classrooms={classrooms || []} 
-                lockdownPolicy={exam.lockdownPolicy}
-                currentClassroomId={exam.classroomId || ''}
+                lockdownPolicy={exam.lockdown_policy}
+                currentClassroomId={exam.classroom_id || ''}
+                onUpdate={handleRefresh}
              />
              <DeleteExamButton examId={exam.id} />
         </div>
@@ -143,12 +173,29 @@ export default async function ExamDetailsPage({ params }: { params: Promise<{ id
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <dt className="text-sm font-medium text-gray-500 truncate">Lockdown Policy</dt>
             <dd className="mt-2">
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${exam.lockdownPolicy === 'disqualify' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
-                    {exam.lockdownPolicy === 'disqualify' ? 'Strict (Disqualify)' : 'Standard (Log Only)'}
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${exam.lockdown_policy === 'disqualify' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {exam.lockdown_policy === 'disqualify' ? 'Strict (Disqualify)' : 'Standard (Log Only)'}
                 </span>
             </dd>
          </div>
       </div>
+
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Questions ({questions?.length || 0})</h2>
+            <span className="text-sm text-gray-500">
+                Sorted by creation order
+            </span>
+        </div>
+        
+        {/* List Questions */}
+        <QuestionsList questions={questions || []} examId={exam.id} onUpdate={handleRefresh} />
+
+        <AddQuestionForm examId={exam.id} onSuccess={handleRefresh} />
+      </div>
+    </div>
+  );
+}
 
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-gray-200 pb-4">

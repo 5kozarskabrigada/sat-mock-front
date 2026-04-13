@@ -1,37 +1,77 @@
 
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
+'use client';
 
-export default async function AdminDashboard() {
-  // Fetch stats and recent activity in parallel
-  const [studentCount, activeExamCount, recentStudents, recentExams] = await Promise.all([
-    prisma.user.count({ where: { role: 'student' } }),
-    prisma.exam.count({ where: { status: 'active', deletedAt: null } }),
-    prisma.user.findMany({
-      where: { role: 'student' },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        createdAt: true,
-      },
-    }),
-    prisma.exam.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        code: true,
-        createdAt: true,
-      },
-    }),
-  ])
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { usersAPI, examsAPI } from '@/lib/api-client';
+
+export default function AdminDashboard() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [studentCount, setStudentCount] = useState(0);
+  const [activeExamCount, setActiveExamCount] = useState(0);
+  const [recentStudents, setRecentStudents] = useState<any[]>([]);
+  const [recentExams, setRecentExams] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user || user.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+
+    async function loadDashboardData() {
+      try {
+        // Fetch all data in parallel
+        const [usersResponse, examsResponse] = await Promise.all([
+          usersAPI.getAll({ role: 'student' }),
+          examsAPI.getAll(),
+        ]);
+
+        const students = usersResponse.data;
+        const exams = examsResponse.data;
+
+        // Calculate stats
+        setStudentCount(students.length);
+        setActiveExamCount(exams.filter((e: any) => e.status === 'active' && !e.deleted_at).length);
+
+        // Get recent students (last 5)
+        const sortedStudents = [...students].sort((a: any, b: any) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setRecentStudents(sortedStudents.slice(0, 5));
+
+        // Get recent exams (last 5, excluding deleted)
+        const activeExams = exams.filter((e: any) => !e.deleted_at);
+        const sortedExams = [...activeExams].sort((a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setRecentExams(sortedExams.slice(0, 5));
+
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, [user, authLoading, router]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -44,7 +84,7 @@ export default async function AdminDashboard() {
         {/* Card 1: Students */}
         <Link href="/admin/students" className="block group">
           <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-indigo-300 relative">
-             <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 rounded-md bg-indigo-50 p-3">
@@ -69,7 +109,7 @@ export default async function AdminDashboard() {
         {/* Card 2: Exams */}
         <Link href="/admin/exams" className="block group">
           <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-green-300 relative">
-             <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 rounded-md bg-green-50 p-3">
@@ -93,96 +133,96 @@ export default async function AdminDashboard() {
         
         {/* Card 3: Quick Action */}
         <Link href="/admin/exams" className="block group h-full">
-           <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md transition-all duration-200 hover:shadow-lg hover:from-indigo-600 hover:to-purple-700 h-full flex flex-col justify-center items-center text-center p-6 text-white cursor-pointer relative">
-               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <svg className="h-12 w-12 mb-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <h3 className="text-xl font-bold">Create New Exam</h3>
-              <p className="text-indigo-100 text-sm mt-1">Set up a mock test in seconds</p>
-           </div>
+          <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md transition-all duration-200 hover:shadow-lg hover:from-indigo-600 hover:to-purple-700 h-full flex flex-col justify-center items-center text-center p-6 text-white cursor-pointer relative">
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <svg className="h-12 w-12 mb-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <h3 className="text-xl font-bold">Create New Exam</h3>
+            <p className="text-indigo-100 text-sm mt-1">Set up a mock test in seconds</p>
+          </div>
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Students */}
-          <div>
-              <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">Recent Students</h2>
-                  <Link href="/admin/students" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
-              </div>
-              <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-                  <ul role="list" className="divide-y divide-gray-200">
-                      {recentStudents?.map((student: any) => (
-                          <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
-                              <div className="flex items-center space-x-3">
-                                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                                      {student.firstName?.[0]}{student.lastName?.[0]}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                      <p className="text-sm font-medium text-gray-900 truncate">
-                                          {student.firstName} {student.lastName}
-                                      </p>
-                                      <p className="text-xs text-gray-500 truncate">{student.email}</p>
-                                  </div>
-                                  <div className="flex-shrink-0 text-xs text-gray-400">
-                                      {new Date(student.createdAt).toLocaleDateString()}
-                                  </div>
-                              </div>
-                          </li>
-                      ))}
-                      {(!recentStudents || recentStudents.length === 0) && (
-                          <li className="p-4 text-center text-sm text-gray-500">No recent students</li>
-                      )}
-                  </ul>
-              </div>
+        {/* Recent Students */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium text-gray-900">Recent Students</h2>
+            <Link href="/admin/students" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
           </div>
+          <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
+            <ul role="list" className="divide-y divide-gray-200">
+              {recentStudents?.map((student: any) => (
+                <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                      {student.first_name?.[0]}{student.last_name?.[0]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {student.first_name} {student.last_name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">{student.email}</p>
+                    </div>
+                    <div className="flex-shrink-0 text-xs text-gray-400">
+                      {new Date(student.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </li>
+              ))}
+              {(!recentStudents || recentStudents.length === 0) && (
+                <li className="p-4 text-center text-sm text-gray-500">No recent students</li>
+              )}
+            </ul>
+          </div>
+        </div>
 
-          {/* Recent Exams */}
-          <div>
-              <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">Recent Exams</h2>
-                  <Link href="/admin/exams" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
-              </div>
-              <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-                  <ul role="list" className="divide-y divide-gray-200">
-                      {recentExams?.map((exam: any) => (
-                          <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
-                              <Link href={`/admin/exams/${exam.id}`} className="block group">
-                                  <div className="flex items-center justify-between">
-                                      <div className="min-w-0 flex-1">
-                                          <p className="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                                              {exam.title}
-                                          </p>
-                                          <div className="flex items-center mt-1 space-x-2">
-                                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
-                                                  exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                              }`}>
-                                                  {exam.status}
-                                              </span>
-                                              {exam.code && (
-                                                <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 rounded">
-                                                    {exam.code}
-                                                </span>
-                                              )}
-                                          </div>
-                                      </div>
-                                      <div className="flex-shrink-0">
-                                          <svg className="h-5 w-5 text-gray-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                          </svg>
-                                      </div>
-                                  </div>
-                              </Link>
-                          </li>
-                      ))}
-                      {(!recentExams || recentExams.length === 0) && (
-                          <li className="p-4 text-center text-sm text-gray-500">No recent exams</li>
-                      )}
-                  </ul>
-              </div>
+        {/* Recent Exams */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium text-gray-900">Recent Exams</h2>
+            <Link href="/admin/exams" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
           </div>
+          <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
+            <ul role="list" className="divide-y divide-gray-200">
+              {recentExams?.map((exam: any) => (
+                <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <Link href={`/admin/exams/${exam.id}`} className="block group">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                          {exam.title}
+                        </p>
+                        <div className="flex items-center mt-1 space-x-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
+                            exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {exam.status}
+                          </span>
+                          {exam.code && (
+                            <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 rounded">
+                              {exam.code}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-gray-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+              {(!recentExams || recentExams.length === 0) && (
+                <li className="p-4 text-center text-sm text-gray-500">No recent exams</li>
+              )}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }

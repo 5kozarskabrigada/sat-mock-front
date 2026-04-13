@@ -5,8 +5,17 @@ import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import AddStudentForm from './add-student-form'
 
-export default function CreateStudentModal() {
+interface CreateStudentModalProps {
+  onSuccess?: () => void;
+}
+
+export default function CreateStudentModal({ onSuccess }: CreateStudentModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+
+  const handleSuccess = () => {
+    if (onSuccess) onSuccess();
+    // Keep modal open to show credentials
+  }
 
   return (
     <>
@@ -46,7 +55,7 @@ export default function CreateStudentModal() {
                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               >
                 <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                  <AddStudentForm />
+                  <AddStudentForm onSuccess={handleSuccess} />
                 </Dialog.Panel>
               </Transition.Child>
             </div>

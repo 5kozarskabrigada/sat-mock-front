@@ -1,38 +1,30 @@
 
-'use server'
+import { examsAPI } from '@/lib/api-client';
 
-import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/get-current-user'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+export async function createExam(title: string, description: string, type: string) {
+  // Generate simple random code
+  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-export async function createExam(prevState: any, formData: FormData) {
-  const title = formData.get('title') as string
-  const description = formData.get('description') as string
-  const type = formData.get('type') as string
-  const code = Math.random().toString(36).substring(2, 8).toUpperCase() // Simple random code
-
-  const user = await getCurrentUser()
-
-  if (!user) {
-    return { error: 'Unauthorized' }
+  // Get user from localStorage
+  const userStr = localStorage.getItem('user');
+  if (!userStr) {
+    return { error: 'Unauthorized - please log in' };
   }
 
-  try {
-    const exam = await prisma.exam.create({
-      data: {
-        title,
-        description,
-        code,
-        createdBy: user.id,
-        status: 'draft',
-      },
-    })
+  const user = JSON.parse(userStr);
 
-    revalidatePath('/admin/exams')
-    return { success: true, examId: exam.id }
+  try {
+    const response = await examsAPI.create({
+      title,
+      description,
+      code,
+      created_by: user.id,
+      status: 'draft',
+    });
+
+    return { success: true, examId: response.data.id };
   } catch (error: any) {
-    console.error('Create exam error:', error)
-    return { error: error.message }
+    console.error('Create exam error:', error);
+    return { error: error.response?.data?.message || error.message || 'Failed to create exam' };
   }
 }
