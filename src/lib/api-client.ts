@@ -38,7 +38,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const requestUrl: string = error.config?.url || '';
+    const isAuthRequest = /\/auth\/(login|register)$/.test(requestUrl);
+
+    if (status === 401 && !isAuthRequest) {
       // Token expired or invalid
       localStorage.removeItem('jwt_token');
       localStorage.removeItem('user');
