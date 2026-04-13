@@ -92,7 +92,7 @@ export async function joinExam(prevState: any, formData: FormData) {
         type: 'exam_joined',
         details: `Student joined the exam using code: ${code}`,
       },
-    }).catch((error) => {
+    }).catch((error: any) => {
       console.error('Failed to log exam joined:', error)
     })
 

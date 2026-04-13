@@ -187,7 +187,7 @@ export async function submitExam(studentExamId: string, answers: Record<string, 
         type: 'exam_completed',
         details: 'Student submitted the exam',
       },
-    }).catch((error) => {
+    }).catch((error: any) => {
       console.error('Failed to log exam completion:', error)
     })
 
