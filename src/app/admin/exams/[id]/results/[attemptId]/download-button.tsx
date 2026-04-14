@@ -66,7 +66,7 @@ const RED = [220, 38, 38] as const
 const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
-const REPORT_LOGO_PATH = '/images/submission-report-logo.jpg'
+const REPORT_LOGO_PATH = '/images/submission-report-logo.png'
 
 type PdfLogoAsset = {
   dataUrl: string
@@ -100,6 +100,28 @@ async function loadPdfLogoAsset(url: string): Promise<PdfLogoAsset | null> {
   }
 }
 
+function drawContainedLogo(
+  pdf: jsPDF,
+  logoAsset: PdfLogoAsset,
+  x: number,
+  y: number,
+  boxWidth: number,
+  boxHeight: number,
+) {
+  const imageProps = pdf.getImageProperties(logoAsset.dataUrl)
+  const widthRatio = boxWidth / imageProps.width
+  const heightRatio = boxHeight / imageProps.height
+  const scale = Math.min(widthRatio, heightRatio)
+  const renderWidth = imageProps.width * scale
+  const renderHeight = imageProps.height * scale
+  const renderX = x + (boxWidth - renderWidth) / 2
+  const renderY = y + (boxHeight - renderHeight) / 2
+
+  pdf.setFillColor(...WHITE)
+  pdf.roundedRect(x, y, boxWidth, boxHeight, 4, 4, 'F')
+  pdf.addImage(logoAsset.dataUrl, logoAsset.format, renderX, renderY, renderWidth, renderHeight)
+}
+
 function getScoreBarWidth(score: number) {
   return Math.max(0, Math.min(100, (score - 200) / 6))
 }
@@ -126,23 +148,26 @@ function drawReportCover(
   logoAsset: PdfLogoAsset | null,
 ) {
   const pageWidth = pdf.internal.pageSize.getWidth()
+  const coverHeight = 68
+  const studentNameLines = pdf.splitTextToSize(studentName, pageWidth - PAGE_MARGIN * 2 - 46)
+  const usernameLine = `@${username}`
 
   pdf.setFillColor(...DARK)
-  pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, pageWidth - PAGE_MARGIN * 2, 52, 4, 4, 'F')
+  pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, pageWidth - PAGE_MARGIN * 2, coverHeight, 4, 4, 'F')
+
+  if (logoAsset) {
+    drawContainedLogo(pdf, logoAsset, PAGE_MARGIN + 8, PAGE_MARGIN + 8, 18, 18)
+  }
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(20)
-  pdf.text('SAT Score Report', PAGE_MARGIN + 8, PAGE_MARGIN + 15)
+  pdf.text('SAT Score Report', PAGE_MARGIN + 32, PAGE_MARGIN + 15)
 
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(11)
-  pdf.text(examTitle, PAGE_MARGIN + 8, PAGE_MARGIN + 24)
-
-  if (logoAsset) {
-    pdf.addImage(logoAsset.dataUrl, logoAsset.format, PAGE_MARGIN + 8, PAGE_MARGIN + 4, 42, 14)
-  }
+  pdf.text(examTitle, PAGE_MARGIN + 32, PAGE_MARGIN + 24)
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
@@ -160,21 +185,21 @@ function drawReportCover(
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(8)
-  pdf.text('STUDENT', PAGE_MARGIN + 8, PAGE_MARGIN + 44)
-  pdf.text('DATE', pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 44, { align: 'right' })
+  pdf.text('STUDENT', PAGE_MARGIN + 8, PAGE_MARGIN + 46)
+  pdf.text('DATE', pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 46, { align: 'right' })
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(13)
-  pdf.text(studentName, PAGE_MARGIN + 8, PAGE_MARGIN + 50)
-  pdf.text(completedDate, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 50, { align: 'right' })
+  pdf.text(studentNameLines, PAGE_MARGIN + 8, PAGE_MARGIN + 52)
+  pdf.text(completedDate, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 52, { align: 'right' })
 
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(9)
-  pdf.text(`@${username}`, PAGE_MARGIN + 8, PAGE_MARGIN + 56)
+  pdf.text(usernameLine, PAGE_MARGIN + 8, PAGE_MARGIN + 60)
 
-  return PAGE_MARGIN + 64
+  return PAGE_MARGIN + coverHeight + 12
 }
 
 function drawScoreSectionCard(
@@ -304,7 +329,7 @@ function addPageHeader(pdf: jsPDF, title: string, subtitle: string, logoAsset: P
   pdf.text(subtitle, PAGE_MARGIN, 21)
 
   if (logoAsset) {
-    pdf.addImage(logoAsset.dataUrl, logoAsset.format, pageWidth - PAGE_MARGIN - 34, 4, 34, 11)
+    drawContainedLogo(pdf, logoAsset, pageWidth - PAGE_MARGIN - 16, 7, 12, 12)
   }
 
   return 40
