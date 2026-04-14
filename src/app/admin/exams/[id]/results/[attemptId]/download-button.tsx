@@ -66,7 +66,7 @@ const RED = [220, 38, 38] as const
 const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
-const REPORT_LOGO_URL = 'https://www.image2url.com/r2/default/images/1776184637206-291b37c3-761a-40e8-9a97-ff58706b8eb2.jpg'
+const REPORT_LOGO_PATH = '/images/submission-report-logo.jpg'
 
 type PdfLogoAsset = {
   dataUrl: string
@@ -141,7 +141,7 @@ function drawReportCover(
   pdf.text(examTitle, PAGE_MARGIN + 8, PAGE_MARGIN + 24)
 
   if (logoAsset) {
-    pdf.addImage(logoAsset.dataUrl, logoAsset.format, PAGE_MARGIN + 8, PAGE_MARGIN + 4, 30, 10)
+    pdf.addImage(logoAsset.dataUrl, logoAsset.format, PAGE_MARGIN + 8, PAGE_MARGIN + 4, 42, 14)
   }
 
   pdf.setTextColor(...WHITE)
@@ -304,7 +304,7 @@ function addPageHeader(pdf: jsPDF, title: string, subtitle: string, logoAsset: P
   pdf.text(subtitle, PAGE_MARGIN, 21)
 
   if (logoAsset) {
-    pdf.addImage(logoAsset.dataUrl, logoAsset.format, pageWidth - PAGE_MARGIN - 24, 5, 24, 8)
+    pdf.addImage(logoAsset.dataUrl, logoAsset.format, pageWidth - PAGE_MARGIN - 34, 4, 34, 11)
   }
 
   return 40
@@ -428,7 +428,7 @@ export default function DownloadReportButton({
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const contentWidth = pdfWidth - PAGE_MARGIN * 2
-      const logoAsset = await loadPdfLogoAsset(REPORT_LOGO_URL)
+      const logoAsset = await loadPdfLogoAsset(REPORT_LOGO_PATH)
 
       let cursorY = drawReportCover(pdf, examTitle, totalScore, studentName, username, completedDate, logoAsset)
 
@@ -451,7 +451,7 @@ export default function DownloadReportButton({
       pdf.text('TEACHER SUMMARY', PAGE_MARGIN + 8, PAGE_MARGIN + 10)
 
       if (logoAsset) {
-        pdf.addImage(logoAsset.dataUrl, logoAsset.format, pdfWidth - PAGE_MARGIN - 24, PAGE_MARGIN + 4, 24, 8)
+        pdf.addImage(logoAsset.dataUrl, logoAsset.format, pdfWidth - PAGE_MARGIN - 34, PAGE_MARGIN + 3, 34, 11)
       }
 
       const teacherCardGap = 4
