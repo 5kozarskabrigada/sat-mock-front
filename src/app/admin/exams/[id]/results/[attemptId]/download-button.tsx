@@ -66,6 +66,39 @@ const RED = [220, 38, 38] as const
 const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
+const REPORT_LOGO_URL = 'https://www.image2url.com/r2/default/images/1776184637206-291b37c3-761a-40e8-9a97-ff58706b8eb2.jpg'
+
+type PdfLogoAsset = {
+  dataUrl: string
+  format: 'JPEG' | 'PNG'
+}
+
+async function loadPdfLogoAsset(url: string): Promise<PdfLogoAsset | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      return null
+    }
+
+    const blob = await response.blob()
+    const format = blob.type.includes('png') ? 'PNG' : 'JPEG'
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result ?? ''))
+      reader.onerror = () => reject(new Error('Failed to read logo image'))
+      reader.readAsDataURL(blob)
+    })
+
+    if (!dataUrl) {
+      return null
+    }
+
+    return { dataUrl, format }
+  } catch {
+    return null
+  }
+}
 
 function getScoreBarWidth(score: number) {
   return Math.max(0, Math.min(100, (score - 200) / 6))
@@ -90,6 +123,7 @@ function drawReportCover(
   studentName: string,
   username: string,
   completedDate: string,
+  logoAsset: PdfLogoAsset | null,
 ) {
   const pageWidth = pdf.internal.pageSize.getWidth()
 
@@ -105,6 +139,10 @@ function drawReportCover(
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(11)
   pdf.text(examTitle, PAGE_MARGIN + 8, PAGE_MARGIN + 24)
+
+  if (logoAsset) {
+    pdf.addImage(logoAsset.dataUrl, logoAsset.format, PAGE_MARGIN + 8, PAGE_MARGIN + 4, 30, 10)
+  }
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
@@ -250,7 +288,7 @@ function drawModuleCard(pdf: jsPDF, x: number, y: number, width: number, summary
   pdf.text(`${summary.correct}/${summary.total}`, x + 5, y + 18)
 }
 
-function addPageHeader(pdf: jsPDF, title: string, subtitle: string) {
+function addPageHeader(pdf: jsPDF, title: string, subtitle: string, logoAsset: PdfLogoAsset | null) {
   const pageWidth = pdf.internal.pageSize.getWidth()
 
   pdf.setFillColor(...DARK)
@@ -264,6 +302,10 @@ function addPageHeader(pdf: jsPDF, title: string, subtitle: string) {
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(10)
   pdf.text(subtitle, PAGE_MARGIN, 21)
+
+  if (logoAsset) {
+    pdf.addImage(logoAsset.dataUrl, logoAsset.format, pageWidth - PAGE_MARGIN - 24, 5, 24, 8)
+  }
 
   return 40
 }
@@ -386,8 +428,9 @@ export default function DownloadReportButton({
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const contentWidth = pdfWidth - PAGE_MARGIN * 2
+      const logoAsset = await loadPdfLogoAsset(REPORT_LOGO_URL)
 
-      let cursorY = drawReportCover(pdf, examTitle, totalScore, studentName, username, completedDate)
+      let cursorY = drawReportCover(pdf, examTitle, totalScore, studentName, username, completedDate, logoAsset)
 
       const sectionGap = 6
       const sectionCardWidth = (contentWidth - sectionGap) / 2
@@ -406,6 +449,10 @@ export default function DownloadReportButton({
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(10)
       pdf.text('TEACHER SUMMARY', PAGE_MARGIN + 8, PAGE_MARGIN + 10)
+
+      if (logoAsset) {
+        pdf.addImage(logoAsset.dataUrl, logoAsset.format, pdfWidth - PAGE_MARGIN - 24, PAGE_MARGIN + 4, 24, 8)
+      }
 
       const teacherCardGap = 4
       const teacherCardWidth = (contentWidth - teacherCardGap * 3) / 4
@@ -441,7 +488,7 @@ export default function DownloadReportButton({
 
       breakdownSections.forEach((section) => {
         pdf.addPage()
-        const startY = addPageHeader(pdf, section.label, `${section.correct}/${section.total} correct`)
+        const startY = addPageHeader(pdf, section.label, `${section.correct}/${section.total} correct`, logoAsset)
 
         autoTable(pdf, {
           startY,
