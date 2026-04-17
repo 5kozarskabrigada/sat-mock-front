@@ -1,5 +1,9 @@
 ﻿import { studentExamsAPI, activityLogsAPI } from '@/lib/api-client';
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // Save answers periodically during exam (using optimized batch API)
 export async function saveAnswersProgress(
   studentExamId: string,
@@ -16,8 +20,20 @@ export async function saveAnswersProgress(
       return { success: true };
     }
 
-    await studentExamsAPI.saveAnswersBatch(studentExamId, answersArray);
-    return { success: true };
+    let lastError: any = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await studentExamsAPI.saveAnswersBatch(studentExamId, answersArray);
+        return { success: true };
+      } catch (error: any) {
+        lastError = error;
+        if (attempt < 3) {
+          await delay(250 * attempt);
+        }
+      }
+    }
+
+    throw lastError;
   } catch (error: any) {
     console.error('Failed to save answer progress:', error);
     return { error: 'Failed to save progress' };
@@ -31,7 +47,10 @@ export async function submitExam(
 ) {
   try {
     // First save all final answers
-    await saveAnswersProgress(studentExamId, answers);
+    const saveResult = await saveAnswersProgress(studentExamId, answers);
+    if (saveResult.error) {
+      return { error: saveResult.error };
+    }
 
     // Then mark as complete (backend calculates scores)
     await studentExamsAPI.complete(studentExamId);
