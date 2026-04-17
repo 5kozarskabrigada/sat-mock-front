@@ -1,5 +1,3 @@
-'use server'
-
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -8,11 +6,11 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'im
 const BUCKET = 'exam-images'
 
 function getStorageClient() {
-  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
-    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+    throw new Error('Missing Supabase credentials: SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY must be set')
   }
 
   return createClient(supabaseUrl, supabaseServiceRoleKey)
@@ -53,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error('Storage upload error:', uploadError)
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+      return NextResponse.json({ error: `Upload failed: ${uploadError.message}` }, { status: 500 })
     }
 
     const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(objectPath)
