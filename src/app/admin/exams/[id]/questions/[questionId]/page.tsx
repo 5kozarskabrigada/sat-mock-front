@@ -40,6 +40,11 @@ export default function EditQuestionPage() {
           return;
         }
 
+        const directOrderIndex = Number(questionData.order_index);
+        if (!Number.isNaN(directOrderIndex) && directOrderIndex > 0) {
+          setQuestionNumber(directOrderIndex);
+        }
+
         const sameSectionModuleQuestions = (examQuestionsResponse.data || [])
           .filter(
             (q: any) =>
@@ -56,7 +61,11 @@ export default function EditQuestionPage() {
           });
 
         const currentIndex = sameSectionModuleQuestions.findIndex((q: any) => q.id === questionData.id);
-        setQuestionNumber(currentIndex >= 0 ? currentIndex + 1 : null);
+        if (currentIndex >= 0) {
+          setQuestionNumber(currentIndex + 1);
+        } else if (!directOrderIndex || Number.isNaN(directOrderIndex)) {
+          setQuestionNumber(1);
+        }
 
         setQuestion({
           ...questionData,
@@ -92,7 +101,7 @@ export default function EditQuestionPage() {
           <div>
             <Link href={`/admin/exams/${id}`} className="text-sm text-indigo-600 hover:text-indigo-900 mb-2 inline-block">&larr; Back to Exam</Link>
             <h1 className="text-2xl font-bold text-gray-900">
-              Edit Question{questionNumber ? ` #${questionNumber}` : ''}
+              Edit Question #{questionNumber || 1}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               {question.section === 'reading_writing' ? 'Reading & Writing' : 'Math'} - Module {question.module}
