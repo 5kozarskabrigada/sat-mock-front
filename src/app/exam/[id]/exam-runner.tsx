@@ -119,6 +119,22 @@ export default function ExamRunner({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isSubmittingRef = useRef(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isQuestionNavLocked, setIsQuestionNavLocked] = useState(false)
+  const questionNavLockRef = useRef(false)
+
+  const lockQuestionNavigation = () => {
+    if (questionNavLockRef.current) return false
+
+    questionNavLockRef.current = true
+    setIsQuestionNavLocked(true)
+
+    setTimeout(() => {
+      questionNavLockRef.current = false
+      setIsQuestionNavLocked(false)
+    }, 180)
+
+    return true
+  }
 
   // Initialize on mount - log exam start and request fullscreen
   useEffect(() => {
@@ -436,8 +452,10 @@ export default function ExamRunner({
   }
 
   const handleNext = () => {
+    if (!lockQuestionNavigation()) return
+
     if (currentQuestionIndex < currentModuleQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
+      setCurrentQuestionIndex((prev) => Math.min(prev + 1, currentModuleQuestions.length - 1))
     } else {
         // Last question -> go to Review
         setView('review')
@@ -445,16 +463,20 @@ export default function ExamRunner({
   }
 
   const handleBack = () => {
+    if (!lockQuestionNavigation()) return
+
     if (view === 'review') {
         setView('question')
         return
     }
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1)
+      setCurrentQuestionIndex((prev) => Math.max(prev - 1, 0))
     }
   }
 
   const handleNavigate = (index: number) => {
+      if (!lockQuestionNavigation()) return
+
       setCurrentQuestionIndex(index)
       setView('question')
   }
@@ -596,6 +618,7 @@ export default function ExamRunner({
               questions={currentModuleQuestions} 
               onNext={handleNext}
               onBack={handleBack}
+              isNavigationLocked={isQuestionNavLocked}
               onToggleMark={handleToggleMark}
               onSubmit={() => setShowSubmitConfirm(true)}
               onNavigate={handleNavigate}

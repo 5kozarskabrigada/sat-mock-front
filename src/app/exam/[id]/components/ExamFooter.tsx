@@ -8,6 +8,7 @@ export default function ExamFooter({
   questions,
   onNext, 
   onBack,
+    isNavigationLocked,
   onToggleMark,
   onSubmit,
   onNavigate,
@@ -20,6 +21,7 @@ export default function ExamFooter({
   questions: any[]
   onNext: () => void
   onBack: () => void
+    isNavigationLocked?: boolean
   onToggleMark: () => void
   onSubmit: () => void
   onNavigate: (index: number) => void
@@ -83,7 +85,7 @@ export default function ExamFooter({
       <div className="flex gap-2 pr-4">
           <button 
               onClick={onBack}
-              disabled={currentQuestionIndex === 0}
+              disabled={currentQuestionIndex === 0 || !!isNavigationLocked}
               className="px-6 py-2 text-white transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-[15px]"
               style={{ 
                   backgroundColor: 'rgb(51, 76, 199)', 
@@ -107,6 +109,7 @@ export default function ExamFooter({
           ) : (
               <button 
                   onClick={onNext}
+                  disabled={!!isNavigationLocked}
                   className="px-6 py-2 text-white transition-opacity duration-200 cursor-pointer text-[15px]"
                   style={{ 
                       backgroundColor: 'rgb(51, 76, 199)', 
