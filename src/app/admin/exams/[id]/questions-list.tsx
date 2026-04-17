@@ -5,18 +5,42 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import LatexRenderer from '@/components/ui/latex-renderer'
-import { deleteQuestion } from './actions'
+import { deleteQuestion, reorderQuestions } from './actions'
 import ConfirmationModal from '@/components/confirmation-modal'
 
 interface Question {
     id: string
     section: string
     module: number
+    order_index?: number
+    created_at?: string
     domain?: string
     content: {
         question: string
     }
     correctAnswer: string
+}
+
+function getQuestionPreview(text?: string) {
+    if (!text) return 'No question text'
+
+    const withoutHtml = text.replace(/<[^>]*>/g, ' ')
+    const compact = withoutHtml.replace(/\s+/g, ' ').trim()
+
+    if (compact.length <= 140) return compact
+    return `${compact.slice(0, 140)}...`
+}
+
+function sortQuestionsByOrder(questions: Question[]) {
+    return [...questions].sort((a, b) => {
+        const aOrder = a.order_index ?? Number.MAX_SAFE_INTEGER
+        const bOrder = b.order_index ?? Number.MAX_SAFE_INTEGER
+        if (aOrder !== bOrder) return aOrder - bOrder
+
+        const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0
+        const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0
+        return aCreated - bCreated
+    })
 }
 
 function SectionGroup({ title, questions, router, examId, colorClass, ringClass, onUpdate }: { 
@@ -30,6 +54,9 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
 }) {
     const [isExpanded, setIsExpanded] = useState(true)
     const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [reordering, setReordering] = useState(false)
+
+    const sortedQuestions = sortQuestionsByOrder(questions)
 
     const handleDelete = async () => {
         if (deletingId) {
@@ -37,6 +64,30 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
             setDeletingId(null)
             onUpdate?.() // Call the refresh callback
         }
+    }
+
+    const handleMove = async (index: number, direction: 'up' | 'down') => {
+        const targetIndex = direction === 'up' ? index - 1 : index + 1
+        if (targetIndex < 0 || targetIndex >= sortedQuestions.length) return
+
+        const reordered = [...sortedQuestions]
+        const [moved] = reordered.splice(index, 1)
+        reordered.splice(targetIndex, 0, moved)
+
+        setReordering(true)
+        const result = await reorderQuestions(examId, {
+            section: moved.section,
+            module: moved.module,
+            questionIdsInOrder: reordered.map((q) => q.id),
+        })
+        setReordering(false)
+
+        if (result.error) {
+            alert(result.error)
+            return
+        }
+
+        onUpdate?.()
     }
 
     if (questions.length === 0) return null
@@ -76,7 +127,7 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
             {isExpanded && (
                 <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
                     <ul role="list" className="divide-y divide-gray-100">
-                        {questions.map((q, index) => (
+                        {sortedQuestions.map((q, index) => (
                             <li 
                                 key={q.id} 
                                 className="group relative hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
@@ -98,6 +149,10 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
                                                     </span>
                                                 )}
                                             </div>
+
+                                            <p className="text-xs text-gray-500 line-clamp-2">
+                                                Preview: {getQuestionPreview(q.content.question)}
+                                            </p>
                                             
                                             <div className="mt-2 text-sm text-gray-900 line-clamp-3 font-serif leading-relaxed">
                                                 <LatexRenderer>{q.content.question}</LatexRenderer>
@@ -112,6 +167,32 @@ function SectionGroup({ title, questions, router, examId, colorClass, ringClass,
                                         </div>
 
                                         <div className="shrink-0 self-center flex items-center gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleMove(index, 'up')
+                                                }}
+                                                disabled={reordering || index === 0}
+                                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all disabled:opacity-40"
+                                                title="Move up"
+                                            >
+                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleMove(index, 'down')
+                                                }}
+                                                disabled={reordering || index === sortedQuestions.length - 1}
+                                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all disabled:opacity-40"
+                                                title="Move down"
+                                            >
+                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation()

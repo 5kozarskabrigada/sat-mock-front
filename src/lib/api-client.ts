@@ -114,6 +114,9 @@ export const questionsAPI = {
   
   createBulk: (examId: string, questions: any[]) =>
     apiClient.post('/questions/bulk', { examId, questions }),
+
+  reorderByExam: (examId: string, data: { section: string; module: number; questionIdsInOrder: string[] }) =>
+    apiClient.put(`/questions/exam/${examId}/reorder`, data),
   
   update: (id: string, data: any) => apiClient.put(`/questions/${id}`, data),
   

@@ -134,6 +134,18 @@ export async function deleteQuestion(questionId: string, examId: string) {
   }
 }
 
+export async function reorderQuestions(
+  examId: string,
+  data: { section: string; module: number; questionIdsInOrder: string[] },
+) {
+  try {
+    await questionsAPI.reorderByExam(examId, data);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+}
+
 export async function deleteExam(examId: string) {
   try {
     await examsAPI.delete(examId);

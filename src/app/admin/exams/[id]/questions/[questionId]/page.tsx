@@ -13,6 +13,7 @@ export default function EditQuestionPage() {
   const params = useParams();
   const { user, loading: authLoading } = useAuth();
   const [question, setQuestion] = useState<any>(null);
+  const [questionNumber, setQuestionNumber] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const id = params?.id as string;
@@ -28,13 +29,34 @@ export default function EditQuestionPage() {
 
     async function loadQuestion() {
       try {
-        const response = await questionsAPI.getById(questionId);
+        const [response, examQuestionsResponse] = await Promise.all([
+          questionsAPI.getById(questionId),
+          questionsAPI.getByExam(id),
+        ]);
         const questionData = response.data;
         
         if (!questionData || questionData.deleted_at) {
           router.push(`/admin/exams/${id}`);
           return;
         }
+
+        const sameSectionModuleQuestions = (examQuestionsResponse.data || [])
+          .filter(
+            (q: any) =>
+              !q.deleted_at && q.section === questionData.section && Number(q.module) === Number(questionData.module),
+          )
+          .sort((a: any, b: any) => {
+            const aOrder = a.order_index ?? Number.MAX_SAFE_INTEGER;
+            const bOrder = b.order_index ?? Number.MAX_SAFE_INTEGER;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+
+            const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return aCreated - bCreated;
+          });
+
+        const currentIndex = sameSectionModuleQuestions.findIndex((q: any) => q.id === questionData.id);
+        setQuestionNumber(currentIndex >= 0 ? currentIndex + 1 : null);
 
         setQuestion({
           ...questionData,
@@ -69,7 +91,12 @@ export default function EditQuestionPage() {
        <div className="flex items-center justify-between">
           <div>
             <Link href={`/admin/exams/${id}`} className="text-sm text-indigo-600 hover:text-indigo-900 mb-2 inline-block">&larr; Back to Exam</Link>
-            <h1 className="text-2xl font-bold text-gray-900">Edit Question</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Edit Question{questionNumber ? ` #${questionNumber}` : ''}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {question.section === 'reading_writing' ? 'Reading & Writing' : 'Math'} - Module {question.module}
+            </p>
           </div>
        </div>
 
