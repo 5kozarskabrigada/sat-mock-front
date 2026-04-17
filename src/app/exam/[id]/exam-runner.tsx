@@ -158,7 +158,7 @@ export default function ExamRunner({
   }, [answers])
 
   useEffect(() => {
-    if (isAdminPreview || isDisqualified) return
+    if (isAdminPreview || isDisqualified || isSubmitting) return
 
     // Initial heartbeat
     heartbeat(studentExamId)
@@ -174,7 +174,7 @@ export default function ExamRunner({
     }, 60000) // Every 60 seconds (Optimized for Quantity & Quality)
 
     return () => clearInterval(interval)
-  }, [studentExamId, isAdminPreview, isDisqualified])
+  }, [studentExamId, isAdminPreview, isDisqualified, isSubmitting])
 
   // Save state to localStorage when it changes
   useEffect(() => {
