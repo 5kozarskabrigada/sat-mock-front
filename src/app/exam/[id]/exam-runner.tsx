@@ -346,16 +346,20 @@ export default function ExamRunner({
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 0) {
-          clearInterval(timer)
-          handleModuleTimeUp() // Auto-advance
-          return 0
-        }
+        if (prev <= 0) return 0
         return prev - 1
       })
     }, 1000)
     return () => clearInterval(timer)
   }, [isTimerRunning, currentModuleIndex, isAdminPreview])
+
+  // Auto-advance when timer expires.
+  useEffect(() => {
+    if (isAdminPreview || !isTimerRunning) return
+    if (timeLeft > 0) return
+
+    handleModuleTimeUp()
+  }, [timeLeft, isAdminPreview, isTimerRunning])
 
   // -- Handlers --
 
