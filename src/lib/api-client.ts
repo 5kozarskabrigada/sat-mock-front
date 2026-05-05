@@ -186,3 +186,12 @@ export const activityLogsAPI = {
   
   create: (data: any) => apiClient.post('/activity-logs', data),
 };
+
+// Usage API
+export const usageAPI = {
+  getPerStudentUsage: (from?: string, to?: string) =>
+    apiClient.get('/admin/usage/per-student', { params: { from, to } }),
+  
+  getUsageSummary: (from?: string, to?: string) =>
+    apiClient.get('/admin/usage/summary', { params: { from, to } }),
+};
