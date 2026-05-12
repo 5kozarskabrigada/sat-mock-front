@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_URL: https://examroomedu.com/1/api
+        PUBLIC_URL: /1
+    environment:
+      - NEXT_PUBLIC_API_URL=https://examroomedu.com/1/api
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

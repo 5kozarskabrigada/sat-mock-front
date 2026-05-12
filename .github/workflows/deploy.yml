@@ -6,20 +6,11 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -28,23 +19,22 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            # Pull latest image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            set -e
             
-            # Stop and remove existing container
-            docker stop sat-web || true
-            docker rm sat-web || true
+            # Clone repo if it doesn't exist, otherwise pull
+            if [ ! -d "/root/sat-front" ]; then
+              cd /root
+              git clone https://github.com/5kozarskabrigada/sat-mock-front.git sat-front
+            fi
             
-            # Run new container
-            docker run -d \
-              --name sat-web \
-              --restart unless-stopped \
-              -p 3000:3000 \
-              -e NODE_ENV=production \
-              -e NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            cd /root/sat-front
+            git pull origin main
             
-            # Clean up old images
-            docker image prune -f
+            # Stop and remove existing containers
+            docker compose down || true
             
-            echo "Deployment completed successfully"
+            # Build and start with proper environment variables
+            docker compose up -d --build
+            
+            echo "Frontend deployment completed"
+            docker compose ps

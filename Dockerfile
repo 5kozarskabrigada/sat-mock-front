@@ -5,7 +5,9 @@ WORKDIR /app
 
 # Accept build arguments
 ARG NEXT_PUBLIC_API_URL
+ARG PUBLIC_URL=/1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV PUBLIC_URL=$PUBLIC_URL
 
 # Copy package files
 COPY package*.json ./
@@ -34,6 +36,7 @@ RUN npm ci --only=production
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/package.json ./
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -50,7 +53,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "require('http').get('http://localhost:3000/1/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the application
 CMD ["npm", "start"]
