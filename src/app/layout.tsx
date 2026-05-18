@@ -15,8 +15,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 // });
 
 export const metadata: Metadata = {
-  title: "ExamRoom",
-  description: "SAT Mock Exam Platform",
+  title: "ExamRoom - Online Exam Platform",
+  description: "Professional Online Examination Platform",
+  icons: {
+    icon: 'https://i.postimg.cc/4Y5V5pBq/logo.png',
+  },
 };
 
 export default function RootLayout({
