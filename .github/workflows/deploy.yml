@@ -30,12 +30,27 @@ jobs:
             cd /root/sat-front
             git pull origin main
             
+            # Stop ALL docker containers to be safe
+            docker stop $(docker ps -aq) 2>/dev/null || true
+            
             # Stop and remove existing containers and volumes
             docker compose down -v || true
             
-            # Kill any process using port 3002
-            lsof -ti:3002 | xargs kill -9 2>/dev/null || true
-            fuser -k 3002/tcp 2>/dev/null || true
+            # Find and kill process on port 3002 (multiple methods)
+            PID=$(netstat -tlnp 2>/dev/null | grep ':3002 ' | awk '{print $7}' | cut -d'/' -f1)
+            if [ ! -z "$PID" ]; then
+              kill -9 $PID 2>/dev/null || true
+            fi
+            
+            # Also try ss command
+            PID=$(ss -tlnp 2>/dev/null | grep ':3002 ' | grep -oP 'pid=\K[0-9]+')
+            if [ ! -z "$PID" ]; then
+              kill -9 $PID 2>/dev/null || true
+            fi
+            
+            # Kill any pm2 processes
+            pm2 delete all 2>/dev/null || true
+            pm2 kill 2>/dev/null || true
             
             # Remove old images completely
             docker rmi sat-front-web:latest 2>/dev/null || true
