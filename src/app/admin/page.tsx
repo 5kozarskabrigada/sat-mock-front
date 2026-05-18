@@ -75,152 +75,167 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">Overview of your SAT Mock Platform</p>
+      <div className="bg-gradient-to-r from-[#123b71] to-[#1a5490] rounded-2xl p-8 text-white shadow-xl">
+        <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+        <p className="mt-2 text-blue-100">Welcome back! Here's what's happening with your SAT Mock Platform</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Students */}
-        <Link href="/admin/students" className="block group">
-          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-indigo-300 relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="shrink-0 rounded-md bg-indigo-50 p-3">
-                  <svg className="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dt className="truncate text-sm font-medium text-gray-500">Total Students</dt>
-                  <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">{studentCount}</dd>
-                </div>
-              </div>
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-indigo-100 text-sm font-medium">Total Students</p>
+              <p className="text-4xl font-bold mt-2">{studentCount}</p>
             </div>
-            <div className="bg-gray-50 px-6 py-3">
-              <div className="text-sm font-medium text-indigo-600 group-hover:text-indigo-500">
-                View all students <span aria-hidden="true">&rarr;</span>
-              </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
             </div>
           </div>
-        </Link>
+          <Link href="/admin/students" className="mt-4 inline-flex items-center text-sm font-medium text-white hover:text-indigo-100 transition-colors">
+            View all <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          </Link>
+        </div>
         
         {/* Card 2: Exams */}
-        <Link href="/admin/exams" className="block group">
-          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 transition-all duration-200 hover:shadow-md hover:ring-green-300 relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="shrink-0 rounded-md bg-green-50 p-3">
-                  <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dt className="truncate text-sm font-medium text-gray-500">Active Exams</dt>
-                  <dd className="mt-1 text-3xl font-semibold tracking-tight text-gray-900">{activeExamCount}</dd>
-                </div>
-              </div>
+        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-emerald-100 text-sm font-medium">Active Exams</p>
+              <p className="text-4xl font-bold mt-2">{activeExamCount}</p>
             </div>
-            <div className="bg-gray-50 px-6 py-3">
-              <div className="text-sm font-medium text-green-600 group-hover:text-green-500">
-                Manage exams <span aria-hidden="true">&rarr;</span>
-              </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
           </div>
-        </Link>
+          <Link href="/admin/exams" className="mt-4 inline-flex items-center text-sm font-medium text-white hover:text-emerald-100 transition-colors">
+            Manage exams <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          </Link>
+        </div>
         
-        {/* Card 3: Quick Action */}
-        <Link href="/admin/exams" className="block group h-full">
-          <div className="overflow-hidden rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 shadow-md transition-all duration-200 hover:shadow-lg hover:from-indigo-600 hover:to-purple-700 h-full flex flex-col justify-center items-center text-center p-6 text-white cursor-pointer relative">
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <svg className="h-12 w-12 mb-3 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Card 3: Classrooms */}
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-violet-100 text-sm font-medium">Classrooms</p>
+              <p className="text-4xl font-bold mt-2">-</p>
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+          </div>
+          <Link href="/admin/classrooms" className="mt-4 inline-flex items-center text-sm font-medium text-white hover:text-violet-100 transition-colors">
+            View classes <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          </Link>
+        </div>
+        
+        {/* Card 4: Quick Action */}
+        <Link href="/admin/exams" className="bg-gradient-to-br from-[#123b71] to-[#1a5490] rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 duration-200 flex flex-col items-center justify-center text-center group">
+          <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 mb-3 group-hover:bg-white/30 transition-colors">
+            <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <h3 className="text-xl font-bold">Create New Exam</h3>
-            <p className="text-indigo-100 text-sm mt-1">Set up a mock test in seconds</p>
           </div>
+          <h3 className="text-lg font-bold">Create New Exam</h3>
+          <p className="text-blue-100 text-xs mt-1">Start a new assessment</p>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Students */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Recent Students</h2>
-            <Link href="/admin/students" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
+        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Recent Students</h2>
+            <Link href="/admin/students" className="text-sm font-medium text-white hover:text-indigo-100 transition-colors inline-flex items-center">
+              View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
-          <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-            <ul role="list" className="divide-y divide-gray-200">
-              {recentStudents?.map((student: any) => (
-                <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                      {student.first_name?.[0]}{student.last_name?.[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {student.first_name} {student.last_name}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">{student.email}</p>
-                    </div>
-                    <div className="shrink-0 text-xs text-gray-400">
-                      {new Date(student.created_at).toLocaleDateString()}
-                    </div>
+          <ul role="list" className="divide-y divide-gray-200">
+            {recentStudents?.map((student: any) => (
+              <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    {student.first_name?.[0]}{student.last_name?.[0]}
                   </div>
-                </li>
-              ))}
-              {(!recentStudents || recentStudents.length === 0) && (
-                <li className="p-4 text-center text-sm text-gray-500">No recent students</li>
-              )}
-            </ul>
-          </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {student.first_name} {student.last_name}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{student.email}</p>
+                  </div>
+                  <div className="shrink-0">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      {new Date(student.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </li>
+            ))}
+            {(!recentStudents || recentStudents.length === 0) && (
+              <li className="p-8 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <p className="mt-2 text-sm text-gray-500">No recent students</p>
+              </li>
+            )}
+          </ul>
         </div>
 
         {/* Recent Exams */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Recent Exams</h2>
-            <Link href="/admin/exams" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">View All</Link>
+        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Recent Exams</h2>
+            <Link href="/admin/exams" className="text-sm font-medium text-white hover:text-emerald-100 transition-colors inline-flex items-center">
+              View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
-          <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-            <ul role="list" className="divide-y divide-gray-200">
-              {recentExams?.map((exam: any) => (
-                <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
-                  <Link href={`/admin/exams/${exam.id}`} className="block group">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                          {exam.title}
-                        </p>
-                        <div className="flex items-center mt-1 space-x-2">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
-                            exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {exam.status}
+          <ul role="list" className="divide-y divide-gray-200">
+            {recentExams?.map((exam: any) => (
+              <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <Link href={`/admin/exams/${exam.id}`} className="block group">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-emerald-600 transition-colors">
+                        {exam.title}
+                      </p>
+                      <div className="flex items-center mt-2 space-x-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+                          exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {exam.status}
+                        </span>
+                        {exam.code && (
+                          <span className="text-xs text-gray-600 font-mono bg-gray-100 px-2 py-0.5 rounded">
+                            {exam.code}
                           </span>
-                          {exam.code && (
-                            <span className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 rounded">
-                              {exam.code}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="shrink-0">
-                        <svg className="h-5 w-5 text-gray-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        )}
                       </div>
                     </div>
-                  </Link>
-                </li>
-              ))}
-              {(!recentExams || recentExams.length === 0) && (
-                <li className="p-4 text-center text-sm text-gray-500">No recent exams</li>
-              )}
-            </ul>
-          </div>
+                    <div className="shrink-0 ml-4">
+                      <svg className="h-5 w-5 text-gray-400 group-hover:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+            {(!recentExams || recentExams.length === 0) && (
+              <li className="p-8 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="mt-2 text-sm text-gray-500">No recent exams</p>
+              </li>
+            )}
+          </ul>
         </div>
       </div>
     </div>
