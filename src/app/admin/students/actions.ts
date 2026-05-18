@@ -35,7 +35,7 @@ export async function createStudent(firstName: string, lastName: string, email?:
       lastName,
       password,
       role: 'student',
-      sendEmail: sendEmail && email && email.trim() !== '', // Only send email if flag is set and real email is provided
+      sendEmail: Boolean(sendEmail && email && email.trim()), // Only send email if flag is set and real email is provided
     });
 
     return {
