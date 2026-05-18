@@ -63,7 +63,7 @@ export default function AdminSubmissionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Exam Submissions</h1>
@@ -74,7 +74,7 @@ export default function AdminSubmissionsPage() {
         </Suspense>
       </div>
 
-      <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white shadow-md ring-1 ring-gray-200 rounded-xl overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

@@ -68,19 +68,19 @@ export default function MonitorPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+    <div className="p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Exam Monitor</h1>
             <p className="mt-1 text-sm text-gray-500">Real-time view of active student sessions</p>
           </div>
-          <button onClick={loadSessions} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium shadow-sm transition-colors">
+          <button onClick={loadSessions} className="px-4 py-2 bg-[#123b71] text-white rounded-lg hover:bg-[#0d2a4d] text-sm font-medium shadow-sm transition-colors">
             Refresh
           </button>
         </div>
 
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden">
           {rows.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -123,7 +123,7 @@ export default function MonitorPage() {
                         <div className="text-xs text-gray-400 mt-1">Last seen: {new Date(session.updated_at).toLocaleTimeString()}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link href={`/admin/exams/${session.exam_id}/results/${session.id}`} className="text-indigo-600 hover:text-indigo-900">
+                        <Link href={`/admin/exams/${session.exam_id}/results/${session.id}`} className="text-[#123b71] hover:text-[#0d2a4d]">
                           View Details
                         </Link>
                       </td>

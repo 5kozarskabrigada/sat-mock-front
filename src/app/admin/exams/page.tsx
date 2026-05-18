@@ -41,7 +41,7 @@ export default function ExamsPage() {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#123b71] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading exams...</p>
         </div>
       </div>
@@ -49,11 +49,11 @@ export default function ExamsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Exam Management</h1>
-          <p className="mt-2 text-sm text-gray-700">Create, edit, and manage your mock exams.</p>
+          <p className="mt-2 text-sm text-gray-600">Create, edit, and manage your mock exams.</p>
         </div>
         <CreateExamModal />
       </div>

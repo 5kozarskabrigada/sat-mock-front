@@ -47,7 +47,7 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
                     </div>
                     <input
                         type="text"
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#123b71] focus:border-[#123b71] sm:text-sm text-gray-900"
                         placeholder="Search exams by title or code..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -57,7 +57,7 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-gray-900 bg-white"
+                        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#123b71] focus:border-[#123b71] sm:text-sm rounded-md text-gray-900 bg-white"
                     >
                         <option value="all">All Statuses</option>
                         <option value="active">Active</option>
@@ -68,53 +68,60 @@ export default function ExamListFilter({ exams }: { exams: Exam[] }) {
             </div>
 
             {/* Results Grid */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredExams.map((exam: any) => (
-                    <div 
-                        key={exam.id} 
-                        className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md"
-                        onMouseEnter={() => handleMouseEnter(exam.id)}
-                    >
-                        <Link 
-                            href={`/admin/exams/${exam.id}`}
-                            prefetch={true}
-                            className="flex-1 p-6 flex flex-col justify-between hover:bg-gray-50/50"
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredExams.map((exam: any, index: number) => {
+                    const colors = [
+                        { border: 'border-blue-500', hoverText: 'hover:text-blue-600' },
+                        { border: 'border-cyan-500', hoverText: 'hover:text-cyan-600' },
+                        { border: 'border-sky-500', hoverText: 'hover:text-sky-600' }
+                    ]
+                    const colorScheme = colors[index % colors.length]
+                    
+                    return (
+                        <div 
+                            key={exam.id} 
+                            className={`flex flex-col overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow border-l-4 ${colorScheme.border}`}
+                            onMouseEnter={() => handleMouseEnter(exam.id)}
                         >
-                            <div>
-                                <div className="flex items-center justify-between">
-                                    <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
-                                        exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                        {exam.status}
+                            <Link 
+                                href={`/admin/exams/${exam.id}`}
+                                prefetch={true}
+                                className="flex-1 p-5 flex flex-col justify-between hover:bg-gray-50"
+                            >
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
+                                            exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {exam.status}
+                                        </div>
+                                        <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+                                            {exam.code}
+                                        </span>
                                     </div>
-                                    <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
-                                        {exam.code}
-                                    </span>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-lg font-medium text-gray-900 truncate" title={exam.title}>
+                                    <h3 className={`text-base font-semibold text-gray-900 truncate transition-colors ${colorScheme.hoverText}`} title={exam.title}>
                                         {exam.title}
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-500 line-clamp-2 min-h-10">
+                                    <p className="mt-1 text-sm text-gray-500 line-clamp-2">
                                         {exam.description || 'No description provided.'}
                                     </p>
                                 </div>
-                            </div>
-                            <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-                                <span className="capitalize px-2 py-1 bg-gray-50 rounded text-xs border border-gray-100">
-                                    SAT
+                                <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
+                                    <span className="capitalize px-2 py-1 bg-gray-50 rounded text-xs border border-gray-100">
+                                        SAT
+                                    </span>
+                                </div>
+                            </Link>
+                            
+                            <div className="bg-gray-50 px-5 py-2.5 border-t border-gray-100 flex items-center justify-between">
+                                <span className="text-xs text-gray-400">
+                                    {new Date(exam.createdAt).toLocaleDateString()}
                                 </span>
+                                <ExamListActions exam={exam} />
                             </div>
-                        </Link>
-                        
-                        <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between">
-                            <span className="text-xs text-gray-400">
-                                {new Date(exam.createdAt).toLocaleDateString()}
-                            </span>
-                            <ExamListActions exam={exam} />
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
 
                 {filteredExams.length === 0 && (
                     <div className="col-span-full text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
