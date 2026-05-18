@@ -47,7 +47,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-white text-center tracking-tight">
             Welcome Back
           </h1>
-          <p className="text-blue-100 text-center mt-2">Sign in to continue</p>
+          <p className="text-blue-100 text-center mt-2">Sign in to the SAT Mock Exam Platform</p>
         </div>
         <div className="p-8 sm:p-10">
 
