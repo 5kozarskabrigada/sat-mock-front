@@ -1,5 +1,6 @@
 services:
   frontend:
+    image: sat-front-web:latest
     build:
       context: .
       args:

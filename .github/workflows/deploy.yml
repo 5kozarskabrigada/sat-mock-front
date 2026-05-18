@@ -30,14 +30,22 @@ jobs:
             cd /root/sat-front
             git pull origin main
             
-            # Stop and remove existing containers
-            docker compose down || true
+            # Stop and remove existing containers and volumes
+            docker compose down -v || true
             
-            # Remove old images to force clean rebuild
-            docker compose build --no-cache
+            # Remove old images completely
+            docker rmi sat-front-web:latest 2>/dev/null || true
+            docker image prune -f || true
+            
+            # Clean docker build cache
+            docker builder prune -f || true
+            
+            # Build fresh without any cache
+            docker compose build --no-cache --pull
             
             # Start with proper environment variables
             docker compose up -d
             
             echo "Frontend deployment completed"
             docker compose ps
+            docker compose logs --tail=20 frontend
