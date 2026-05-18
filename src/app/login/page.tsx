@@ -47,12 +47,12 @@ export default function LoginPage() {
             <Logo className="h-28 w-auto" withBorder={false} />
           </div>
           <div className="flex justify-center mb-2">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-[#123b71] tracking-tight">
               Welcome Back
             </h1>
           </div>
           <div className="flex justify-center">
-            <p className="text-white text-sm">Sign in to the SAT Mock Exam Platform</p>
+            <p className="text-gray-700 text-sm">Sign in to the SAT Mock Exam Platform</p>
           </div>
         </div>
         <div className="p-8 sm:p-10">
