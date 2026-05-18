@@ -9,5 +9,5 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://examroomedu.com/1/api
     ports:
-      - "3000:3000"
+      - "3002:3000"
     restart: unless-stopped
