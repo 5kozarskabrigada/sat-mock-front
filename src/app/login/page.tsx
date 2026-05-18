@@ -36,18 +36,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8 sm:p-10">
-          <div className="text-center mb-10">
-            <div className="flex justify-center mb-10">
-              <Logo className="h-28 w-auto" />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+        <div className="bg-gradient-to-r from-[#123b71] to-[#1a5490] p-8">
+          <div className="flex justify-center mb-4">
+            <div className="bg-white p-4 rounded-xl shadow-lg">
+              <Logo className="h-16 w-auto" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-500">Sign in to the SAT Mock Exam Platform</p>
           </div>
+          <h1 className="text-2xl font-bold text-white text-center tracking-tight">
+            Welcome Back
+          </h1>
+          <p className="text-blue-100 text-center mt-2">Sign in to continue</p>
+        </div>
+        <div className="p-8 sm:p-10">
 
           <form className="space-y-6" onSubmit={handleLogin}>
             {error && (
@@ -79,15 +81,15 @@ export default function LoginPage() {
                   htmlFor="identifier"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Username or Email
+                  Username
                 </label>
                 <input
                   id="identifier"
                   name="identifier"
                   type="text"
                   required
-                  className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 transition-colors text-black"
-                  placeholder="username or email"
+                  className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-[#123b71] focus:ring-[#123b71] sm:text-sm p-3 transition-colors text-black"
+                  placeholder="Enter your username"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
@@ -106,7 +108,7 @@ export default function LoginPage() {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 pr-10 transition-colors text-black"
+                    className="block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-[#123b71] focus:ring-[#123b71] sm:text-sm p-3 pr-10 transition-colors text-black"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -160,7 +162,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#123b71] hover:bg-[#0d2a4d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#123b71] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <svg
