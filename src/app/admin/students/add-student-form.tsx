@@ -61,6 +61,8 @@ export default function AddStudentForm({ onSuccess }: AddStudentFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
+      {/* Version marker - DEPLOYED v2.0 with EMAIL FIELD */}
+      <div className="mb-4 text-center text-xs text-gray-400">Build v2.0.0 - {new Date().toISOString().split('T')[0]}</div>
       {/* Form Card */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
