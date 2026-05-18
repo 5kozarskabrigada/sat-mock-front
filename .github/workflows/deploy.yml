@@ -33,8 +33,11 @@ jobs:
             # Stop and remove existing containers
             docker compose down || true
             
-            # Build and start with proper environment variables
-            docker compose up -d --build
+            # Remove old images to force clean rebuild
+            docker compose build --no-cache
+            
+            # Start with proper environment variables
+            docker compose up -d
             
             echo "Frontend deployment completed"
             docker compose ps
