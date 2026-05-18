@@ -33,7 +33,13 @@ jobs:
             # Stop and remove existing containers and volumes for THIS project only
             docker compose down -v || true
             
-            # Find any container using port 3002 and stop it
+            # SAFETY: Check that backend on port 3001 is still running
+            BACKEND_RUNNING=$(docker ps --filter "publish=3001" --format "{{.ID}}")
+            if [ -z "$BACKEND_RUNNING" ]; then
+              echo "WARNING: Backend container on port 3001 is not running!"
+            fi
+            
+            # Find any container using port 3002 and stop it (NEVER touch 3001!)
             CONTAINER_ID=$(docker ps --filter "publish=3002" --format "{{.ID}}")
             if [ ! -z "$CONTAINER_ID" ]; then
               echo "Stopping container using port 3002: $CONTAINER_ID"
