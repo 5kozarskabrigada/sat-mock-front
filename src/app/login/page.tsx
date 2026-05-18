@@ -36,16 +36,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen items-center justify-center p-4" style={{
+      backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.dev/svgjs' width='1920' height='1080' preserveAspectRatio='none' viewBox='0 0 1920 1080'%3e%3cg mask='url(%26quot%3b%23SvgjsMask1018%26quot%3b)' fill='none'%3e%3crect width='1920' height='1080' x='0' y='0' fill='%230e2a47'%3e%3c/rect%3e%3cpath d='M1679.9131753987544 645.8336955081278L1562.0239109649017 688.7418787015874 1685.3308179720177 844.1216837556368z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float1'%3e%3c/path%3e%3cpath d='M-137.86 639.87 a264.62 264.62 0 1 0 529.24 0 a264.62 264.62 0 1 0 -529.24 0z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float3'%3e%3c/path%3e%3cpath d='M63.123427038131155-144.09402960940346L-169.49424029630052 12.808568175689032 220.02602482322365 88.52363772502821z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float3'%3e%3c/path%3e%3cpath d='M1678.68 850.88 a188.67 188.67 0 1 0 377.34 0 a188.67 188.67 0 1 0 -377.34 0z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float3'%3e%3c/path%3e%3cpath d='M1961.5146364953578 622.3987133959863L1762.364145610869 477.7074122952612 1617.6728445101437 676.8579031797501 1816.8233353946327 821.5492042804752z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float1'%3e%3c/path%3e%3cpath d='M1033.72 746.04 a311.6 311.6 0 1 0 623.2 0 a311.6 311.6 0 1 0 -623.2 0z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float2'%3e%3c/path%3e%3cpath d='M1049.242438646008 55.24301369517823L1102.919745785259 211.13323297333673 1258.8099650634174 157.4559258340857 1205.1326579241663 1.5657065559271928z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float3'%3e%3c/path%3e%3cpath d='M1500.09 886.05 a275.15 275.15 0 1 0 550.3 0 a275.15 275.15 0 1 0 -550.3 0z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float3'%3e%3c/path%3e%3cpath d='M749.2503755701302 669.3596548854696L573.6616505567744 762.7218360684848 667.0238317397896 938.3105610818407 842.6125567531454 844.9483798988255z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float1'%3e%3c/path%3e%3cpath d='M153.64 578.8 a313.09 313.09 0 1 0 626.18 0 a313.09 313.09 0 1 0 -626.18 0z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float2'%3e%3c/path%3e%3cpath d='M579.4831549548466 260.18558975459996L407.43290024741276 120.86204058538601 268.1093510781988 292.9122952928198 440.1596057856326 432.23584446203375z' fill='rgba(28%2c 83%2c 142%2c 0.4)' class='triangle-float1'%3e%3c/path%3e%3c/g%3e%3cdefs%3e%3cmask id='SvgjsMask1018'%3e%3crect width='1920' height='1080' fill='white'%3e%3c/rect%3e%3c/mask%3e%3cstyle%3e %40keyframes float1 %7b 0%25%7btransform: translate(0%2c 0)%7d 50%25%7btransform: translate(-10px%2c 0)%7d 100%25%7btransform: translate(0%2c 0)%7d %7d .triangle-float1 %7b animation: float1 5s infinite%3b %7d %40keyframes float2 %7b 0%25%7btransform: translate(0%2c 0)%7d 50%25%7btransform: translate(-5px%2c -5px)%7d 100%25%7btransform: translate(0%2c 0)%7d %7d .triangle-float2 %7b animation: float2 4s infinite%3b %7d %40keyframes float3 %7b 0%25%7btransform: translate(0%2c 0)%7d 50%25%7btransform: translate(0%2c -10px)%7d 100%25%7btransform: translate(0%2c 0)%7d %7d .triangle-float3 %7b animation: float3 6s infinite%3b %7d %3c/style%3e%3c/defs%3e%3c/svg%3e\")",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }}>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
         <div className="bg-[#123b71] px-8 py-10">
           <div className="flex justify-center mb-6">
             <Logo className="h-20 w-auto" withBorder={true} />
           </div>
-          <h1 className="text-2xl font-bold text-white text-center tracking-tight">
-            Welcome Back
-          </h1>
-          <p className="text-blue-100 text-center mt-2">Sign in to the SAT Mock Exam Platform</p>
+          <div className="flex justify-center mb-3">
+            <div className="bg-white rounded-lg px-6 py-3">
+              <h1 className="text-2xl font-bold text-[#123b71] tracking-tight">
+                Welcome Back
+              </h1>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <div className="bg-white rounded-lg px-4 py-2">
+              <p className="text-gray-700 text-sm">Sign in to the SAT Mock Exam Platform</p>
+            </div>
+          </div>
         </div>
         <div className="p-8 sm:p-10">
 
