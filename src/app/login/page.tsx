@@ -42,19 +42,19 @@ export default function LoginPage() {
       backgroundPosition: 'center'
     }}>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
-        <div className="bg-[#123b71] px-8 py-10">
+        <div className="bg-white px-8 py-10">
           <div className="flex justify-center mb-6">
             <Logo className="h-20 w-auto" withBorder={true} />
           </div>
           <div className="flex justify-center mb-3">
-            <div className="bg-white rounded-lg px-6 py-3">
+            <div className="bg-gray-50 rounded-lg px-6 py-3 border border-gray-200">
               <h1 className="text-2xl font-bold text-[#123b71] tracking-tight">
                 Welcome Back
               </h1>
             </div>
           </div>
           <div className="flex justify-center">
-            <div className="bg-white rounded-lg px-4 py-2">
+            <div className="bg-gray-50 rounded-lg px-4 py-2 border border-gray-200">
               <p className="text-gray-700 text-sm">Sign in to the SAT Mock Exam Platform</p>
             </div>
           </div>
