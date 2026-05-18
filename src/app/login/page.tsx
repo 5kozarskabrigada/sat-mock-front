@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
         <div className="bg-[#123b71] px-8 py-10">
           <div className="flex justify-center mb-6">
-            <Logo className="h-24 w-auto" />
+            <Logo className="h-20 w-auto" withBorder={true} />
           </div>
           <h1 className="text-2xl font-bold text-white text-center tracking-tight">
             Welcome Back
