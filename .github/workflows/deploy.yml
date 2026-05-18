@@ -33,6 +33,10 @@ jobs:
             # Stop and remove existing containers and volumes
             docker compose down -v || true
             
+            # Kill any process using port 3002
+            lsof -ti:3002 | xargs kill -9 2>/dev/null || true
+            fuser -k 3002/tcp 2>/dev/null || true
+            
             # Remove old images completely
             docker rmi sat-front-web:latest 2>/dev/null || true
             docker image prune -f || true
