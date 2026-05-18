@@ -82,61 +82,61 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Students */}
-        <div className="bg-slate-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border-l-4 border-slate-500">
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 duration-300 border-l-4 border-indigo-400">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-200 text-sm font-medium uppercase tracking-wide">Students</p>
+              <p className="text-indigo-100 text-sm font-medium uppercase tracking-wide">Students</p>
               <p className="text-4xl font-bold mt-2">{studentCount}</p>
             </div>
-            <div className="bg-slate-600 rounded-xl p-3">
-              <svg className="h-8 w-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
           </div>
-          <Link href="/admin/students" className="mt-4 inline-flex items-center text-sm font-semibold text-slate-200 hover:text-white transition-colors">
+          <Link href="/admin/students" className="mt-4 inline-flex items-center text-sm font-semibold text-white hover:text-indigo-100 transition-colors">
             View all <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
         
         {/* Card 2: Exams */}
-        <div className="bg-gray-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border-l-4 border-gray-500">
+        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 duration-300 border-l-4 border-teal-400">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-200 text-sm font-medium uppercase tracking-wide">Active Exams</p>
+              <p className="text-teal-100 text-sm font-medium uppercase tracking-wide">Active Exams</p>
               <p className="text-4xl font-bold mt-2">{activeExamCount}</p>
             </div>
-            <div className="bg-gray-600 rounded-xl p-3">
-              <svg className="h-8 w-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
           </div>
-          <Link href="/admin/exams" className="mt-4 inline-flex items-center text-sm font-semibold text-gray-200 hover:text-white transition-colors">
+          <Link href="/admin/exams" className="mt-4 inline-flex items-center text-sm font-semibold text-white hover:text-teal-100 transition-colors">
             Manage exams <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
         
         {/* Card 3: Classrooms */}
-        <div className="bg-stone-700 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border-l-4 border-stone-500">
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 duration-300 border-l-4 border-violet-400">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-stone-200 text-sm font-medium uppercase tracking-wide">Classrooms</p>
+              <p className="text-violet-100 text-sm font-medium uppercase tracking-wide">Classrooms</p>
               <p className="text-4xl font-bold mt-2">-</p>
             </div>
-            <div className="bg-stone-600 rounded-xl p-3">
-              <svg className="h-8 w-8 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
           </div>
-          <Link href="/admin/classrooms" className="mt-4 inline-flex items-center text-sm font-semibold text-stone-200 hover:text-white transition-colors">
+          <Link href="/admin/classrooms" className="mt-4 inline-flex items-center text-sm font-semibold text-white hover:text-violet-100 transition-colors">
             View classes <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
         
         {/* Card 4: Quick Action */}
-        <Link href="/admin/exams" className="bg-gradient-to-br from-[#123b71] to-[#1a5490] rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 duration-200 flex flex-col items-center justify-center text-center group border-l-4 border-[#0d2a4d]">
+        <Link href="/admin/exams" className="bg-gradient-to-br from-[#123b71] to-[#1a5490] rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all hover:scale-105 duration-300 flex flex-col items-center justify-center text-center group border-l-4 border-[#0d2a4d]">
           <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 mb-3 group-hover:bg-white/30 transition-colors">
             <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -149,18 +149,18 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Students */}
-        <div className="bg-white rounded-2xl shadow-lg ring-1 ring-gray-200 overflow-hidden">
-          <div className="bg-slate-700 px-6 py-4 flex items-center justify-between border-b-2 border-slate-600">
+        <div className="bg-white rounded-2xl shadow-lg ring-1 ring-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-white uppercase tracking-wide">Recent Students</h2>
-            <Link href="/admin/students" className="text-sm font-semibold text-slate-200 hover:text-white transition-colors inline-flex items-center">
+            <Link href="/admin/students" className="text-sm font-semibold text-white hover:text-indigo-100 transition-colors inline-flex items-center">
               View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
           <ul role="list" className="divide-y divide-gray-200">
             {recentStudents?.map((student: any) => (
-              <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <li key={student.id} className="p-4 hover:bg-indigo-50 transition-colors">
                 <div className="flex items-center space-x-3">
-                  <div className="shrink-0 h-10 w-10 rounded-lg bg-slate-700 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                  <div className="shrink-0 h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
                     {student.first_name?.[0]}{student.last_name?.[0]}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
                     <p className="text-xs text-gray-500 truncate">{student.email}</p>
                   </div>
                   <div className="shrink-0">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700">
                       {new Date(student.created_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -189,20 +189,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Exams */}
-        <div className="bg-white rounded-2xl shadow-lg ring-1 ring-gray-200 overflow-hidden">
-          <div className="bg-gray-700 px-6 py-4 flex items-center justify-between border-b-2 border-gray-600">
+        <div className="bg-white rounded-2xl shadow-lg ring-1 ring-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+          <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-white uppercase tracking-wide">Recent Exams</h2>
-            <Link href="/admin/exams" className="text-sm font-semibold text-gray-200 hover:text-white transition-colors inline-flex items-center">
+            <Link href="/admin/exams" className="text-sm font-semibold text-white hover:text-teal-100 transition-colors inline-flex items-center">
               View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
           <ul role="list" className="divide-y divide-gray-200">
             {recentExams?.map((exam: any) => (
-              <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <li key={exam.id} className="p-4 hover:bg-teal-50 transition-colors">
                 <Link href={`/admin/exams/${exam.id}`} className="block group">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-gray-700 transition-colors">
+                      <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-teal-700 transition-colors">
                         {exam.title}
                       </p>
                       <div className="flex items-center mt-2 space-x-2">
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="shrink-0 ml-4">
-                      <svg className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-gray-400 group-hover:text-teal-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
