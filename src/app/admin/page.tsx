@@ -82,95 +82,95 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Students */}
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+        <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 border-l-4 border-slate-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-indigo-100 text-sm font-medium">Total Students</p>
-              <p className="text-4xl font-bold mt-2">{studentCount}</p>
+              <p className="text-slate-300 text-sm font-semibold uppercase tracking-wider">Students</p>
+              <p className="text-5xl font-black mt-3">{studentCount}</p>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            <div className="bg-slate-700 rounded-xl p-3">
+              <svg className="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
           </div>
-          <Link href="/admin/students" className="mt-4 inline-flex items-center text-sm font-medium text-white hover:text-indigo-100 transition-colors">
-            View all <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          <Link href="/admin/students" className="mt-5 inline-flex items-center text-sm font-bold text-slate-300 hover:text-white transition-colors">
+            View all <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
         
         {/* Card 2: Exams */}
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+        <div className="bg-neutral-800 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 border-l-4 border-neutral-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-emerald-100 text-sm font-medium">Active Exams</p>
-              <p className="text-4xl font-bold mt-2">{activeExamCount}</p>
+              <p className="text-neutral-300 text-sm font-semibold uppercase tracking-wider">Active Exams</p>
+              <p className="text-5xl font-black mt-3">{activeExamCount}</p>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <div className="bg-neutral-700 rounded-xl p-3">
+              <svg className="h-8 w-8 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
           </div>
-          <Link href="/admin/exams" className="mt-4 inline-flex items-center text-sm font-medium text-white hover:text-emerald-100 transition-colors">
-            Manage exams <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          <Link href="/admin/exams" className="mt-5 inline-flex items-center text-sm font-bold text-neutral-300 hover:text-white transition-colors">
+            Manage exams <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
         
         {/* Card 3: Classrooms */}
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+        <div className="bg-zinc-800 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 border-l-4 border-zinc-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-violet-100 text-sm font-medium">Classrooms</p>
-              <p className="text-4xl font-bold mt-2">-</p>
+              <p className="text-zinc-300 text-sm font-semibold uppercase tracking-wider">Classrooms</p>
+              <p className="text-5xl font-black mt-3">-</p>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            <div className="bg-zinc-700 rounded-xl p-3">
+              <svg className="h-8 w-8 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
           </div>
-          <Link href="/admin/classrooms" className="mt-4 inline-flex items-center text-sm font-medium text-white hover:text-violet-100 transition-colors">
-            View classes <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+          <Link href="/admin/classrooms" className="mt-5 inline-flex items-center text-sm font-bold text-zinc-300 hover:text-white transition-colors">
+            View classes <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
           </Link>
         </div>
         
         {/* Card 4: Quick Action */}
-        <Link href="/admin/exams" className="bg-gradient-to-br from-[#123b71] to-[#1a5490] rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 duration-200 flex flex-col items-center justify-center text-center group">
+        <Link href="/admin/exams" className="bg-gradient-to-br from-[#123b71] to-[#1a5490] rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200 flex flex-col items-center justify-center text-center group border-l-4 border-[#0d2a4d]">
           <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 mb-3 group-hover:bg-white/30 transition-colors">
             <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
-          <h3 className="text-lg font-bold">Create New Exam</h3>
-          <p className="text-blue-100 text-xs mt-1">Start a new assessment</p>
+          <h3 className="text-lg font-black uppercase">Create Exam</h3>
+          <p className="text-blue-100 text-xs mt-1 font-medium">Start new assessment</p>
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Students */}
-        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Recent Students</h2>
-            <Link href="/admin/students" className="text-sm font-medium text-white hover:text-indigo-100 transition-colors inline-flex items-center">
-              View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+        <div className="bg-white rounded-2xl shadow-xl ring-2 ring-slate-200 overflow-hidden">
+          <div className="bg-slate-800 px-6 py-5 flex items-center justify-between border-b-4 border-slate-700">
+            <h2 className="text-xl font-black text-white uppercase tracking-wide">Recent Students</h2>
+            <Link href="/admin/students" className="text-sm font-bold text-slate-300 hover:text-white transition-colors inline-flex items-center">
+              View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
           <ul role="list" className="divide-y divide-gray-200">
             {recentStudents?.map((student: any) => (
-              <li key={student.id} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              <li key={student.id} className="p-5 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-4">
+                  <div className="shrink-0 h-12 w-12 rounded-xl bg-slate-800 flex items-center justify-center text-white font-black text-base shadow-md">
                     {student.first_name?.[0]}{student.last_name?.[0]}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
+                    <p className="text-sm font-bold text-gray-900 truncate">
                       {student.first_name} {student.last_name}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{student.email}</p>
+                    <p className="text-xs text-gray-600 truncate font-medium">{student.email}</p>
                   </div>
                   <div className="shrink-0">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800">
                       {new Date(student.created_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -182,45 +182,45 @@ export default function AdminDashboard() {
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <p className="mt-2 text-sm text-gray-500">No recent students</p>
+                <p className="mt-2 text-sm text-gray-500 font-medium">No recent students</p>
               </li>
             )}
           </ul>
         </div>
 
         {/* Recent Exams */}
-        <div className="bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Recent Exams</h2>
-            <Link href="/admin/exams" className="text-sm font-medium text-white hover:text-emerald-100 transition-colors inline-flex items-center">
-              View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+        <div className="bg-white rounded-2xl shadow-xl ring-2 ring-neutral-200 overflow-hidden">
+          <div className="bg-neutral-800 px-6 py-5 flex items-center justify-between border-b-4 border-neutral-700">
+            <h2 className="text-xl font-black text-white uppercase tracking-wide">Recent Exams</h2>
+            <Link href="/admin/exams" className="text-sm font-bold text-neutral-300 hover:text-white transition-colors inline-flex items-center">
+              View All <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
           <ul role="list" className="divide-y divide-gray-200">
             {recentExams?.map((exam: any) => (
-              <li key={exam.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <li key={exam.id} className="p-5 hover:bg-gray-50 transition-colors">
                 <Link href={`/admin/exams/${exam.id}`} className="block group">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-emerald-600 transition-colors">
+                      <p className="text-sm font-bold text-gray-900 truncate group-hover:text-neutral-800 transition-colors">
                         {exam.title}
                       </p>
                       <div className="flex items-center mt-2 space-x-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                          exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold capitalize ${
+                          exam.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-800'
                         }`}>
                           {exam.status}
                         </span>
                         {exam.code && (
-                          <span className="text-xs text-gray-600 font-mono bg-gray-100 px-2 py-0.5 rounded">
+                          <span className="text-xs text-gray-700 font-mono bg-gray-100 px-2.5 py-1 rounded-lg font-bold">
                             {exam.code}
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="shrink-0 ml-4">
-                      <svg className="h-5 w-5 text-gray-400 group-hover:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <svg className="h-6 w-6 text-gray-400 group-hover:text-neutral-700 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </div>
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <p className="mt-2 text-sm text-gray-500">No recent exams</p>
+                <p className="mt-2 text-sm text-gray-500 font-medium">No recent exams</p>
               </li>
             )}
           </ul>
