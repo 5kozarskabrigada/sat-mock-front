@@ -13,6 +13,7 @@ export default function AddStudentForm({ onSuccess }: AddStudentFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [lastCreated, setLastCreated] = useState<any>(null)
   const [copied, setCopied] = useState(false)
+  const [sendEmail, setSendEmail] = useState(true)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -22,8 +23,9 @@ export default function AddStudentForm({ onSuccess }: AddStudentFormProps) {
     const formData = new FormData(e.currentTarget)
     const firstName = formData.get('firstName') as string
     const lastName = formData.get('lastName') as string
+    const email = formData.get('email') as string
 
-    const result = await createStudent(firstName, lastName)
+    const result = await createStudent(firstName, lastName, email, sendEmail)
 
     if (result.error) {
       setError(result.error)
@@ -42,10 +44,15 @@ export default function AddStudentForm({ onSuccess }: AddStudentFormProps) {
   const handleCopy = async () => {
     if (!lastCreated) return
     
+    const emailInfo = lastCreated.emailSent 
+      ? `Email: ${lastCreated.email} (credentials sent via email)`
+      : `Email: ${lastCreated.email}`;
+    
     const text = `Student Account Details:
 Name: ${lastCreated.firstName} ${lastCreated.lastName}
 Username: ${lastCreated.username}
-Password: ${lastCreated.password}`
+Password: ${lastCreated.password}
+${emailInfo}`
 
     try {
       await navigator.clipboard.writeText(text)
@@ -100,6 +107,34 @@ Password: ${lastCreated.password}`
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
                 placeholder="Doe"
             />
+          </div>
+          
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email Address
+            </label>
+            <input
+                type="email"
+                name="email"
+                id="email"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border text-black bg-white"
+                placeholder="student@example.com"
+            />
+            <p className="mt-1 text-xs text-gray-500">Optional. Leave empty to generate a placeholder email.</p>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              id="sendEmail"
+              name="sendEmail"
+              type="checkbox"
+              checked={sendEmail}
+              onChange={(e) => setSendEmail(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <label htmlFor="sendEmail" className="ml-2 block text-sm text-gray-700">
+              Send login credentials via email
+            </label>
           </div>
           
           <div className="pt-2">
@@ -194,6 +229,14 @@ Password: ${lastCreated.password}`
                 <p className="mt-3 text-xs text-green-600">
                     ⚠️ Save these credentials - they won't be shown again.
                 </p>
+                {lastCreated.emailSent && (
+                  <div className="mt-2 flex items-center text-xs text-blue-600">
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    ✅ Login credentials sent to {lastCreated.email}
+                  </div>
+                )}
             </div>
           </div>
         )}

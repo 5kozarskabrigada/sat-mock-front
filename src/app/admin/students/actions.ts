@@ -16,23 +16,26 @@ export function generateUsername(firstName: string, lastName: string) {
   return `${base}${randomSuffix}`;
 }
 
-export async function createStudent(firstName: string, lastName: string) {
+export async function createStudent(firstName: string, lastName: string, email?: string, sendEmail: boolean = false) {
   if (!firstName || !lastName) {
     return { error: 'First name and last name are required' };
   }
 
   const username = generateUsername(firstName, lastName);
   const password = generatePassword();
-  const email = `${username}@sat-platform.local`;
+  
+  // Use provided email or generate a placeholder
+  const studentEmail = email && email.trim() ? email.trim() : `${username}@sat-platform.local`;
 
   try {
     const response = await usersAPI.create({
-      email,
+      email: studentEmail,
       username,
       firstName,
       lastName,
       password,
       role: 'student',
+      sendEmail: sendEmail && email && email.trim() !== '', // Only send email if flag is set and real email is provided
     });
 
     return {
@@ -41,7 +44,9 @@ export async function createStudent(firstName: string, lastName: string) {
         username,
         password,
         firstName,
-        lastName
+        lastName,
+        email: studentEmail,
+        emailSent: sendEmail && email && email.trim() !== ''
       }
     };
   } catch (err: any) {
