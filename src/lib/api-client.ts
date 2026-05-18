@@ -77,6 +77,7 @@ export const usersAPI = {
     lastName: string;
     password: string;
     role?: string;
+    sendEmail?: boolean;
   }) => apiClient.post('/users', data),
   
   update: (id: string, data: any) => apiClient.put(`/users/${id}`, data),
