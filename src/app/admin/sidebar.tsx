@@ -46,12 +46,12 @@ export default function AdminSidebar({ email }: { email: string }) {
   ]
 
   return (
-    <div className={`flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
-      <div className="flex items-center justify-between h-16 border-b border-gray-200 px-4">
-        {!isCollapsed && <Logo className="h-10 w-auto" />}
+    <div className={`flex flex-col bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 h-full transition-all duration-300 shadow-lg ${isCollapsed ? 'w-20' : 'w-64'}`}>
+      <div className="flex items-center justify-between h-20 border-b border-gray-200 px-4 bg-white">
+        {!isCollapsed && <Logo className="h-12 w-auto" />}
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 rounded-md hover:bg-gray-100 text-gray-500"
+          className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
         >
           {isCollapsed ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
@@ -62,16 +62,16 @@ export default function AdminSidebar({ email }: { email: string }) {
       </div>
       
       <div className="flex flex-col flex-1 overflow-y-auto">
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-6 space-y-2">
           {navItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
               title={isCollapsed ? item.name : undefined}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-md group ${
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg group transition-all ${
                 isActive(item.href) && item.href !== '/admin' || (item.href === '/admin' && pathname === '/admin')
-                  ? 'bg-indigo-50 text-indigo-600'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-[#123b71] text-white shadow-md'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-[#123b71]'
               } ${isCollapsed ? 'justify-center px-2' : ''}`}
             >
               <span className={`${isCollapsed ? '' : 'mr-3'}`}>{item.icon}</span>
@@ -80,11 +80,12 @@ export default function AdminSidebar({ email }: { email: string }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 bg-white">
           {!isCollapsed && (
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="ml-0">
-                <p className="text-sm font-medium text-gray-700 truncate w-48" title={email}>
+                <p className="text-xs text-gray-500 mb-1">Logged in as</p>
+                <p className="text-sm font-semibold text-gray-900 truncate w-48" title={email}>
                   {email}
                 </p>
               </div>
@@ -94,7 +95,7 @@ export default function AdminSidebar({ email }: { email: string }) {
               type="button"
               onClick={logout}
               title={isCollapsed ? "Sign out" : undefined}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ${isCollapsed ? 'px-2' : ''}`}
+              className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors ${isCollapsed ? 'px-2' : ''}`}
             >
               {isCollapsed ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>

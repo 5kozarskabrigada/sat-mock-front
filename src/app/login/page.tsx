@@ -36,13 +36,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
-        <div className="bg-gradient-to-r from-[#123b71] to-[#1a5490] p-8">
-          <div className="flex justify-center mb-4">
-            <div className="bg-white p-4 rounded-xl shadow-lg">
-              <Logo className="h-16 w-auto" />
-            </div>
+        <div className="bg-[#123b71] px-8 py-10">
+          <div className="flex justify-center mb-6">
+            <Logo className="h-24 w-auto" />
           </div>
           <h1 className="text-2xl font-bold text-white text-center tracking-tight">
             Welcome Back
