@@ -106,9 +106,10 @@ export default function ClassroomsPage() {
                     {new Date(classroom.created_at).toLocaleDateString()}
                   </span>
                   <DeleteClassroomButton classroomId={classroom.id} onDeleted={loadClassrooms} />
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
     </div>
