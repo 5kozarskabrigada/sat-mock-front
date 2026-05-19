@@ -6,6 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { examsAPI, studentExamsAPI } from '@/lib/api-client'
+import SendReportButton from '@/components/SendReportButton'
 
 export default function AdminSubmissionsPage() {
   const router = useRouter()
@@ -110,12 +111,24 @@ export default function AdminSubmissionsPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/admin/exams/${sub.exam?.id}/results/${sub.id}`}
-                    className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md transition-colors"
-                  >
-                    View Report
-                  </Link>
+                  <div className="flex items-center justify-end gap-2">
+                    <Link
+                      href={`/admin/exams/${sub.exam?.id}/results/${sub.id}`}
+                      className="text-[#123b71] hover:text-[#0d2a4d] bg-blue-50 px-3 py-1 rounded-md transition-colors inline-flex items-center"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </Link>
+                    <SendReportButton
+                      attemptId={sub.id}
+                      studentEmail={sub.student_email}
+                      studentName={`${sub.first_name} ${sub.last_name}`}
+                      compact={true}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
