@@ -221,7 +221,7 @@ export default function ExamRunner({
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(() => {})
             }
-            window.location.href = '/student/completed?disqualified=true'
+            window.location.href = '/1/student/completed?disqualified=true'
         } else {
             setShowLockdownWarning(true)
             await logLockdownViolation(studentExamId, detail)
@@ -399,7 +399,7 @@ export default function ExamRunner({
                           document.exitFullscreen().catch(() => {})
                       }
                       // Hard redirect to bypass lockdown event listeners entirely
-                      window.location.href = '/student/completed'
+                      window.location.href = '/1/student/completed'
                   }
               } catch (e) {
                   console.error(e)
@@ -706,7 +706,7 @@ export default function ExamRunner({
                   
                   {isDisqualified ? (
                     <button 
-                        onClick={() => router.push('/student/completed')}
+                        onClick={() => router.push('/1/student/completed')}
                         className="w-full py-4 rounded-xl bg-gray-900 text-white hover:bg-black font-bold text-lg shadow-lg transition-transform active:scale-95"
                     >
                         Exit Exam

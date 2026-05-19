@@ -70,7 +70,7 @@ export default function ExamPage() {
           // Verify it actually has answers
           const answersResponse = await studentExamsAPI.getAnswers(myExam.id);
           if (answersResponse.data.length > 0) {
-            router.push('/student/completed');
+            router.push('/1/student/completed');
             return;
           }
         }
