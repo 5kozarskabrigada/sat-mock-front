@@ -43,7 +43,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
         <div className="bg-white px-8 py-6">
           <div className="flex justify-center mb-4">
-            <img src="https://img.sanishtech.com/u/83961a365a6fbdc5ad19beeed7a76179.png" alt="EXAMROOM" className="h-28 w-auto" loading="lazy" style={{maxWidth:'100%', height:'auto'}} />
+            <img 
+              src="https://img.sanishtech.com/u/83961a365a6fbdc5ad19beeed7a76179.png" 
+              alt="EXAMROOM" 
+              className="w-64 h-auto rounded-2xl" 
+              loading="lazy" 
+              style={{maxWidth:'100%', height:'auto', objectFit:'cover', aspectRatio: '16/9'}} 
+            />
           </div>
           <div className="flex justify-center mb-2">
             <h1 className="text-2xl font-bold text-[#123b71] tracking-tight">
