@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import Logo from '@/components/Logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,7 +43,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
         <div className="bg-white px-8 py-6">
           <div className="flex justify-center mb-4">
-            <Logo className="h-28 w-auto" withBorder={false} />
+            <img src="https://img.sanishtech.com/u/83961a365a6fbdc5ad19beeed7a76179.png" alt="EXAMROOM" className="h-28 w-auto" loading="lazy" style={{maxWidth:'100%', height:'auto'}} />
           </div>
           <div className="flex justify-center mb-2">
             <h1 className="text-2xl font-bold text-[#123b71] tracking-tight">
