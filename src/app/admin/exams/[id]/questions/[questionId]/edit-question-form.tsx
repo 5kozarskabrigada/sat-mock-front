@@ -47,7 +47,7 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
             const uploadData = new FormData()
             uploadData.append('file', file)
 
-            const res = await fetch('/api/upload', { method: 'POST', body: uploadData })
+            const res = await fetch('/1/api/upload', { method: 'POST', body: uploadData })
             const result = await res.json()
 
             if (!res.ok) {
