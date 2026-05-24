@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     
     // Return full URL with API prefix
     return NextResponse.json({ 
-      url: `${apiUrl}${result.url}`,
+      url: `https://examroomedu.com/1${result.url}`,
       id: result.id 
     })
   } catch (error: any) {
