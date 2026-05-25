@@ -40,9 +40,6 @@ function ImageUploader({ defaultUrl, defaultDescription }: { defaultUrl: string,
                 return
             }
 
-            const fileExt = file.name.split('.').pop()?.toLowerCase()
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-
             // Upload via server API route
             const uploadData = new FormData()
             uploadData.append('file', file)
