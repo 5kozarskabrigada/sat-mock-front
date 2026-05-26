@@ -242,7 +242,7 @@ export default function ScoreReportPage() {
           {/* Official-style Header */}
           <div className="bg-gray-900 text-white p-8">
               <div className="mb-6">
-                  <Logo className="h-16 w-auto" withBorder={false} />
+                  <Logo className="h-12 w-auto" withBorder={false} />
               </div>
               <div className="flex justify-between items-start">
                   <div>

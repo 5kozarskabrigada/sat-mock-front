@@ -150,24 +150,94 @@ async function loadSvgLogoAsPngAsset(url: string): Promise<PdfLogoAsset | null> 
   }
 }
 
+function drawRoundedClipPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  const cappedRadius = Math.max(0, Math.min(radius, Math.min(width, height) / 2))
+  ctx.beginPath()
+  ctx.moveTo(x + cappedRadius, y)
+  ctx.lineTo(x + width - cappedRadius, y)
+  ctx.quadraticCurveTo(x + width, y, x + width, y + cappedRadius)
+  ctx.lineTo(x + width, y + height - cappedRadius)
+  ctx.quadraticCurveTo(x + width, y + height, x + width - cappedRadius, y + height)
+  ctx.lineTo(x + cappedRadius, y + height)
+  ctx.quadraticCurveTo(x, y + height, x, y + height - cappedRadius)
+  ctx.lineTo(x, y + cappedRadius)
+  ctx.quadraticCurveTo(x, y, x + cappedRadius, y)
+  ctx.closePath()
+}
+
+async function applyRoundedCornersToPdfLogo(asset: PdfLogoAsset): Promise<PdfLogoAsset | null> {
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = () => reject(new Error('Failed to process PDF logo image'))
+      img.src = asset.dataUrl
+    })
+
+    const width = image.naturalWidth || 2000
+    const height = image.naturalHeight || 500
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return null
+    }
+
+    const radius = Math.min(width, height) * 0.18
+    ctx.save()
+    drawRoundedClipPath(ctx, 0, 0, width, height, radius)
+    ctx.clip()
+    ctx.drawImage(image, 0, 0, width, height)
+    ctx.restore()
+
+    const dataUrl = canvas.toDataURL('image/png')
+    if (!dataUrl) {
+      return null
+    }
+
+    return { dataUrl, format: 'PNG' }
+  } catch {
+    return null
+  }
+}
+
 async function loadBestPdfLogoAsset(): Promise<PdfLogoAsset | null> {
+  const withRoundedCorners = async (asset: PdfLogoAsset | null): Promise<PdfLogoAsset | null> => {
+    if (!asset) {
+      return null
+    }
+
+    return (await applyRoundedCornersToPdfLogo(asset)) ?? asset
+  }
+
   if (REPORT_LOGO_PATH.includes('.svg')) {
     const svgLogo = await loadSvgLogoAsPngAsset(REPORT_LOGO_PATH)
     if (svgLogo) {
-      return svgLogo
+      return withRoundedCorners(svgLogo)
     }
   }
 
   const primary = await loadPdfLogoAsset(REPORT_LOGO_PATH)
   if (primary) {
-    return primary
+    return withRoundedCorners(primary)
   }
 
   if (REPORT_LOGO_FALLBACK_PATH.includes('.svg')) {
-    return loadSvgLogoAsPngAsset(REPORT_LOGO_FALLBACK_PATH)
+    const fallbackSvg = await loadSvgLogoAsPngAsset(REPORT_LOGO_FALLBACK_PATH)
+    return withRoundedCorners(fallbackSvg)
   }
 
-  return loadPdfLogoAsset(REPORT_LOGO_FALLBACK_PATH)
+  const fallback = await loadPdfLogoAsset(REPORT_LOGO_FALLBACK_PATH)
+  return withRoundedCorners(fallback)
 }
 
 function drawContainedLogo(
