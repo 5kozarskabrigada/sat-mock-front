@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { examsAPI, studentExamsAPI, usersAPI, questionsAPI } from '@/lib/api-client'
 import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
-import Logo from '@/components/Logo'
 import DownloadReportButton from './download-button'
 import type { PdfBreakdownSection, PdfBreakdownQuestion } from './download-button'
 
@@ -242,7 +241,11 @@ export default function ScoreReportPage() {
           {/* Official-style Header */}
           <div className="bg-gray-900 text-white p-8">
               <div className="mb-6">
-                <Logo className="h-12 w-auto" withBorder={true} />
+                  <img
+                    src="/1/images/submission-report-logo.jpg"
+                    alt="Submission Report Logo"
+                    className="h-12 w-auto object-contain"
+                  />
               </div>
               <div className="flex justify-between items-start">
                   <div>
