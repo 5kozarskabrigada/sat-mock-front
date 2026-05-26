@@ -66,7 +66,7 @@ const RED = [220, 38, 38] as const
 const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
-const REPORT_LOGO_PATH = 'https://i.postimg.cc/zDw6fRmM/EXAMROOM.png'
+const REPORT_LOGO_PATH = 'https://cdn.phototourl.com/free/2026-05-26-9e1976a7-e525-4485-ac82-160ba1203d2c.png'
 const REPORT_LOGO_FALLBACK_PATH = '/images/submission-report-logo.png'
 
 type PdfLogoAsset = {

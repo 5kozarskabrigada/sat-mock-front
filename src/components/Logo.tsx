@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 
-const PRIMARY_LOGO_URL = 'https://i.postimg.cc/zDw6fRmM/EXAMROOM.png'
+const PRIMARY_LOGO_URL = 'https://cdn.phototourl.com/free/2026-05-26-9e1976a7-e525-4485-ac82-160ba1203d2c.png'
 const FALLBACK_LOGO_URL = '/images/submission-report-logo.png'
 
 export default function Logo({ className = "h-8", withBorder = false }: { className?: string, withBorder?: boolean }) {
