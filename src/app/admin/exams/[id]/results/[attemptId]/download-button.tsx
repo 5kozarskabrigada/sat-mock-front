@@ -66,8 +66,8 @@ const RED = [220, 38, 38] as const
 const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
-const REPORT_LOGO_PATH = '/1/images/submission-report-logo.jpg?v=20260526'
-const REPORT_LOGO_FALLBACK_PATH = '/1/images/submission-report-logo.png?v=20260526'
+const REPORT_LOGO_PATH = '/1/images/examroom-logo-wide.svg?v=20260526'
+const REPORT_LOGO_FALLBACK_PATH = '/1/images/examroom-logo-wide.svg?v=20260526'
 
 type PdfLogoAsset = {
   dataUrl: string
@@ -101,10 +101,70 @@ async function loadPdfLogoAsset(url: string): Promise<PdfLogoAsset | null> {
   }
 }
 
+async function loadSvgLogoAsPngAsset(url: string): Promise<PdfLogoAsset | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      return null
+    }
+
+    const svgText = await response.text()
+    if (!svgText) {
+      return null
+    }
+
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
+    const svgObjectUrl = URL.createObjectURL(svgBlob)
+
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = () => reject(new Error('Failed to render SVG logo'))
+        img.src = svgObjectUrl
+      })
+
+      const width = image.naturalWidth || 2000
+      const height = image.naturalHeight || 500
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return null
+      }
+
+      ctx.drawImage(image, 0, 0, width, height)
+      const dataUrl = canvas.toDataURL('image/png')
+      if (!dataUrl) {
+        return null
+      }
+
+      return { dataUrl, format: 'PNG' }
+    } finally {
+      URL.revokeObjectURL(svgObjectUrl)
+    }
+  } catch {
+    return null
+  }
+}
+
 async function loadBestPdfLogoAsset(): Promise<PdfLogoAsset | null> {
+  if (REPORT_LOGO_PATH.includes('.svg')) {
+    const svgLogo = await loadSvgLogoAsPngAsset(REPORT_LOGO_PATH)
+    if (svgLogo) {
+      return svgLogo
+    }
+  }
+
   const primary = await loadPdfLogoAsset(REPORT_LOGO_PATH)
   if (primary) {
     return primary
+  }
+
+  if (REPORT_LOGO_FALLBACK_PATH.includes('.svg')) {
+    return loadSvgLogoAsPngAsset(REPORT_LOGO_FALLBACK_PATH)
   }
 
   return loadPdfLogoAsset(REPORT_LOGO_FALLBACK_PATH)
