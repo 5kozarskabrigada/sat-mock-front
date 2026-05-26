@@ -96,12 +96,11 @@ export default function ScoreReportPage() {
 
         const mappedAnswers: AnswerRecord[] = answersData.map((answer: any) => {
           const question = questionMap.get(answer.question_id)
-          const hasCurrentQuestion = Boolean(question)
           const answerValue = answer.answer_value ?? null
 
           return {
             questionId: answer.question_id,
-            isCorrect: hasCurrentQuestion ? answerValue === question.correctAnswer : answer.is_correct,
+            isCorrect: question ? answerValue === question.correctAnswer : answer.is_correct,
             answerValue,
           }
         })
