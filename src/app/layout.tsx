@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "ExamRoom - Online Exam Platform",
   description: "Professional Online Examination Platform",
   icons: {
-    icon: 'https://i.postimg.cc/zDw6fRmM/EXAMROOM.png',
+    icon: ['https://i.postimg.cc/zDw6fRmM/EXAMROOM.png', '/images/logo.svg'],
   },
 };
 

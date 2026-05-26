@@ -67,6 +67,7 @@ const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
 const REPORT_LOGO_PATH = 'https://i.postimg.cc/zDw6fRmM/EXAMROOM.png'
+const REPORT_LOGO_FALLBACK_PATH = '/images/submission-report-logo.png'
 
 type PdfLogoAsset = {
   dataUrl: string
@@ -98,6 +99,15 @@ async function loadPdfLogoAsset(url: string): Promise<PdfLogoAsset | null> {
   } catch {
     return null
   }
+}
+
+async function loadBestPdfLogoAsset(): Promise<PdfLogoAsset | null> {
+  const primary = await loadPdfLogoAsset(REPORT_LOGO_PATH)
+  if (primary) {
+    return primary
+  }
+
+  return loadPdfLogoAsset(REPORT_LOGO_FALLBACK_PATH)
 }
 
 function drawContainedLogo(
@@ -453,7 +463,7 @@ export default function DownloadReportButton({
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const contentWidth = pdfWidth - PAGE_MARGIN * 2
-      const logoAsset = await loadPdfLogoAsset(REPORT_LOGO_PATH)
+      const logoAsset = await loadBestPdfLogoAsset()
 
       let cursorY = drawReportCover(pdf, examTitle, totalScore, studentName, username, completedDate, logoAsset)
 
