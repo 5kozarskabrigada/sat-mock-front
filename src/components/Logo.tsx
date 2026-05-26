@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-const LOGO_URL = '/images/examroom-logo-wide.svg?v=20260526'
+const LOGO_URL = '/1/images/examroom-logo-wide.svg?v=20260526'
 
 export default function Logo({ className = "h-8", withBorder = false }: { className?: string, withBorder?: boolean }) {
   return (
