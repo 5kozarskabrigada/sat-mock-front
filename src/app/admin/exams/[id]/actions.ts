@@ -1,6 +1,20 @@
 
 import { examsAPI, questionsAPI } from '@/lib/api-client';
 
+export async function updateExamName(examId: string, newTitle: string) {
+  const title = newTitle.trim();
+  if (!title || title.length < 3) {
+    return { error: 'Exam name must be at least 3 characters.' };
+  }
+
+  try {
+    await examsAPI.update(examId, { title });
+    return { success: true, title };
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+}
+
 export async function updateExamCode(examId: string, newCode: string) {
   const code = newCode.trim().toUpperCase();
   if (!code || code.length < 4) {

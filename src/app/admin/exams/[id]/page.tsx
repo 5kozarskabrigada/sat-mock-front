@@ -11,6 +11,7 @@ import ExamStatusToggle from './exam-status-toggle';
 import DeleteExamButton from './delete-exam-button';
 import QuestionsList from './questions-list';
 import ExamCodeEditor from './exam-code-editor';
+import ExamNameEditor from './exam-name-editor';
 
 export default function ExamDetailsPage() {
   const router = useRouter();
@@ -145,6 +146,9 @@ export default function ExamDetailsPage() {
 
       {/* Stats / Info Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+        <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5 sm:col-span-2">
+          <ExamNameEditor examId={exam.id} currentTitle={exam.title || ''} onUpdated={handleRefresh} />
+        </div>
          <div className="bg-white overflow-hidden shadow-sm ring-1 ring-gray-200 rounded-xl px-6 py-5">
             <dt className="text-sm font-medium text-gray-500 truncate">Status</dt>
             <dd className="mt-2">
