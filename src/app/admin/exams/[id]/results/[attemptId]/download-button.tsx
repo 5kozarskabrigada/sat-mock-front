@@ -187,8 +187,8 @@ function drawContainedLogo(
   const renderX = x + (boxWidth - renderWidth) / 2
   const renderY = y + (boxHeight - renderHeight) / 2
 
-  pdf.setFillColor(...WHITE)
-  pdf.roundedRect(x, y, boxWidth, boxHeight, 4, 4, 'F')
+  pdf.setDrawColor(...BORDER)
+  pdf.roundedRect(x, y, boxWidth, boxHeight, 6, 6, 'S')
   pdf.addImage(logoAsset.dataUrl, logoAsset.format, renderX, renderY, renderWidth, renderHeight)
 }
 
