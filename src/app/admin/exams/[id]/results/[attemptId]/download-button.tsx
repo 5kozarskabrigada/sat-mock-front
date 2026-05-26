@@ -192,7 +192,7 @@ async function applyRoundedCornersToPdfLogo(asset: PdfLogoAsset): Promise<PdfLog
       return null
     }
 
-    const radius = Math.min(width, height) * 0.18
+    const radius = Math.min(width, height) * 0.24
     ctx.save()
     drawRoundedClipPath(ctx, 0, 0, width, height, radius)
     ctx.clip()
@@ -286,7 +286,7 @@ function drawReportCover(
   logoAsset: PdfLogoAsset | null,
 ) {
   const pageWidth = pdf.internal.pageSize.getWidth()
-  const coverHeight = 68
+  const coverHeight = 76
   const studentNameLines = pdf.splitTextToSize(studentName, pageWidth - PAGE_MARGIN * 2 - 46)
   const usernameLine = `@${username}`
 
@@ -294,18 +294,18 @@ function drawReportCover(
   pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, pageWidth - PAGE_MARGIN * 2, coverHeight, 4, 4, 'F')
 
   if (logoAsset) {
-    drawContainedLogo(pdf, logoAsset, PAGE_MARGIN + 8, PAGE_MARGIN + 9, 30, 12)
+    drawContainedLogo(pdf, logoAsset, PAGE_MARGIN + 8, PAGE_MARGIN + 7, 34, 12)
   }
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(20)
-  pdf.text('SAT Score Report', PAGE_MARGIN + 42, PAGE_MARGIN + 15)
+  pdf.text('SAT Score Report', PAGE_MARGIN + 8, PAGE_MARGIN + 27)
 
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(11)
-  pdf.text(examTitle, PAGE_MARGIN + 42, PAGE_MARGIN + 24)
+  pdf.text(examTitle, PAGE_MARGIN + 8, PAGE_MARGIN + 36)
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
@@ -323,19 +323,19 @@ function drawReportCover(
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(8)
-  pdf.text('STUDENT', PAGE_MARGIN + 8, PAGE_MARGIN + 46)
-  pdf.text('DATE', pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 46, { align: 'right' })
+  pdf.text('STUDENT', PAGE_MARGIN + 8, PAGE_MARGIN + 52)
+  pdf.text('DATE', pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 52, { align: 'right' })
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(13)
-  pdf.text(studentNameLines, PAGE_MARGIN + 8, PAGE_MARGIN + 52)
-  pdf.text(completedDate, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 52, { align: 'right' })
+  pdf.text(studentNameLines, PAGE_MARGIN + 8, PAGE_MARGIN + 58)
+  pdf.text(completedDate, pageWidth - PAGE_MARGIN - 8, PAGE_MARGIN + 58, { align: 'right' })
 
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(9)
-  pdf.text(usernameLine, PAGE_MARGIN + 8, PAGE_MARGIN + 60)
+  pdf.text(usernameLine, PAGE_MARGIN + 8, PAGE_MARGIN + 66)
 
   return PAGE_MARGIN + coverHeight + 12
 }
