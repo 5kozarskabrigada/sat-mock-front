@@ -81,12 +81,6 @@ export default function ScoreReportPage() {
           },
         }
 
-        const mappedAnswers: AnswerRecord[] = answersData.map((answer: any) => ({
-          questionId: answer.question_id,
-          isCorrect: answer.is_correct,
-          answerValue: answer.answer_value,
-        }))
-
         const mappedQuestions: QuestionRecord[] = (Array.isArray(questionsRes.data) ? questionsRes.data : [])
           .filter((question: any) => !question.deleted_at)
           .map((question: any) => ({
@@ -97,6 +91,20 @@ export default function ScoreReportPage() {
             module: question.module,
             content: question.content,
           }))
+
+        const questionMap = new Map(mappedQuestions.map((question) => [question.id, question]))
+
+        const mappedAnswers: AnswerRecord[] = answersData.map((answer: any) => {
+          const question = questionMap.get(answer.question_id)
+          const hasCurrentQuestion = Boolean(question)
+          const answerValue = answer.answer_value ?? null
+
+          return {
+            questionId: answer.question_id,
+            isCorrect: hasCurrentQuestion ? answerValue === question.correctAnswer : answer.is_correct,
+            answerValue,
+          }
+        })
 
         setAttempt(mappedAttempt)
         setTypedAnswers(mappedAnswers)
