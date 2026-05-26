@@ -25,6 +25,10 @@ type QuestionRecord = {
   content: unknown
 }
 
+function normalizeAnswer(value: string | null | undefined): string {
+  return (value ?? '').toString().trim().toLowerCase()
+}
+
 export default function ScoreReportPage() {
   const router = useRouter()
   const params = useParams()
@@ -100,7 +104,7 @@ export default function ScoreReportPage() {
 
           return {
             questionId: answer.question_id,
-            isCorrect: question ? answerValue === question.correctAnswer : answer.is_correct,
+            isCorrect: question ? normalizeAnswer(answerValue) === normalizeAnswer(question.correctAnswer) : null,
             answerValue,
           }
         })
