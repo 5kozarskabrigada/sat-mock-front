@@ -136,6 +136,15 @@ export default function ExamRunner({
     return true
   }
 
+  const waitWithTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs),
+      ),
+    ])
+  }
+
   // Initialize on mount - log exam start and request fullscreen
   useEffect(() => {
     // Log exam start (only if not already logged in this session)
@@ -414,9 +423,9 @@ export default function ExamRunner({
           }
       } else {
           // Move to next module - save progress to server first
-          if (!isAdminPreview) {
+          if (!isAdminPreview && currentModule.type !== 'break') {
               try {
-                  await saveAnswersProgress(studentExamId, answers)
+              await waitWithTimeout(saveAnswersProgress(studentExamId, answers), 5000)
               } catch (e) {
                   console.error('Failed to save progress at module transition:', e)
                   // Continue anyway - localStorage backup is still there
