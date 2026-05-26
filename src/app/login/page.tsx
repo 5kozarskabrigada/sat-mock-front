@@ -39,7 +39,7 @@ export default function LoginPage() {
     <div className="login-container min-h-screen flex items-center justify-center relative overflow-hidden">
       <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md relative z-10 border border-gray-100">
         <div className="w-64 md:w-72 h-20 md:h-24 mx-auto mb-5 rounded-2xl overflow-hidden shadow-lg">
-          <Logo className="w-full h-full object-cover object-center" withBorder={false} />
+          <Logo className="w-full h-full" withBorder={false} />
         </div>
 
         <div className="text-center mb-6">
