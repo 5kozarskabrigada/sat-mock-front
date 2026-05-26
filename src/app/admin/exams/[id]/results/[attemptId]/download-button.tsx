@@ -66,7 +66,7 @@ const RED = [220, 38, 38] as const
 const LIGHT_GREEN = [220, 252, 231] as const
 const LIGHT_AMBER = [254, 243, 199] as const
 const LIGHT_RED = [254, 226, 226] as const
-const REPORT_LOGO_PATH = '/images/submission-report-logo.png'
+const REPORT_LOGO_PATH = 'https://i.postimg.cc/zDw6fRmM/EXAMROOM.png'
 
 type PdfLogoAsset = {
   dataUrl: string
