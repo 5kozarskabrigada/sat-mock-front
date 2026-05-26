@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { examsAPI, studentExamsAPI, usersAPI, questionsAPI } from '@/lib/api-client'
 import { calculateDomainScores, calculateRWScoreByModule, calculateMathScoreByModule } from '@/lib/score-calculator'
+import Logo from '@/components/Logo'
 import DownloadReportButton from './download-button'
 import type { PdfBreakdownSection, PdfBreakdownQuestion } from './download-button'
 
@@ -240,6 +241,9 @@ export default function ScoreReportPage() {
         <div id="score-report" className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
           {/* Official-style Header */}
           <div className="bg-gray-900 text-white p-8">
+              <div className="mb-6">
+                <Logo className="h-12 w-auto" withBorder={true} />
+              </div>
               <div className="flex justify-between items-start">
                   <div>
                       <h1 className="text-2xl font-bold tracking-tight">SAT Score Report</h1>
