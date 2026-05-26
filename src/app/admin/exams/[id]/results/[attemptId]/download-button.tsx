@@ -224,18 +224,18 @@ function drawReportCover(
   pdf.roundedRect(PAGE_MARGIN, PAGE_MARGIN, pageWidth - PAGE_MARGIN * 2, coverHeight, 4, 4, 'F')
 
   if (logoAsset) {
-    drawContainedLogo(pdf, logoAsset, PAGE_MARGIN + 8, PAGE_MARGIN + 8, 18, 18)
+    drawContainedLogo(pdf, logoAsset, PAGE_MARGIN + 8, PAGE_MARGIN + 9, 30, 12)
   }
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(20)
-  pdf.text('SAT Score Report', PAGE_MARGIN + 32, PAGE_MARGIN + 15)
+  pdf.text('SAT Score Report', PAGE_MARGIN + 42, PAGE_MARGIN + 15)
 
   pdf.setTextColor(...LIGHT_TEXT)
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(11)
-  pdf.text(examTitle, PAGE_MARGIN + 32, PAGE_MARGIN + 24)
+  pdf.text(examTitle, PAGE_MARGIN + 42, PAGE_MARGIN + 24)
 
   pdf.setTextColor(...WHITE)
   pdf.setFont('helvetica', 'bold')
@@ -397,7 +397,7 @@ function addPageHeader(pdf: jsPDF, title: string, subtitle: string, logoAsset: P
   pdf.text(subtitle, PAGE_MARGIN, 21)
 
   if (logoAsset) {
-    drawContainedLogo(pdf, logoAsset, pageWidth - PAGE_MARGIN - 16, 7, 12, 12)
+    drawContainedLogo(pdf, logoAsset, pageWidth - PAGE_MARGIN - 24, 9, 20, 8)
   }
 
   return 40

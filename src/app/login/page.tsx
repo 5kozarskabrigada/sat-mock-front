@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="login-container min-h-screen flex items-center justify-center relative overflow-hidden">
       <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md relative z-10 border border-gray-100">
-        <div className="w-64 md:w-72 h-20 md:h-24 mx-auto mb-5 rounded-3xl overflow-hidden shadow-lg">
+        <div className="w-72 md:w-80 h-24 md:h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-lg">
           <Logo className="w-full h-full" withBorder={false} />
         </div>
 
