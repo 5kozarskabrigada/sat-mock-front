@@ -29,6 +29,17 @@ function normalizeAnswer(value: string | null | undefined): string {
   return (value ?? '').toString().trim().toLowerCase()
 }
 
+function isAnswerCorrect(answerValue: string | null | undefined, correctAnswer: string | null | undefined): boolean {
+  const normalizedStudentAnswer = normalizeAnswer(answerValue)
+  const acceptedAnswers = (correctAnswer ?? '')
+    .toString()
+    .split('|')
+    .map((answer) => normalizeAnswer(answer))
+    .filter((answer) => answer.length > 0)
+
+  return acceptedAnswers.includes(normalizedStudentAnswer)
+}
+
 export default function ScoreReportPage() {
   const router = useRouter()
   const params = useParams()
@@ -104,7 +115,7 @@ export default function ScoreReportPage() {
 
           return {
             questionId: answer.question_id,
-            isCorrect: question ? normalizeAnswer(answerValue) === normalizeAnswer(question.correctAnswer) : null,
+            isCorrect: question ? isAnswerCorrect(answerValue, question.correctAnswer) : null,
             answerValue,
           }
         })
