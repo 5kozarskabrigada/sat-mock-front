@@ -36,20 +36,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-container min-h-screen flex items-center justify-center relative overflow-hidden">
-      <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md relative z-10 border border-gray-100">
-        <div className="w-72 md:w-80 h-24 md:h-28 mx-auto mb-5 rounded-full overflow-hidden shadow-lg flex items-center justify-center">
-          <Logo className="h-full w-auto block" withBorder={false} />
+    <div className="login-container min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-10">
+      <div className="bg-[#efefef] p-8 md:p-12 rounded-[2rem] shadow-[0_24px_40px_rgba(0,0,0,0.14)] w-full max-w-5xl relative z-10 border border-[#e8e8e8]">
+        <div className="w-full max-w-[54rem] mx-auto mb-12 rounded-full bg-white p-3 shadow-[0_14px_24px_rgba(0,0,0,0.12)]">
+          <div className="h-24 md:h-32 rounded-full overflow-hidden flex items-center justify-center">
+            <Logo className="h-full w-full block" withBorder={false} />
+          </div>
         </div>
 
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-[#123b71] tracking-tight mb-2">
+        <div className="text-center mb-10">
+          <h1 className="text-5xl md:text-6xl font-bold text-[#123b71] tracking-tight mb-4">
             Welcome Back
           </h1>
-          <p className="text-gray-700 text-sm">Sign in to the SAT Mock Exam Platform</p>
+          <p className="text-gray-700 text-xl md:text-2xl">Sign in to the SAT Mock Exam Platform</p>
         </div>
 
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6 max-w-xl mx-auto" onSubmit={handleLogin}>
             {error && (
               <div className="rounded-lg bg-red-50 p-4 border border-red-200">
                 <div className="flex">
