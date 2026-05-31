@@ -45,10 +45,10 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mb-10">
-          <h1 className="text-5xl md:text-6xl font-bold text-[#123b71] tracking-tight mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-[#123b71] tracking-tight mb-4">
             Welcome Back
           </h1>
-          <p className="text-gray-700 text-xl md:text-2xl">Sign in to the SAT Mock Exam Platform</p>
+          <p className="text-gray-700 text-lg md:text-2xl">Sign in to the SAT Mock Exam Platform</p>
         </div>
 
           <form className="space-y-6 max-w-xl mx-auto" onSubmit={handleLogin}>
