@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="login-container min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-10">
       <div className="bg-[#efefef] p-8 md:p-12 rounded-[2rem] shadow-[0_24px_40px_rgba(0,0,0,0.14)] w-full max-w-5xl relative z-10 border border-[#e8e8e8]">
-        <div className="w-full max-w-[54rem] mx-auto mb-12 rounded-full bg-white p-3 shadow-[0_14px_24px_rgba(0,0,0,0.12)]">
+        <div className="w-full max-w-4xl mx-auto mb-12 rounded-full bg-white p-3 shadow-[0_14px_24px_rgba(0,0,0,0.12)]">
           <div className="h-24 md:h-32 rounded-full overflow-hidden flex items-center justify-center">
             <Logo className="h-full w-full block" withBorder={false} />
           </div>
